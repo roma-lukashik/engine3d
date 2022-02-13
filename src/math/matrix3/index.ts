@@ -7,21 +7,15 @@ export type Matrix3 = [
 ]
 
 export const m00 = (m: Matrix3) => m[0]
-
 export const m01 = (m: Matrix3) => m[1]
-
 export const m02 = (m: Matrix3) => m[2]
 
 export const m10 = (m: Matrix3) => m[3]
-
 export const m11 = (m: Matrix3) => m[4]
-
 export const m12 = (m: Matrix3) => m[5]
 
 export const m20 = (m: Matrix3) => m[6]
-
 export const m21 = (m: Matrix3) => m[7]
-
 export const m22 = (m: Matrix3) => m[8]
 
 export const identity = (): Matrix3 => [
@@ -43,7 +37,7 @@ export const transpose = (m: Matrix3): Matrix3 => [
 
 export const invert = (m: Matrix3): Matrix3 | null => {
   const d = det(m)
-  if (!d) return null
+  if (d === 0) return null
   return [
     (m22(m) * m11(m) - m12(m) * m21(m)) / d,
     (-m22(m) * m01(m) + m02(m) * m21(m)) / d,
