@@ -1,16 +1,16 @@
-import { renderer } from '.'
+import { createRenderer } from '.'
 
-describe("renderer", () => {
-  let gl: WebGL2RenderingContext
+describe('renderer', () => {
+  let gl: ReturnType<typeof createRenderer>
   beforeEach(() => {
-    gl = renderer({
+    gl = createRenderer({
       canvas: document.createElement('canvas'),
       width: 640,
       height: 480,
     })
   })
 
-  it("should return GL context", () => {
+  it('should return renderer', () => {
     expect(gl).toBeDefined()
   })
 })
