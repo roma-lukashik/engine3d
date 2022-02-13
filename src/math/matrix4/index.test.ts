@@ -1,4 +1,17 @@
-import { add, det, identity, invert, Matrix4, scalar, subtract, transpose } from '.'
+import {
+  add,
+  det,
+  identity,
+  invert,
+  Matrix4,
+  multiply,
+  rotateX,
+  rotateY,
+  rotateZ,
+  scalar,
+  subtract,
+  transpose,
+} from '.'
 
 describe('matrix4', () => {
   describe('#identity', () => {
@@ -117,6 +130,80 @@ describe('matrix4', () => {
         8, 2, 6, 4,
         8, 6, 4, 2,
         6, 4, 8, 2,
+      ])
+    })
+  })
+
+  describe('#multiply', () => {
+    it('works correctly', () => {
+      const a: Matrix4 = [
+        1, 2,	3, 4,
+        4, 1,	3, 2,
+        4, 3,	2, 1,
+        3, 2,	4, 1,
+      ]
+      const b: Matrix4 = [
+        1, 4,	4, 3,
+        2, 1,	3, 2,
+        3, 3,	2, 4,
+        4, 2,	1, 1,
+      ]
+      expect(multiply(a, b)).toEqual([
+        30, 23, 20, 23,
+        23, 30, 27, 28,
+        20, 27, 30, 27,
+        23, 28, 27, 30,
+      ])
+    })
+  })
+
+  describe('#rotateX', () => {
+    it('works correctly', () => {
+      const m: Matrix4 = [
+        1, 2,	3, 4,
+        4, 1,	3, 2,
+        4, 3,	2, 1,
+        3, 2,	4, 1,
+      ]
+      expect(rotateX(m, Math.PI / 4)).toPrettyEqual([
+        1, 3.535, 0.707, 4,
+        4, 2.828, 1.414, 2,
+        4, 3.535, -0.707, 1,
+        3, 4.243, 1.414, 1,
+      ])
+    })
+  })
+
+  describe('#rotateY', () => {
+    it('works correctly', () => {
+      const m: Matrix4 = [
+        1, 2,	3, 4,
+        4, 1,	3, 2,
+        4, 3,	2, 1,
+        3, 2,	4, 1,
+      ]
+      expect(rotateY(m, Math.PI / 4)).toPrettyEqual([
+        -1.414, 2, 2.828, 4,
+        0.707, 1, 4.949, 2,
+        1.414, 3, 4.243, 1,
+        -0.707, 2, 4.949, 1,
+      ])
+    })
+  })
+
+  describe('#rotateZ', () => {
+    it('works correctly', () => {
+      const m: Matrix4 = [
+        1, 2,	3, 4,
+        4, 1,	3, 2,
+        4, 3,	2, 1,
+        3, 2,	4, 1,
+      ]
+      expect(rotateZ(m, Math.PI / 4)).toPrettyEqual([
+        2.121, 0.707, 3, 4,
+        3.535, -2.121, 3, 2,
+        4.949, -0.707, 2, 1,
+        3.535, -0.707, 4, 1,
       ])
     })
   })

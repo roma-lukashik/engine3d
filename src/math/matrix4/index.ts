@@ -75,3 +75,54 @@ export const add = (a: Matrix4, b: Matrix4): Matrix4 => a.map((x, i) => x + b[i]
 export const subtract = (a: Matrix4, b: Matrix4): Matrix4 => a.map((x, i) => x - b[i]) as Matrix4
 
 export const scalar = (a: Matrix4, c: number): Matrix4 => a.map((x) => x * c) as Matrix4
+
+export const multiply = (a: Matrix4, b: Matrix4): Matrix4 => [
+  m00(a) * m00(b) + m01(a) * m10(b) + m02(a) * m20(b) + m03(a) * m30(b),
+  m00(a) * m01(b) + m01(a) * m11(b) + m02(a) * m21(b) + m03(a) * m31(b),
+  m00(a) * m02(b) + m01(a) * m12(b) + m02(a) * m22(b) + m03(a) * m32(b),
+  m00(a) * m03(b) + m01(a) * m13(b) + m02(a) * m23(b) + m03(a) * m33(b),
+
+  m10(a) * m00(b) + m11(a) * m10(b) + m12(a) * m20(b) + m13(a) * m30(b),
+  m10(a) * m01(b) + m11(a) * m11(b) + m12(a) * m21(b) + m13(a) * m31(b),
+  m10(a) * m02(b) + m11(a) * m12(b) + m12(a) * m22(b) + m13(a) * m32(b),
+  m10(a) * m03(b) + m11(a) * m13(b) + m12(a) * m23(b) + m13(a) * m33(b),
+
+  m20(a) * m00(b) + m21(a) * m10(b) + m22(a) * m20(b) + m23(a) * m30(b),
+  m20(a) * m01(b) + m21(a) * m11(b) + m22(a) * m21(b) + m23(a) * m31(b),
+  m20(a) * m02(b) + m21(a) * m12(b) + m22(a) * m22(b) + m23(a) * m32(b),
+  m20(a) * m03(b) + m21(a) * m13(b) + m22(a) * m23(b) + m23(a) * m33(b),
+
+  m30(a) * m00(b) + m31(a) * m10(b) + m32(a) * m20(b) + m33(a) * m30(b),
+  m30(a) * m01(b) + m31(a) * m11(b) + m32(a) * m21(b) + m33(a) * m31(b),
+  m30(a) * m02(b) + m31(a) * m12(b) + m32(a) * m22(b) + m33(a) * m32(b),
+  m30(a) * m03(b) + m31(a) * m13(b) + m32(a) * m23(b) + m33(a) * m33(b),
+]
+
+export const rotateX = (m: Matrix4, rad: number): Matrix4 => multiply(m, rotationMatrix(rad, rx))
+
+export const rotateY = (m: Matrix4, rad: number): Matrix4 => multiply(m, rotationMatrix(rad, ry))
+
+export const rotateZ = (m: Matrix4, rad: number): Matrix4 => multiply(m, rotationMatrix(rad, rz))
+
+const rotationMatrix = (rad: number, fn: (sin: number, cos: number) => Matrix4) => fn(Math.sin(rad), Math.cos(rad))
+
+const rx = (sin: number, cos: number): Matrix4 => [
+  1, 0, 0, 0,
+  0, cos, -sin, 0,
+  0, sin, cos, 0,
+  0, 0, 0, 1,
+]
+
+const ry = (sin: number, cos: number): Matrix4 => [
+  cos, 0, sin, 0,
+  0, 1, 0, 0,
+  -sin, 0, cos, 0,
+  0, 0, 0, 1,
+]
+
+const rz = (sin: number, cos: number): Matrix4 => [
+  cos, -sin, 0, 0,
+  sin, cos, 0, 0,
+  0, 0, 1, 0,
+  0, 0, 0, 1,
+]
