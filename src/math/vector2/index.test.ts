@@ -22,7 +22,7 @@ import {
 
 describe('vector', () => {
   it('#vector', () => {
-    expect(vector2(1, -3.14)).toEqualVector([1, -3.14])
+    expect(vector2(1, -3.14)).toPrettyEqual([1, -3.14])
   })
 
   it('#x', () => {
@@ -34,23 +34,23 @@ describe('vector', () => {
   })
 
   it('#zero', () => {
-    expect(zero()).toEqualVector([0, 0])
+    expect(zero()).toPrettyEqual([0, 0])
   })
 
   it('#add', () => {
-    expect(add(vector2(-1, 3.14), vector2(3.14, -1))).toEqualVector([2.14, 2.14])
+    expect(add(vector2(-1, 3.14), vector2(3.14, -1))).toPrettyEqual([2.14, 2.14])
   })
 
   it('#subtract', () => {
-    expect(subtract(vector2(-1, 3.14), vector2(3.14, -1))).toEqualVector([-4.14, 4.14])
+    expect(subtract(vector2(-1, 3.14), vector2(3.14, -1))).toPrettyEqual([-4.14, 4.14])
   })
 
   it('#multiply', () => {
-    expect(multiply(vector2(-1, 3.14), 2)).toEqualVector([-2, 6.28])
+    expect(multiply(vector2(-1, 3.14), 2)).toPrettyEqual([-2, 6.28])
   })
 
   it('#divide', () => {
-    expect(divide(vector2(-1, 3.14), 2)).toEqualVector([-0.5, 1.57])
+    expect(divide(vector2(-1, 3.14), 2)).toPrettyEqual([-0.5, 1.57])
   })
 
   it('#lengthSquared', () => {
@@ -58,39 +58,39 @@ describe('vector', () => {
   })
 
   it('#length', () => {
-    expect(length(vector2(-2, 3.14))).toEqualScalar(3.722)
+    expect(length(vector2(-2, 3.14))).toPrettyEqual(3.722)
   })
 
   it('#distanceSquared', () => {
-    expect(distanceSquared(vector2(-2, 3.14), vector2(-1, 0))).toEqualScalar(10.8596)
+    expect(distanceSquared(vector2(-2, 3.14), vector2(-1, 0))).toPrettyEqual(10.8596)
   })
 
   it('#distance', () => {
-    expect(distance(vector2(-2, 3.14), vector2(-1, 0))).toEqualScalar(3.295)
+    expect(distance(vector2(-2, 3.14), vector2(-1, 0))).toPrettyEqual(3.295)
   })
 
   it('#normalize', () => {
-    expect(normalize(vector2(-2, 3.14))).toEqualVector([-0.537, 0.843])
+    expect(normalize(vector2(-2, 3.14))).toPrettyEqual([-0.537, 0.843])
   })
 
   it('#dot', () => {
-    expect(dot(vector2(-2, 3.14), vector2(1, -2))).toEqualScalar(-8.28)
+    expect(dot(vector2(-2, 3.14), vector2(1, -2))).toPrettyEqual(-8.28)
   })
 
   it('#cross', () => {
-    expect(cross(vector2(-2, 3.14), vector2(1, -2))).toEqualScalar(0.86)
+    expect(cross(vector2(-2, 3.14), vector2(1, -2))).toPrettyEqual(0.86)
   })
 
   it('#perp', () => {
-    expect(perp(vector2(-1, 3.14))).toEqualVector([3.14, 1])
+    expect(perp(vector2(-1, 3.14))).toPrettyEqual([3.14, 1])
   })
 
   it('#negate', () => {
-    expect(negate(vector2(-1, 3.14))).toEqualVector([1, -3.14])
+    expect(negate(vector2(-1, 3.14))).toPrettyEqual([1, -3.14])
   })
 
   it('#angleTo', () => {
-    expect(angleTo(vector2(-2, 3.14), vector2(1, -2))).toEqualScalar(3.038)
+    expect(angleTo(vector2(-2, 3.14), vector2(1, -2))).toPrettyEqual(3.038)
   })
 
   it('#equal', () => {

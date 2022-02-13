@@ -1,2 +1,1 @@
-export * from './toEqualVector'
-export * from './toEqualScalar'
+export * from './toPrettyEqual'

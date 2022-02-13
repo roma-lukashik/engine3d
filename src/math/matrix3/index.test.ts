@@ -1,4 +1,19 @@
-import { add, det, identity, invert, Matrix3, scalar, subtract, transpose } from '.'
+import {
+  add,
+  det,
+  identity,
+  invert,
+  Matrix3,
+  multiply,
+  rotateX,
+  rotateY,
+  rotateZ,
+  scalar,
+  subtract,
+  translateXY,
+  transpose,
+} from '.'
+import { vector2 } from '../vector2'
 
 describe('matrix3', () => {
   describe('#identity', () => {
@@ -16,7 +31,7 @@ describe('matrix3', () => {
       const m: Matrix3 = [
         1, 2, 3,
         0, 1, 4,
-        5, 6, 0
+        5, 6, 0,
       ]
       expect(det(m)).toBe(1)
     })
@@ -27,7 +42,7 @@ describe('matrix3', () => {
       const m: Matrix3 = [
         1, 2, 3,
         0, 1, 4,
-        5, 6, 0
+        5, 6, 0,
       ]
       expect(invert(m)).toEqual([
         -24, 18, 5,
@@ -112,6 +127,87 @@ describe('matrix3', () => {
         2, 4, 6,
         8, 10, 12,
         14, 16, 18,
+      ])
+    })
+  })
+
+  describe('#multiply', () => {
+    it('works correctly', () => {
+      const a: Matrix3 = [
+        1, 2, 3,
+        3, 2, 1,
+        1, 2, 3,
+      ]
+      const b: Matrix3 = [
+        4, 5, 6,
+        6, 5, 4,
+        4, 6, 5,
+      ]
+      expect(multiply(a, b)).toEqual([
+        28, 33, 29,
+        28, 31, 31,
+        28, 33, 29,
+      ])
+    })
+  })
+
+  describe('#translate', () => {
+    it('works correctly', () => {
+      const m: Matrix3 = [
+        1, 2, 3,
+        3, 2, 1,
+        1, 2, 3,
+      ]
+      const v = vector2(2, 4)
+      expect(translateXY(m, v)).toEqual([
+        1, 2, 3,
+        3, 2, 1,
+        15, 14, 13,
+      ])
+    })
+  })
+
+  describe('#rotateX', () => {
+    it("works correctly", () => {
+      const m: Matrix3 = [
+        1, 2, 3,
+        3, 2, 1,
+        1, 2, 3,
+      ]
+      expect(rotateX(m, Math.PI / 4)).toPrettyEqual([
+        1, 3.536, 0.707,
+        3, 2.121, -0.707,
+        1, 3.536, 0.707,
+      ])
+    })
+  })
+
+  describe('#rotateY', () => {
+    it("works correctly", () => {
+      const m: Matrix3 = [
+        1, 2, 3,
+        3, 2, 1,
+        1, 2, 3,
+      ]
+      expect(rotateY(m, Math.PI / 4)).toPrettyEqual([
+        -1.414, 2, 2.828,
+        1.414, 2, 2.828,
+        -1.414, 2, 2.828,
+      ])
+    })
+  })
+
+  describe('#rotateZ', () => {
+    it("works correctly", () => {
+      const m: Matrix3 = [
+        1, 2, 3,
+        3, 2, 1,
+        1, 2, 3,
+      ]
+      expect(rotateZ(m, Math.PI / 4)).toPrettyEqual([
+        2.121, 0.707, 3,
+        3.536, -0.707, 1,
+        2.121, 0.707, 3,
       ])
     })
   })

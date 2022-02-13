@@ -1,10 +1,7 @@
-import { Vector2 } from './src/vector2'
-
 declare global {
   namespace jest {
     interface Matchers<R> {
-      toEqualVector(expected: Vector2): R
-      toEqualScalar(expected: number): R
+      toPrettyEqual<T extends number | number[]>(expected: T): R
     }
   }
 }

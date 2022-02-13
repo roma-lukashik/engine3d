@@ -1,7 +1,6 @@
 import 'jest-canvas-mock'
-import { toEqualVector, toEqualScalar } from './tests/matchers'
+import { toPrettyEqual } from './tests/matchers'
 
 expect.extend({
-  toEqualVector,
-  toEqualScalar,
+  toPrettyEqual,
 })
