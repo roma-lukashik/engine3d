@@ -7,7 +7,6 @@ type MeshProps = {
     position: { size: number; data: Float32Array };
     normal: { size: number; data: Float32Array };
     uv: { size: number; data: Float32Array };
-    index: { data: Uint16Array | Uint32Array };
   };
 }
 
@@ -21,7 +20,7 @@ export const createMesh = ({
   shape,
 }: MeshProps): Mesh => {
   const attr = Object.fromEntries(Object.entries(shape).map(([key, value]) => {
-    return [key, addAttribute(gl, key, value)]
+    return [key, addAttribute(gl, value)]
   }))
 
   return {
@@ -29,20 +28,16 @@ export const createMesh = ({
   }
 }
 
-const addAttribute = (gl: WebGL2RenderingContext, key: string, value: MeshProps['shape'][keyof MeshProps['shape']]) => {
+const addAttribute = (gl: WebGL2RenderingContext, value: MeshProps['shape'][keyof MeshProps['shape']]) => {
   const attr = {
     ...value,
-    type: value.data.constructor === Float32Array
-      ? gl.FLOAT
-      : value.data.constructor === Uint16Array
-        ? gl.UNSIGNED_SHORT
-        : gl.UNSIGNED_INT,
+    type: gl.FLOAT,
     normalized: false,
     stride: 0,
     offset: 0,
     divisor: 0,
-    target: key === 'index' ? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER,
-    count: value.data.length / ('size' in value ? value.size : 1),
+    target: gl.ARRAY_BUFFER,
+    count: value.data.length / value.size,
     buffer: gl.createBuffer(),
   }
   updateAttribute(gl, attr)
@@ -83,10 +78,5 @@ const render = (gl: WebGL2RenderingContext, program: Program, attr: Record<strin
     }
   })
 
-  if (attr.index) {
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, attr.index.buffer)
-    gl.drawElements(gl.TRIANGLES, attr.index.count, attr.index.type, attr.index.offset)
-  } else {
-    gl.drawArrays(gl.TRIANGLES, 0, attr.position.count)
-  }
+  gl.drawArrays(gl.TRIANGLES, 0, attr.position.count)
 }
