@@ -17,6 +17,8 @@ export const createRenderer = ({
   width,
   height,
 }: RendererProps): Renderer => {
+  canvas.width = width
+  canvas.height = height
   const gl = canvas.getContext('webgl2')
   if (!gl) {
     throw new Error('Unable to create WebGL context')

@@ -1,9 +1,9 @@
-import * as matrix4 from '../../math/matrix4'
 import * as matrix3 from '../../math/matrix3'
-import { array32flatten } from '../../utils/float32array'
+import { Camera } from '../camera'
 
 type ProgramProps = {
   gl: WebGL2RenderingContext;
+  camera: Camera;
   vertex: string;
   fragment: string;
 }
@@ -16,6 +16,7 @@ export type Program = {
 
 export const createProgram = ({
   gl,
+  camera,
   vertex,
   fragment,
 }: ProgramProps): Program => {
@@ -36,25 +37,10 @@ export const createProgram = ({
   const uniformLocations = getUniformLocations(gl, program)
   const attributeLocations = getAttributeLocations(gl, program)
 
-  const modelViewMatrix = uniformLocations.find(({ info }) => info.name === 'modelViewMatrix')
-  if (modelViewMatrix)  {
-    modelViewMatrix.value = matrix4.identity()
-  }
-
-  const normalMatrix = uniformLocations.find(({ info }) => info.name === 'normalMatrix')
-  if (normalMatrix)  {
-    normalMatrix.value = matrix3.identity()
-  }
-
-  const projectionMatrix = uniformLocations.find(({ info }) => info.name === 'projectionMatrix')
-  if (projectionMatrix)  {
-    projectionMatrix.value = matrix4.identity()
-  }
-
   return {
     program,
     getAttributeLocations: () => attributeLocations,
-    use: () => use(gl, program, uniformLocations),
+    use: () => use(gl, program, uniformLocations, camera),
   }
 }
 
@@ -107,10 +93,20 @@ const use = (
   gl: WebGL2RenderingContext,
   program: WebGLProgram,
   uniformLocations: Uniform[],
+  camera: Camera,
 ) => {
   gl.useProgram(program)
-  uniformLocations.forEach(({ info, location, value }) => {
-    setUniform(gl, info.type, location, value)
+  uniformLocations.forEach((uniform) => {
+    if (uniform.info.name === 'modelViewMatrix') {
+      uniform.value = camera.projectionViewMatrix()
+    }
+    if (uniform.info.name === 'projectionMatrix') {
+      uniform.value = camera.projectionMatrix()
+    }
+    if (uniform.info.name === 'normalMatrix') {
+      uniform.value = matrix3.identity()
+    }
+    setUniform(gl, uniform.info.type, uniform.location, uniform.value)
   })
 }
 
@@ -120,8 +116,6 @@ const setUniform = (
   location: WebGLUniformLocation,
   value: any,
 ): void => {
-  value = value.length ? array32flatten(value) : value
-
   switch (type) {
     case gl.FLOAT:
       return value.length ? gl.uniform1fv(location, value) : gl.uniform1f(location, value)

@@ -1,4 +1,4 @@
-import { Program } from "../program"
+import { Program } from '../program'
 
 type MeshProps = {
   gl: WebGL2RenderingContext;
@@ -55,15 +55,10 @@ const render = (gl: WebGL2RenderingContext, program: Program, attr: Record<strin
     const attribute = attr[name]
     gl.bindBuffer(attribute.target, attribute.buffer)
 
-    // For matrix attributes, buffer needs to be defined per column
-    let numLoc = 1
-    if (type === 35674) numLoc = 2 // mat2
-    if (type === 35675) numLoc = 3 // mat3
-    if (type === 35676) numLoc = 4 // mat4
-
+    const numLoc = bufferSize(gl, type)
     const size = attribute.size / numLoc
-    const stride = numLoc === 1 ? 0 : numLoc * numLoc * numLoc
-    const offset = numLoc === 1 ? 0 : numLoc * numLoc
+    const stride = numLoc === 1 ? 0 : numLoc ** 3
+    const offset = numLoc === 1 ? 0 : numLoc ** 2
 
     for (let i = 0; i < numLoc; i++) {
       gl.vertexAttribPointer(
@@ -79,4 +74,13 @@ const render = (gl: WebGL2RenderingContext, program: Program, attr: Record<strin
   })
 
   gl.drawArrays(gl.TRIANGLES, 0, attr.position.count)
+}
+
+const bufferSize = (gl: WebGL2RenderingContext, type: number) => {
+  switch (type) {
+    case gl.FLOAT_MAT2: return 2
+    case gl.FLOAT_MAT3: return 3
+    case gl.FLOAT_MAT4: return 4
+    default: return 1
+  }
 }
