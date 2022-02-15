@@ -1,4 +1,5 @@
 import { Program } from '../program'
+import { Attribute, createAttribute } from '../utils/attribute'
 
 type MeshProps = {
   gl: WebGL2RenderingContext;
@@ -8,19 +9,6 @@ type MeshProps = {
     normal: { size: number; data: Float32Array };
     uv: { size: number; data: Float32Array };
   };
-}
-
-type Attribute = {
-  size: number;
-  data: Float32Array;
-  type: number;
-  normalized: boolean;
-  stride: number;
-  offset: number;
-  divisor: number;
-  target: number;
-  count: number;
-  buffer: WebGLBuffer | null;
 }
 
 export type Mesh = {
@@ -33,7 +21,7 @@ export const createMesh = ({
   shape,
 }: MeshProps): Mesh => {
   const attributes = Object.fromEntries(Object.entries(shape).map(([key, value]) => {
-    return [key, getAttribute(gl, value)]
+    return [key, createAttribute(gl, value)]
   }))
 
   Object.values(attributes).forEach((attr) => updateAttribute(gl, attr))
@@ -42,18 +30,6 @@ export const createMesh = ({
     render: () => render(gl, program, attributes),
   }
 }
-
-const getAttribute = (gl: WebGL2RenderingContext, value: MeshProps['shape'][keyof MeshProps['shape']]): Attribute => ({
-  ...value,
-  type: gl.FLOAT,
-  normalized: false,
-  stride: 0,
-  offset: 0,
-  divisor: 0,
-  target: gl.ARRAY_BUFFER,
-  count: value.data.length / value.size,
-  buffer: gl.createBuffer(),
-})
 
 const updateAttribute = (gl: WebGL2RenderingContext, attr: Attribute) => {
   gl.bindBuffer(attr.target, attr.buffer)
