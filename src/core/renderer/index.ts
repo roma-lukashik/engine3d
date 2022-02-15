@@ -1,4 +1,5 @@
 import { Mesh } from '../mesh'
+import { Program } from '../program'
 
 type RendererProps = {
   canvas?: HTMLCanvasElement;
@@ -9,7 +10,7 @@ type RendererProps = {
 type Renderer = {
   gl: WebGL2RenderingContext;
   resize: (width: number, height: number) => void;
-  render: (meshes: Mesh[]) => void;
+  render: (program: Program, meshes: Mesh[]) => void;
 }
 
 export const createRenderer = ({
@@ -17,8 +18,6 @@ export const createRenderer = ({
   width,
   height,
 }: RendererProps): Renderer => {
-  canvas.width = width
-  canvas.height = height
   const gl = canvas.getContext('webgl2')
   if (!gl) {
     throw new Error('Unable to create WebGL context')
@@ -30,15 +29,16 @@ export const createRenderer = ({
   return {
     gl,
     resize,
-    render: (meshes: Mesh[]) => render(gl, meshes),
+    render: (program: Program, meshes: Mesh[]) => render(program, meshes),
   }
 }
 
 const setSize = (gl: WebGL2RenderingContext, width: number, height: number) => {
   gl.canvas.width = width
   gl.canvas.height = height
+  gl.viewport(0, 0, width, height)
 }
 
-const render = (_gl: WebGL2RenderingContext, meshes: Mesh[]) => {
-  meshes.forEach((mesh) => mesh.render())
+const render = (program: Program, meshes: Mesh[]) => {
+  meshes.forEach((mesh) => mesh.render(program))
 }

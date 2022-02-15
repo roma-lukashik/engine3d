@@ -3,7 +3,6 @@ import { Attribute, createAttribute } from '../utils/attribute'
 
 type MeshProps = {
   gl: WebGL2RenderingContext;
-  program: Program;
   shape: {
     position: { size: number; data: Float32Array };
     normal: { size: number; data: Float32Array };
@@ -12,12 +11,11 @@ type MeshProps = {
 }
 
 export type Mesh = {
-  render: () => void;
+  render: (program: Program) => void;
 }
 
 export const createMesh = ({
   gl,
-  program,
   shape,
 }: MeshProps): Mesh => {
   const attributes = Object.fromEntries(Object.entries(shape).map(([key, value]) => {
@@ -27,7 +25,7 @@ export const createMesh = ({
   Object.values(attributes).forEach((attr) => updateAttribute(gl, attr))
 
   return {
-    render: () => render(gl, program, attributes),
+    render: (program) => render(gl, attributes, program),
   }
 }
 
@@ -36,7 +34,7 @@ const updateAttribute = (gl: WebGL2RenderingContext, attr: Attribute) => {
   gl.bufferData(attr.target, attr.data, gl.STATIC_DRAW)
 }
 
-const render = (gl: WebGL2RenderingContext, program: Program, attr: Record<string, Attribute>) => {
+const render = (gl: WebGL2RenderingContext, attr: Record<string, Attribute>, program: Program) => {
   program.use()
   program.getAttributeLocations().forEach((location, { name }) => {
     const attribute = attr[name]
