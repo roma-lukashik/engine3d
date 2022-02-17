@@ -96,8 +96,8 @@ const use = (
 ) => {
   gl.useProgram(program)
   uniformLocations.forEach((uniform) => {
-    if (uniform.info.name === 'projectionViewMatrix') {
-      uniform.value = camera.projectionViewMatrix
+    if (uniform.info.name === 'projectionMatrix') {
+      uniform.value = camera.projectionMatrix
     }
     setUniform(gl, uniform.info.type, uniform.location, uniform.value)
   })
