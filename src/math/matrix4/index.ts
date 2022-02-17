@@ -126,3 +126,21 @@ const rz = (sin: number, cos: number): Matrix4 => [
   0, 0, 1, 0,
   0, 0, 0, 1,
 ]
+
+export const translate = (m: Matrix4, x: number, y: number, z: number) => multiply(translation(x, y, z), m)
+
+const translation = (x: number, y: number, z: number): Matrix4 => [
+  1, 0, 0, 0,
+  0, 1, 0, 0,
+  0, 0, 1, 0,
+  x, y, z, 1,
+]
+
+export const scale = (m: Matrix4, x: number, y: number, z: number) => multiply(m, scaling(x, y, z))
+
+const scaling = (x: number, y: number, z: number): Matrix4 => [
+  x, 0, 0, 0,
+  0, y, 0, 0,
+  0, 0, z, 0,
+  0, 0, 0, 1,
+]

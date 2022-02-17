@@ -26,6 +26,9 @@ export const createRenderer = ({
   const resize = (w: number, h: number) => setSize(gl, w, h)
   resize(width, height)
 
+  gl.enable(gl.CULL_FACE)
+  gl.enable(gl.DEPTH_TEST)
+
   return {
     gl,
     resize,

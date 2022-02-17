@@ -1,4 +1,3 @@
-import * as matrix3 from '../../math/matrix3'
 import { Camera } from '../camera'
 
 type ProgramProps = {
@@ -97,14 +96,8 @@ const use = (
 ) => {
   gl.useProgram(program)
   uniformLocations.forEach((uniform) => {
-    if (uniform.info.name === 'modelViewMatrix') {
-      uniform.value = camera.projectionViewMatrix()
-    }
-    if (uniform.info.name === 'projectionMatrix') {
-      uniform.value = camera.projectionMatrix()
-    }
-    if (uniform.info.name === 'normalMatrix') {
-      uniform.value = matrix3.identity()
+    if (uniform.info.name === 'projectionViewMatrix') {
+      uniform.value = camera.projectionViewMatrix
     }
     setUniform(gl, uniform.info.type, uniform.location, uniform.value)
   })
