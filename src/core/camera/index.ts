@@ -16,6 +16,7 @@ type CameraProps = {
 export type Camera = {
   projectionMatrix: Matrix4;
   setPosition(cameraPosition: Vector3): void
+  lookAt(target: Vector3): void
 }
 
 export const createCamera = ({
@@ -35,18 +36,31 @@ class PerspectiveCamera implements Camera {
   private aspect: number
   private fovy: number
 
+  private perspectiveMatrix: Matrix4
+  private cameraPosition: Vector3 = v3.zero()
+  private target: Vector3 = v3.zero()
+
   public projectionMatrix: Matrix4 = m4.identity()
 
   constructor(props: CameraProps) {
     Object.assign(this, props)
+
+    this.perspectiveMatrix = perspective(this.fovy, this.aspect, this.near, this.far)
   }
 
   public setPosition(cameraPosition: Vector3): void {
-    const target = v3.vector3(0, 0, 0)
-    const viewMatrix = m4.invert(lookAt(cameraPosition, target, this.up))!
-    const perspectiveMatrix = perspective(this.fovy, this.aspect, this.near, this.far)
+    this.cameraPosition = cameraPosition
+    this.updateProjectionMatrix()
+  }
 
-    this.projectionMatrix = m4.multiply(viewMatrix, perspectiveMatrix)
+  public lookAt(target: Vector3): void {
+    this.target = target
+    this.updateProjectionMatrix()
+  }
+
+  private updateProjectionMatrix(): void {
+    const viewMatrix = m4.invert(lookAt(this.cameraPosition, this.target, this.up))!
+    this.projectionMatrix = m4.multiply(viewMatrix, this.perspectiveMatrix)
   }
 }
 
