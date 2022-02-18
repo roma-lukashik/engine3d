@@ -9,7 +9,9 @@ import {
   rotateY,
   rotateZ,
   scalar,
+  scale,
   subtract,
+  translate,
   transpose,
 } from '.'
 
@@ -204,6 +206,40 @@ describe('matrix4', () => {
         3.535, -2.121, 3, 2,
         4.949, -0.707, 2, 1,
         3.535, -0.707, 4, 1,
+      ])
+    })
+  })
+
+  describe("#translate", () => {
+    it("works correctly", () => {
+      const m: Matrix4 = [
+        1, 2,	3, 4,
+        4, 1,	3, 2,
+        4, 3,	2, 1,
+        3, 2,	4, 1,
+      ]
+      expect(translate(m, 2, 3, 4)).toEqual([
+        1, 2,	3, 24,
+        4, 1,	3, 25,
+        4, 3,	2, 26,
+        3, 2,	4, 29,
+      ])
+    })
+  })
+
+  describe("#scale", () => {
+    it("works correctly", () => {
+      const m: Matrix4 = [
+        1, 2,	3, 4,
+        4, 1,	3, 2,
+        4, 3,	2, 1,
+        3, 2,	4, 1,
+      ]
+      expect(scale(m, 2, 3, 4)).toEqual([
+        2, 6, 12, 4,
+        8, 3, 12, 2,
+        8, 9, 8, 1,
+        6, 6, 16, 1
       ])
     })
   })
