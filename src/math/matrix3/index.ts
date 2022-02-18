@@ -1,5 +1,3 @@
-import { Vector2, x, y } from '../vector2'
-
 export type Matrix3 = [
   number, number, number,
   number, number, number,
@@ -71,13 +69,12 @@ export const multiply = (a: Matrix3, b: Matrix3): Matrix3 => [
   m20(a) * m02(b) + m21(a) * m12(b) + m22(a) * m22(b),
 ]
 
-export const translateXY = (m: Matrix3, v: Vector2): Matrix3 => [
-  m00(m), m01(m), m02(m),
-  m10(m), m11(m), m12(m),
+export const translate = (m: Matrix3, x: number, y: number): Matrix3 => multiply(m, translation(x, y))
 
-  x(v) * m00(m) + y(v) * m10(m) + m20(m),
-  x(v) * m01(m) + y(v) * m11(m) + m21(m),
-  x(v) * m02(m) + y(v) * m12(m) + m22(m),
+const translation = (x: number, y: number): Matrix3 => [
+  1, 0, x,
+  0, 1, y,
+  0, 0, 1,
 ]
 
 export const rotateX = (m: Matrix3, rad: number): Matrix3 => multiply(m, rotationMatrix(rad, rx))

@@ -10,10 +10,9 @@ import {
   rotateZ,
   scalar,
   subtract,
-  translateXY,
+  translate,
   transpose,
 } from '.'
-import { vector2 } from '../vector2'
 
 describe('matrix3', () => {
   describe('#identity', () => {
@@ -158,11 +157,10 @@ describe('matrix3', () => {
         3, 2, 1,
         1, 2, 3,
       ]
-      const v = vector2(2, 4)
-      expect(translateXY(m, v)).toEqual([
-        1, 2, 3,
-        3, 2, 1,
-        15, 14, 13,
+      expect(translate(m, 2, 4)).toEqual([
+        1, 2, 13,
+        3, 2, 15,
+        1, 2, 13,
       ])
     })
   })
