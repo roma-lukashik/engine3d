@@ -11,13 +11,16 @@ type CameraOptions = {
   far?: number;
   aspect?: number;
   fovy?: number;
+  position?: Vector3;
 }
 
 export type Camera = {
   projectionMatrix: Matrix4;
+  getPosition(): Vector3;
   setPosition(cameraPosition: Vector3): void
+  getTarget(): Vector3;
   lookAt(target: Vector3): void;
-  setOption(options: CameraOptions): void;
+  setOptions(options: CameraOptions): void;
 }
 
 export const createCamera = ({
@@ -26,45 +29,53 @@ export const createCamera = ({
   far = 2000,
   aspect = 1,
   fovy = toRadian(60),
+  position = v3.zero(),
 }: CameraOptions): Camera => {
-  return new PerspectiveCamera({ up, near, far, aspect, fovy })
+  return new PerspectiveCamera({ up, near, far, aspect, fovy, position })
 }
 
 class PerspectiveCamera implements Camera {
-  private up: Vector3
   private near: number
   private far: number
   private aspect: number
   private fovy: number
-
+  private up: Vector3
   private perspectiveMatrix: Matrix4
-  private cameraPosition: Vector3 = v3.zero()
-  private target: Vector3 = v3.zero()
+  private position: Vector3
+  private targetPosition: Vector3 = v3.zero()
 
   public projectionMatrix: Matrix4 = m4.identity()
 
   constructor(options: CameraOptions) {
-    this.setOption(options)
+    this.setOptions(options)
+  }
+
+  public getPosition(): Vector3 {
+    return this.position
   }
 
   public setPosition(cameraPosition: Vector3): void {
-    this.cameraPosition = cameraPosition
+    this.position = cameraPosition
     this.updateProjectionMatrix()
+  }
+
+  public getTarget(): Vector3 {
+    return this.targetPosition
   }
 
   public lookAt(target: Vector3): void {
-    this.target = target
+    this.targetPosition = target
     this.updateProjectionMatrix()
   }
 
-  public setOption(options: CameraOptions): void {
+  public setOptions(options: CameraOptions): void {
     Object.assign(this, options)
     this.updatePerspectiveMatrix()
     this.updateProjectionMatrix()
   }
 
   private updateProjectionMatrix(): void {
-    const viewMatrix = m4.invert(lookAt(this.cameraPosition, this.target, this.up))!
+    const viewMatrix = m4.invert(lookAt(this.position, this.targetPosition, this.up))!
     this.projectionMatrix = m4.multiply(viewMatrix, this.perspectiveMatrix)
   }
 
