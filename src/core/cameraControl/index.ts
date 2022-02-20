@@ -1,6 +1,10 @@
 import { Camera } from '../camera'
+import {
+  cartesian2spherical,
+  spherical2cartesian,
+  zeroSphericalCoordinate,
+} from '../../math/coordinateSystems/spherical'
 import * as v2 from '../../math/vector2'
-import * as v3 from '../../math/vector3'
 
 type CameraControlOptions = {
   camera: Camera;
@@ -13,17 +17,11 @@ export const createCameraControl = ({
   element = document.body,
   rotationSpeed = 1,
 }: CameraControlOptions) => {
+  let startPoint = zeroSphericalCoordinate()
   let dragStart = v2.vector2(0, 0)
-  let startTheta = 0
-  let startPhi = 0
-  let radius = 0
 
   const onMouseDown = (event: MouseEvent) => {
-    const v = v3.subtract(camera.getPosition(), camera.getTarget())
-
-    radius = v3.length(v)
-    startTheta = Math.atan2(v3.x(v), v3.z(v))
-    startPhi = Math.acos(Math.min(Math.max(v3.y(v) / radius, -1), 1))
+    startPoint = cartesian2spherical(camera.getPosition(), camera.getTarget())
     dragStart = v2.vector2(event.clientX, event.clientY)
 
     window.addEventListener('mousemove', onMouseMove, false)
@@ -41,17 +39,11 @@ export const createCameraControl = ({
 
   const handleRotation = (drag: v2.Vector2) => {
     const v = v2.multiply(v2.subtract(drag, dragStart), rotationSpeed)
-    const theta = startTheta - 2 * Math.PI * v[0] / element.clientWidth
-    const phi = Math.min(Math.max(0.00001, startPhi - 2 * Math.PI * v[1] / element.clientHeight), Math.PI)
-    const sinPhiRadius = radius * Math.sin(phi)
+    const theta = startPoint.theta - 2 * Math.PI * v[0] / element.clientWidth
+    const phi = Math.min(Math.max(0.00001, startPoint.phi - 2 * Math.PI * v[1] / element.clientHeight), Math.PI)
+    const radius = startPoint.radius
 
-    camera.setPosition(
-      v3.vector3(
-        sinPhiRadius * Math.sin(theta),
-        radius * Math.cos(phi),
-        sinPhiRadius * Math.cos(theta),
-      ),
-    )
+    camera.setPosition(spherical2cartesian({ radius, theta, phi }))
   }
 
   element.addEventListener('mousedown', onMouseDown, false)
