@@ -8,12 +8,6 @@ export type SphericalCoordinate = {
   phi: number;
 }
 
-export const zeroSphericalCoordinate = (): SphericalCoordinate => ({
-  radius: 0,
-  theta: 0,
-  phi: 0,
-})
-
 export const cartesian2spherical = (point: Vector3, origin: Vector3): SphericalCoordinate => {
   const redialDirection = v3.subtract(point, origin)
   const radius = v3.length(redialDirection)

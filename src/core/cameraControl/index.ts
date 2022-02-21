@@ -2,7 +2,7 @@ import { Camera } from '../camera'
 import {
   cartesian2spherical,
   spherical2cartesian,
-  zeroSphericalCoordinate,
+  SphericalCoordinate,
 } from '../../math/coordinateSystems/spherical'
 import * as v2 from '../../math/vector2'
 
@@ -17,30 +17,28 @@ export const createCameraControl = ({
   element = document.body,
   rotationSpeed = 1,
 }: CameraControlOptions) => {
-  let startPoint = zeroSphericalCoordinate()
-  let dragStart = v2.vector2(0, 0)
-
   const onMouseDown = (event: MouseEvent) => {
-    startPoint = cartesian2spherical(camera.getPosition(), camera.getTarget())
-    dragStart = v2.vector2(event.clientX, event.clientY)
+    const initialCameraPosition = cartesian2spherical(camera.getPosition(), camera.getTarget())
+    const dragStart = v2.vector2(event.clientX, event.clientY)
 
-    window.addEventListener('mousemove', onMouseMove, false)
-    window.addEventListener('mouseup', onMouseUp, false)
+    const mouseMove = (event: MouseEvent) => {
+      const offset = v2.subtract(v2.vector2(event.clientX, event.clientY), dragStart)
+      handleRotation(initialCameraPosition, offset)
+    }
+
+    const mouseUp = () => {
+      window.removeEventListener('mousemove', mouseMove, false)
+      window.removeEventListener('mouseup', mouseUp, false)
+    }
+
+    window.addEventListener('mousemove', mouseMove, false)
+    window.addEventListener('mouseup', mouseUp, false)
   }
 
-  const onMouseMove = (event: MouseEvent) => {
-    handleRotation(v2.vector2(event.clientX, event.clientY))
-  }
-
-  const onMouseUp = () => {
-    window.removeEventListener('mousemove', onMouseMove, false)
-    window.removeEventListener('mouseup', onMouseUp, false)
-  }
-
-  const handleRotation = (drag: v2.Vector2) => {
-    const v = v2.multiply(v2.subtract(drag, dragStart), rotationSpeed)
-    const theta = startPoint.theta - 2 * Math.PI * v[0] / element.clientWidth
-    const phi = Math.min(Math.max(0.00001, startPoint.phi - 2 * Math.PI * v[1] / element.clientHeight), Math.PI)
+  const handleRotation = (startPoint: SphericalCoordinate, offset: v2.Vector2) => {
+    const v = v2.multiply(offset, rotationSpeed)
+    const theta = startPoint.theta - 2 * Math.PI * v2.x(v) / element.clientWidth
+    const phi = Math.min(Math.max(0.00001, startPoint.phi - 2 * Math.PI * v2.y(v) / element.clientHeight), Math.PI)
     const radius = startPoint.radius
 
     camera.setPosition(spherical2cartesian({ radius, theta, phi }))
