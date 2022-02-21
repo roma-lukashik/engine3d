@@ -18,11 +18,18 @@ import {
   negate,
   angleTo,
   equal,
+  copy,
 } from '.'
 
 describe('vector', () => {
   it('#vector', () => {
     expect(vector2(1, -3.14)).toPrettyEqual([1, -3.14])
+  })
+
+  it('#copy', () => {
+    const v = vector2(1, -3.14)
+    expect(copy(v)).toEqual(v)
+    expect(copy(v)).not.toBe(v)
   })
 
   it('#x', () => {
