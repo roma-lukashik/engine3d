@@ -1,13 +1,10 @@
 import { Program } from '../program'
 import { Attribute, createAttribute } from '../utils/attribute'
+import { Model } from '../types'
 
 type MeshProps = {
   gl: WebGL2RenderingContext;
-  shape: {
-    position: { size: number; data: Float32Array };
-    normal: { size: number; data: Float32Array };
-    uv: { size: number; data: Float32Array };
-  };
+  shape: Model;
 }
 
 export type Mesh = {
