@@ -22,6 +22,12 @@ export const identity = (): Matrix3 => [
   0, 0, 1,
 ]
 
+export const zero = (): Matrix3 => [
+  0, 0, 0,
+  0, 0, 0,
+  0, 0, 0,
+]
+
 export const det = (m: Matrix3): number =>
   m00(m) * (m22(m) * m11(m) - m12(m) * m21(m)) +
   m01(m) * (-m22(m) * m10(m) + m12(m) * m20(m)) +
@@ -33,9 +39,9 @@ export const transpose = (m: Matrix3): Matrix3 => [
   m02(m), m12(m), m22(m),
 ]
 
-export const invert = (m: Matrix3): Matrix3 | null => {
+export const invert = (m: Matrix3): Matrix3 => {
   const d = det(m)
-  if (d === 0) return null
+  if (d === 0) return zero()
   return [
     (m22(m) * m11(m) - m12(m) * m21(m)) / d,
     (-m22(m) * m01(m) + m02(m) * m21(m)) / d,

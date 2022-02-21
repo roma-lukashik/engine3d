@@ -75,7 +75,7 @@ class PerspectiveCamera implements Camera {
   }
 
   private updateProjectionMatrix(): void {
-    const viewMatrix = m4.invert(lookAt(this.position, this.targetPosition, this.up))!
+    const viewMatrix = m4.invert(lookAt(this.position, this.targetPosition, this.up))
     this.projectionMatrix = m4.multiply(viewMatrix, this.perspectiveMatrix)
   }
 

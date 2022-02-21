@@ -50,13 +50,17 @@ describe('matrix3', () => {
       ])
     })
 
-    it('returns null if determinant is zero', () => {
+    it('returns zero matrix if det=0', () => {
       const m: Matrix3 = [
         1, 2, 3,
         4, 5, 6,
         7, 8, 9,
       ]
-      expect(invert(m)).toBeNull()
+      expect(invert(m)).toEqual([
+        0, 0, 0,
+        0, 0, 0,
+        0, 0, 0,
+      ])
     })
   })
 

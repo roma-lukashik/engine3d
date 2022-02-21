@@ -71,6 +71,21 @@ describe('matrix4', () => {
         0.2375, 0.1875, -0.0125, -0.3125,
       ])
     })
+
+    it('returns zero matrix if det=0', () => {
+      const m: Matrix4 = [
+        1, 2, 3, 4,
+        5, 6, 7, 8,
+        9, 10, 11, 12,
+        13, 14, 15, 16,
+      ]
+      expect(invert(m)).toEqual([
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+      ])
+    })
   })
 
   describe('#add', () => {

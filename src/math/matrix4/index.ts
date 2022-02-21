@@ -32,6 +32,13 @@ export const identity = (): Matrix4 => [
   0, 0, 0, 1,
 ]
 
+export const zero = (): Matrix4 => [
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+]
+
 export const det = (m: Matrix4): number =>
   (m00(m) * m11(m) - m01(m) * m10(m)) * (m22(m) * m33(m) - m23(m) * m32(m)) -
   (m00(m) * m12(m) - m02(m) * m10(m)) * (m21(m) * m33(m) - m23(m) * m31(m)) +
@@ -47,9 +54,9 @@ export const transpose = (m: Matrix4): Matrix4 => [
   m03(m), m13(m), m23(m), m33(m),
 ]
 
-export const invert = (m: Matrix4): Matrix4 | null => {
+export const invert = (m: Matrix4): Matrix4 => {
   const d = det(m)
-  if (d === 0) return null
+  if (d === 0) return zero()
   return [
     (m11(m) * (m22(m) * m33(m) - m23(m) * m32(m)) - m12(m) * (m21(m) * m33(m) - m23(m) * m31(m)) + m13(m) * (m21(m) * m32(m) - m22(m) * m31(m))) / d,
     (m02(m) * (m21(m) * m33(m) - m23(m) * m31(m)) - m01(m) * (m22(m) * m33(m) - m23(m) * m32(m)) - m03(m) * (m21(m) * m32(m) - m22(m) * m31(m))) / d,
