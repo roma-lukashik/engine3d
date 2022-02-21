@@ -1,4 +1,4 @@
-import { eq, neq, gt, gte, lt, lte } from '.'
+import { eq, neq, gt, gte, lt, lte, clamp } from '.'
 
 describe('operators', () => {
   it('#eq', () => {
@@ -47,5 +47,11 @@ describe('operators', () => {
     expect(lte(1.002, 1)).toBe(false)
     expect(lte(1, 1.001)).toBe(true)
     expect(lte(1, 1.002)).toBe(true)
+  })
+
+  it('#clamp', () => {
+    expect(clamp(2, 1, 3)).toBe(2)
+    expect(clamp(0, 1, 3)).toBe(1)
+    expect(clamp(4, 1, 3)).toBe(3)
   })
 })

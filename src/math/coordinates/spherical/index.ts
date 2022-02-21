@@ -1,4 +1,5 @@
 import * as v3 from '../../vector3'
+import { clamp } from '../../operators'
 
 type Vector3 = v3.Vector3
 
@@ -14,7 +15,7 @@ export const cartesian2spherical = (point: Vector3, origin: Vector3): SphericalC
   return {
     radius,
     theta: Math.atan2(v3.x(redialDirection), v3.z(redialDirection)),
-    phi: Math.acos(Math.min(Math.max(v3.y(redialDirection) / radius, -1), 1)),
+    phi: Math.acos(clamp(v3.y(redialDirection) / radius, -1, 1)),
   }
 }
 

@@ -3,8 +3,9 @@ import {
   cartesian2spherical,
   spherical2cartesian,
   SphericalCoordinate,
-} from '../../math/coordinateSystems/spherical'
+} from '../../math/coordinates/spherical'
 import * as v2 from '../../math/vector2'
+import { clamp } from '../../math/operators'
 
 type CameraControlOptions = {
   camera: Camera;
@@ -38,7 +39,7 @@ export const createCameraControl = ({
   const handleRotation = (startPoint: SphericalCoordinate, offset: v2.Vector2) => {
     const v = v2.multiply(offset, rotationSpeed)
     const theta = startPoint.theta - 2 * Math.PI * v2.x(v) / element.clientWidth
-    const phi = Math.min(Math.max(0.00001, startPoint.phi - 2 * Math.PI * v2.y(v) / element.clientHeight), Math.PI)
+    const phi = clamp(startPoint.phi - 2 * Math.PI * v2.y(v) / element.clientHeight, 0.00001, Math.PI)
     const radius = startPoint.radius
 
     camera.setPosition(spherical2cartesian({ radius, theta, phi }))

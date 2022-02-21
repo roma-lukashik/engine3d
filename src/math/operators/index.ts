@@ -11,3 +11,5 @@ export const gte = (a: number, b: number): boolean => gt(a, b) || eq(a, b)
 export const lt = (a: number, b: number): boolean => b - a > eps
 
 export const lte = (a: number, b: number): boolean => lt(a, b) || eq(a, b)
+
+export const clamp = (x: number, min: number, max: number): number => Math.min(max, Math.max(min, x))
