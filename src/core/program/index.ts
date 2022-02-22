@@ -1,21 +1,19 @@
-import { Camera } from '../camera'
-
 type ProgramProps = {
   gl: WebGL2RenderingContext;
-  camera: Camera;
   vertex: string;
   fragment: string;
 }
 
 export type Program = {
   program: WebGLProgram;
+  getUniformLocations: () => Uniform[];
   getAttributeLocations: () => Map<WebGLActiveInfo, number>;
+  setUniform: (gl: WebGL2RenderingContext, type: number, location: WebGLUniformLocation, value: any) => void;
   use: () => void;
 }
 
 export const createProgram = ({
   gl,
-  camera,
   vertex,
   fragment,
 }: ProgramProps): Program => {
@@ -38,8 +36,10 @@ export const createProgram = ({
 
   return {
     program,
+    getUniformLocations: () => uniformLocations,
     getAttributeLocations: () => attributeLocations,
-    use: () => use(gl, program, uniformLocations, camera),
+    setUniform,
+    use: () => use(gl, program),
   }
 }
 
@@ -91,16 +91,8 @@ const getAttributeLocations = (
 const use = (
   gl: WebGL2RenderingContext,
   program: WebGLProgram,
-  uniformLocations: Uniform[],
-  camera: Camera,
 ) => {
   gl.useProgram(program)
-  uniformLocations.forEach((uniform) => {
-    if (uniform.info.name === 'projectionMatrix') {
-      uniform.value = camera.projectionMatrix
-    }
-    setUniform(gl, uniform.info.type, uniform.location, uniform.value)
-  })
 }
 
 const setUniform = (

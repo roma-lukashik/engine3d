@@ -1,18 +1,22 @@
 import { Program } from '../program'
 import { Attribute, createAttribute } from '../utils/attribute'
 import { Model } from '../types'
+import { Camera } from '../camera'
+import { Lighting } from '../lightings/point'
 
 type MeshProps = {
   gl: WebGL2RenderingContext;
+  program: Program;
   shape: Model;
 }
 
 export type Mesh = {
-  render: (program: Program) => void;
+  render: (camera: Camera, lighting: Lighting) => void;
 }
 
 export const createMesh = ({
   gl,
+  program,
   shape,
 }: MeshProps): Mesh => {
   const attributes = Object.fromEntries(Object.entries(shape).map(([key, value]) => {
@@ -22,7 +26,7 @@ export const createMesh = ({
   Object.values(attributes).forEach((attr) => updateAttribute(gl, attr))
 
   return {
-    render: (program) => render(gl, attributes, program),
+    render: (camera, lighting) => render(gl, attributes, program, camera, lighting),
   }
 }
 
@@ -31,13 +35,28 @@ const updateAttribute = (gl: WebGL2RenderingContext, attr: Attribute) => {
   gl.bufferData(attr.target, attr.data, gl.STATIC_DRAW)
 }
 
-const render = (gl: WebGL2RenderingContext, attr: Record<string, Attribute>, program: Program) => {
+const render = (gl: WebGL2RenderingContext, attr: Record<string, Attribute>, program: Program, camera: Camera, lighting: Lighting) => {
   program.use()
+
+  program.getUniformLocations().forEach((uniform) => {
+    if (uniform.info.name === 'projectionMatrix') {
+      uniform.value = camera.projectionMatrix
+    }
+    if (uniform.info.name === 'lightPosition') {
+      uniform.value = lighting.position
+    }
+    if (uniform.info.name === 'lightViewPosition') {
+      uniform.value = lighting.target
+    }
+    program.setUniform(gl, uniform.info.type, uniform.location, uniform.value)
+  })
+
   program.getAttributeLocations().forEach((location, { name }) => {
     const attribute = attr[name]
     gl.bindBuffer(attribute.target, attribute.buffer)
     bindBufferToVertexAttribute(gl, attribute, location)
   })
+
   gl.drawArrays(gl.TRIANGLES, 0, attr.position.count)
 }
 

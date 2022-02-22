@@ -1,5 +1,6 @@
 import { Mesh } from '../mesh'
-import { Program } from '../program'
+import { Camera } from '../camera'
+import { Lighting } from '../lightings/point'
 
 type RendererProps = {
   canvas?: HTMLCanvasElement;
@@ -10,7 +11,7 @@ type RendererProps = {
 type Renderer = {
   gl: WebGL2RenderingContext;
   resize: (width: number, height: number) => void;
-  render: (program: Program, meshes: Mesh[]) => void;
+  render: (meshes: Mesh[], camera: Camera, lighting: Lighting) => void;
 }
 
 export const createRenderer = ({
@@ -33,7 +34,7 @@ export const createRenderer = ({
   return {
     gl,
     resize,
-    render: (program: Program, meshes: Mesh[]) => render(program, meshes),
+    render,
   }
 }
 
@@ -43,6 +44,6 @@ const setSize = (gl: WebGL2RenderingContext, width: number, height: number) => {
   gl.viewport(0, 0, width, height)
 }
 
-const render = (program: Program, meshes: Mesh[]) => {
-  meshes.forEach((mesh) => mesh.render(program))
+const render = (meshes: Mesh[], camera: Camera, lighting: Lighting) => {
+  meshes.forEach((mesh) => mesh.render(camera, lighting))
 }
