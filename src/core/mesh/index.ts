@@ -6,17 +6,15 @@ import { Lighting } from '../lightings/point'
 
 type MeshProps = {
   gl: WebGL2RenderingContext;
-  program: Program;
   shape: Model;
 }
 
 export type Mesh = {
-  render: (camera: Camera, lighting: Lighting) => void;
+  render: (program: Program, camera: Camera, lighting: Lighting) => void;
 }
 
 export const createMesh = ({
   gl,
-  program,
   shape,
 }: MeshProps): Mesh => {
   const attributes = Object.fromEntries(Object.entries(shape).map(([key, value]) => {
@@ -26,7 +24,7 @@ export const createMesh = ({
   Object.values(attributes).forEach((attr) => updateAttribute(gl, attr))
 
   return {
-    render: (camera, lighting) => render(gl, attributes, program, camera, lighting),
+    render: (program, camera, lighting) => render(gl, program, attributes, camera, lighting),
   }
 }
 
@@ -35,7 +33,7 @@ const updateAttribute = (gl: WebGL2RenderingContext, attr: Attribute) => {
   gl.bufferData(attr.target, attr.data, gl.STATIC_DRAW)
 }
 
-const render = (gl: WebGL2RenderingContext, attr: Record<string, Attribute>, program: Program, camera: Camera, lighting: Lighting) => {
+const render = (gl: WebGL2RenderingContext, program: Program, attr: Record<string, Attribute>, camera: Camera, lighting: Lighting) => {
   program.use()
 
   program.getUniformLocations().forEach((uniform) => {

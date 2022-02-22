@@ -5,7 +5,6 @@ type Vector3 = v3.Vector3
 type Matrix4 = m4.Matrix4
 
 type CameraOptions = {
-  zoom?: number;
   up?: Vector3;
   near?: number;
   far?: number;
@@ -40,9 +39,9 @@ class PerspectiveCamera implements Camera {
   private aspect: number
   private fovy: number
   private up: Vector3
-  private perspectiveMatrix: Matrix4
   private position: Vector3
   private targetPosition: Vector3 = v3.zero()
+  private perspectiveMatrix: Matrix4
 
   public projectionMatrix: Matrix4 = m4.identity()
 
