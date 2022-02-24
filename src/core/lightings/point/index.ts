@@ -1,32 +1,55 @@
-import { Vector3, zero } from '../../../math/vector3'
+import * as m4 from '../../../math/matrix4'
+import * as v3 from '../../../math/vector3'
+import { Camera, createCamera } from '../../camera'
+
+type Vector3 = v3.Vector3
+type Matrix4 = m4.Matrix4
 
 export type Lighting = {
-  position: Vector3;
-  target: Vector3;
+  projectionMatrix: Matrix4;
+  getPosition: () => Vector3;
+  setPosition: (target: Vector3) => void;
+  getTarget: () => Vector3;
   lookAt: (target: Vector3) => void;
 }
 
 type LightingOptions = {
+  up?: Vector3;
+  near?: number;
+  far?: number;
+  aspect?: number;
+  fovy?: number;
   position?: Vector3;
-  target?: Vector3;
 }
 
-export const createLighting = ({
-  position = zero(),
-  target = zero(),
-}: LightingOptions): Lighting => {
-  return new PointLighting({ position, target })
+export const createLighting = (options: LightingOptions): Lighting => {
+  return new PointLighting(options)
 }
 
 class PointLighting implements Lighting {
-  public position: Vector3
-  public target: Vector3
+  private camera: Camera
+
+  get projectionMatrix(): Matrix4 {
+    return this.camera.projectionMatrix
+  }
 
   constructor(options: LightingOptions) {
-    Object.assign(this, options)
+    this.camera = createCamera(options)
   }
 
   lookAt(target: Vector3): void {
-    this.target = target
+    this.camera.lookAt(target)
+  }
+
+  getPosition(): Vector3 {
+    return this.camera.getPosition()
+  }
+
+  getTarget(): Vector3 {
+    return this.camera.getTarget()
+  }
+
+  setPosition(position: Vector3): void {
+    this.camera.setPosition(position)
   }
 }

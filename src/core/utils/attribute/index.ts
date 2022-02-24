@@ -1,15 +1,27 @@
-type TypedArray =
-  | Int8Array
-  | Uint8Array
-  | Int16Array
-  | Uint16Array
-  | Int32Array
-  | Uint32Array
-  | Uint8ClampedArray
-  | Float32Array
-  | Float64Array
+import { TypedArray } from '../../types'
 
-export type Attribute<T extends TypedArray = any> = {
+export type Attribute = {
+  location: number;
+  info: WebGLActiveInfo;
+}
+
+export const extractAttributes = (
+  gl: WebGL2RenderingContext,
+  program: WebGLProgram,
+): Record<string, Attribute> => {
+  const attributeLocations: Record<string, Attribute> = {}
+  const activeAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES) as number
+  for (let i = 0; i < activeAttributes; i++) {
+    const info = gl.getActiveAttrib(program, i)
+    const location = info ? gl.getAttribLocation(program, info.name) : null
+    if (location !== null && info !== null) {
+      attributeLocations[info.name] = { info, location }
+    }
+  }
+  return attributeLocations
+}
+
+export type ExtendedAttribute<T extends TypedArray = any> = {
   size: number;
   data: T;
   type: number;
@@ -22,15 +34,13 @@ export type Attribute<T extends TypedArray = any> = {
   buffer: WebGLBuffer | null;
 }
 
-type Value<T extends TypedArray> = {
-  size: number;
-  data: T;
-}
-
-export const createAttribute = <T extends TypedArray>(
+export const createExtendedAttribute = <T extends TypedArray>(
   gl: WebGL2RenderingContext,
-  value: Value<T>
-): Attribute<T> => ({
+  value: {
+    size: number,
+    data: T,
+  },
+): ExtendedAttribute<T> => ({
   ...value,
   type: gl.FLOAT,
   normalized: false,
