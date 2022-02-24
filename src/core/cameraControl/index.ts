@@ -18,13 +18,26 @@ export const createCameraControl = ({
   element = document.body,
   rotationSpeed = 1,
 }: CameraControlOptions) => {
-  const onMouseDown = (event: MouseEvent) => {
-    const initialCameraPosition = cartesian2spherical(camera.getPosition(), camera.getTarget())
+  return new CameraControl({ camera, element, rotationSpeed })
+}
+
+class CameraControl {
+  private camera: Camera
+  private element: HTMLElement
+  private rotationSpeed: number
+
+  constructor(options: Required<CameraControlOptions>) {
+    Object.assign(this, options)
+    this.element.addEventListener('mousedown', this.onMouseDown, false)
+  }
+
+  private onMouseDown = (event: MouseEvent) => {
+    const initialCameraPosition = cartesian2spherical(this.camera.getPosition(), this.camera.getTarget())
     const dragStart = v2.vector2(event.clientX, event.clientY)
 
     const mouseMove = (event: MouseEvent) => {
       const offset = v2.subtract(v2.vector2(event.clientX, event.clientY), dragStart)
-      handleRotation(initialCameraPosition, offset)
+      this.handleRotation(initialCameraPosition, offset)
     }
 
     const mouseUp = () => {
@@ -36,14 +49,11 @@ export const createCameraControl = ({
     window.addEventListener('mouseup', mouseUp, false)
   }
 
-  const handleRotation = (startPoint: SphericalCoordinate, offset: v2.Vector2) => {
-    const v = v2.multiply(offset, rotationSpeed)
-    const theta = startPoint.theta - 2 * Math.PI * v2.x(v) / element.clientWidth
-    const phi = clamp(startPoint.phi - 2 * Math.PI * v2.y(v) / element.clientHeight, 0.00001, Math.PI)
+  private handleRotation(startPoint: SphericalCoordinate, offset: v2.Vector2) {
+    const v = v2.multiply(offset, this.rotationSpeed)
+    const theta = startPoint.theta - 2 * Math.PI * v2.x(v) / this.element.clientWidth
+    const phi = clamp(startPoint.phi - 2 * Math.PI * v2.y(v) / this.element.clientHeight, 0.00001, Math.PI)
     const radius = startPoint.radius
-
-    camera.setPosition(spherical2cartesian({ radius, theta, phi }))
+    this.camera.setPosition(spherical2cartesian({ radius, theta, phi }))
   }
-
-  element.addEventListener('mousedown', onMouseDown, false)
 }
