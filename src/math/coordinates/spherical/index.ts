@@ -9,7 +9,7 @@ export type SphericalCoordinate = {
   phi: number;
 }
 
-export const cartesian2spherical = (point: Vector3, origin: Vector3): SphericalCoordinate => {
+export const toSpherical = (point: Vector3, origin: Vector3): SphericalCoordinate => {
   const redialDirection = v3.subtract(point, origin)
   const radius = v3.length(redialDirection)
   return {
@@ -19,7 +19,7 @@ export const cartesian2spherical = (point: Vector3, origin: Vector3): SphericalC
   }
 }
 
-export const spherical2cartesian = ({ radius, theta, phi }: SphericalCoordinate): Vector3 => {
+export const fromSpherical = ({ radius, theta, phi }: SphericalCoordinate): Vector3 => {
   const sinPhiRadius = radius * Math.sin(phi)
   return v3.vector3(
     sinPhiRadius * Math.sin(theta),
