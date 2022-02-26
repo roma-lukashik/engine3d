@@ -6,7 +6,7 @@ export type Attribute = {
 }
 
 export const extractAttributes = (
-  gl: WebGL2RenderingContext,
+  gl: WebGLRenderingContext,
   program: WebGLProgram,
 ): Record<string, Attribute> => {
   const attributeLocations: Record<string, Attribute> = {}
@@ -35,7 +35,7 @@ export type ExtendedAttribute<T extends TypedArray = any> = {
 }
 
 export const createExtendedAttribute = <T extends TypedArray>(
-  gl: WebGL2RenderingContext,
+  gl: WebGLRenderingContext,
   value: {
     size: number,
     data: T,

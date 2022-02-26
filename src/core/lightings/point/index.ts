@@ -5,13 +5,7 @@ import { Camera, createCamera } from '../../camera'
 type Vector3 = v3.Vector3
 type Matrix4 = m4.Matrix4
 
-export type Lighting = {
-  projectionMatrix: Matrix4;
-  getPosition: () => Vector3;
-  setPosition: (target: Vector3) => void;
-  getTarget: () => Vector3;
-  lookAt: (target: Vector3) => void;
-}
+export type Lighting = Camera
 
 type LightingOptions = {
   up?: Vector3;
@@ -27,7 +21,15 @@ export const createLighting = (options: LightingOptions): Lighting => {
 }
 
 class PointLighting implements Lighting {
-  private camera: Camera
+  private readonly camera: Camera
+
+  get position(): Vector3 {
+    return this.camera.position
+  }
+
+  get target(): Vector3 {
+    return this.camera.target
+  }
 
   get projectionMatrix(): Matrix4 {
     return this.camera.projectionMatrix
@@ -41,15 +43,11 @@ class PointLighting implements Lighting {
     this.camera.lookAt(target)
   }
 
-  getPosition(): Vector3 {
-    return this.camera.getPosition()
-  }
-
-  getTarget(): Vector3 {
-    return this.camera.getTarget()
-  }
-
   setPosition(position: Vector3): void {
     this.camera.setPosition(position)
+  }
+
+  setOptions(options: LightingOptions): void {
+    this.camera.setOptions(options)
   }
 }

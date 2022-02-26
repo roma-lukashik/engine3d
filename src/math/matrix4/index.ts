@@ -1,3 +1,5 @@
+import * as v3 from '../vector3'
+
 export type Matrix4 = [
   number, number, number, number,
   number, number, number, number,
@@ -83,27 +85,38 @@ export const subtract = (a: Matrix4, b: Matrix4): Matrix4 => a.map((x, i) => x -
 
 export const scalar = (a: Matrix4, c: number): Matrix4 => a.map((x) => x * c) as Matrix4
 
-export const multiply = (a: Matrix4, b: Matrix4): Matrix4 => [
-  m00(a) * m00(b) + m01(a) * m10(b) + m02(a) * m20(b) + m03(a) * m30(b),
-  m00(a) * m01(b) + m01(a) * m11(b) + m02(a) * m21(b) + m03(a) * m31(b),
-  m00(a) * m02(b) + m01(a) * m12(b) + m02(a) * m22(b) + m03(a) * m32(b),
-  m00(a) * m03(b) + m01(a) * m13(b) + m02(a) * m23(b) + m03(a) * m33(b),
-
-  m10(a) * m00(b) + m11(a) * m10(b) + m12(a) * m20(b) + m13(a) * m30(b),
-  m10(a) * m01(b) + m11(a) * m11(b) + m12(a) * m21(b) + m13(a) * m31(b),
-  m10(a) * m02(b) + m11(a) * m12(b) + m12(a) * m22(b) + m13(a) * m32(b),
-  m10(a) * m03(b) + m11(a) * m13(b) + m12(a) * m23(b) + m13(a) * m33(b),
-
-  m20(a) * m00(b) + m21(a) * m10(b) + m22(a) * m20(b) + m23(a) * m30(b),
-  m20(a) * m01(b) + m21(a) * m11(b) + m22(a) * m21(b) + m23(a) * m31(b),
-  m20(a) * m02(b) + m21(a) * m12(b) + m22(a) * m22(b) + m23(a) * m32(b),
-  m20(a) * m03(b) + m21(a) * m13(b) + m22(a) * m23(b) + m23(a) * m33(b),
-
-  m30(a) * m00(b) + m31(a) * m10(b) + m32(a) * m20(b) + m33(a) * m30(b),
-  m30(a) * m01(b) + m31(a) * m11(b) + m32(a) * m21(b) + m33(a) * m31(b),
-  m30(a) * m02(b) + m31(a) * m12(b) + m32(a) * m22(b) + m33(a) * m32(b),
-  m30(a) * m03(b) + m31(a) * m13(b) + m32(a) * m23(b) + m33(a) * m33(b),
-]
+export const multiply = (a: Matrix4, b: Matrix4): Matrix4 => {
+  const [
+    a00, a01, a02, a03,
+    a10, a11, a12, a13,
+    a20, a21, a22, a23,
+    a30, a31, a32, a33,
+  ] = a
+  const [
+    b00, b01, b02, b03,
+    b10, b11, b12, b13,
+    b20, b21, b22, b23,
+    b30, b31, b32, b33,
+  ] = b
+  return [
+    b00 * a00 + b01 * a10 + b02 * a20 + b03 * a30,
+    b00 * a01 + b01 * a11 + b02 * a21 + b03 * a31,
+    b00 * a02 + b01 * a12 + b02 * a22 + b03 * a32,
+    b00 * a03 + b01 * a13 + b02 * a23 + b03 * a33,
+    b10 * a00 + b11 * a10 + b12 * a20 + b13 * a30,
+    b10 * a01 + b11 * a11 + b12 * a21 + b13 * a31,
+    b10 * a02 + b11 * a12 + b12 * a22 + b13 * a32,
+    b10 * a03 + b11 * a13 + b12 * a23 + b13 * a33,
+    b20 * a00 + b21 * a10 + b22 * a20 + b23 * a30,
+    b20 * a01 + b21 * a11 + b22 * a21 + b23 * a31,
+    b20 * a02 + b21 * a12 + b22 * a22 + b23 * a32,
+    b20 * a03 + b21 * a13 + b22 * a23 + b23 * a33,
+    b30 * a00 + b31 * a10 + b32 * a20 + b33 * a30,
+    b30 * a01 + b31 * a11 + b32 * a21 + b33 * a31,
+    b30 * a02 + b31 * a12 + b32 * a22 + b33 * a32,
+    b30 * a03 + b31 * a13 + b32 * a23 + b33 * a33,
+  ]
+}
 
 export const rotateX = (m: Matrix4, rad: number): Matrix4 => multiply(m, rotationMatrix(rad, rx))
 
@@ -151,3 +164,29 @@ const scaling = (x: number, y: number, z: number): Matrix4 => [
   0, 0, z, 0,
   0, 0, 0, 1,
 ]
+
+export const perspective = (fovy: number, aspect: number, near: number, far: number): Matrix4 => {
+  const scaleY = Math.tan((Math.PI - fovy) / 2)
+  const scaleX = scaleY / aspect
+  const rangeInv = 1.0 / (near - far)
+
+  return [
+    scaleX, 0, 0, 0,
+    0, scaleY, 0, 0,
+    0, 0, (near + far) * rangeInv, -1,
+    0, 0, near * far * rangeInv * 2, 0,
+  ]
+}
+
+export const lookAt = (eye: v3.Vector3, target: v3.Vector3, up: v3.Vector3): Matrix4 => {
+  const z = v3.normalize(v3.subtract(eye, target))
+  const x = v3.normalize(v3.cross(up, z))
+  const y = v3.normalize(v3.cross(z, x))
+
+  return [
+    ...x, 0,
+    ...y, 0,
+    ...z, 0,
+    ...eye, 1,
+  ]
+}

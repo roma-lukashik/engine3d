@@ -7,13 +7,13 @@ import { setUniform } from '../utils/uniform'
 import * as m4 from '../../math/matrix4'
 
 type MeshOptions = {
-  gl: WebGL2RenderingContext;
+  gl: WebGLRenderingContext;
   shape: Model;
 }
 
 export type Mesh = {
   worldMatrix: m4.Matrix4;
-  render: (program: Program, camera: Camera, lighting: Lighting) => void;
+  render: (program: Program, camera: Camera, lighting: Lighting, textureMatrix: m4.Matrix4) => void;
 }
 
 export const createMesh = (options: MeshOptions): Mesh => {
@@ -21,7 +21,7 @@ export const createMesh = (options: MeshOptions): Mesh => {
 }
 
 class MeshImpl implements Mesh {
-  private readonly gl: WebGL2RenderingContext
+  private readonly gl: WebGLRenderingContext
   private readonly attributes: Record<string, ExtendedAttribute>
 
   public worldMatrix: m4.Matrix4
@@ -37,23 +37,36 @@ class MeshImpl implements Mesh {
     this.worldMatrix = m4.identity()
   }
 
-  public render(program: Program, camera: Camera, lighting: Lighting): void {
+  public render(program: Program, camera: Camera, lighting: Lighting, textureMatrix: m4.Matrix4): void {
+    this.drawScene(lighting, camera.projectionMatrix, textureMatrix, program)
+  }
+
+  private drawScene(
+    lighting: Lighting,
+    projectionMatrix: m4.Matrix4,
+    textureMatrix: m4.Matrix4,
+    program: Program,
+  ): void {
     program.use()
 
     if (program.uniforms.projectionMatrix) {
-      program.uniforms.projectionMatrix.value = camera.projectionMatrix
+      program.uniforms.projectionMatrix.value = projectionMatrix
     }
 
     if (program.uniforms.lightPosition) {
-      program.uniforms.lightPosition.value = lighting.getPosition()
+      program.uniforms.lightPosition.value = lighting.position
     }
 
     if (program.uniforms.lightViewPosition) {
-      program.uniforms.lightViewPosition.value = lighting.getTarget()
+      program.uniforms.lightViewPosition.value = lighting.target
     }
 
     if (program.uniforms.worldMatrix) {
       program.uniforms.worldMatrix.value = this.worldMatrix
+    }
+
+    if (program.uniforms.textureMatrix) {
+      program.uniforms.textureMatrix.value = textureMatrix
     }
 
     Object.values(program.uniforms).forEach((uniform) => {
@@ -71,12 +84,12 @@ class MeshImpl implements Mesh {
   }
 }
 
-const updateAttribute = (gl: WebGL2RenderingContext, attr: ExtendedAttribute) => {
+const updateAttribute = (gl: WebGLRenderingContext, attr: ExtendedAttribute) => {
   gl.bindBuffer(attr.target, attr.buffer)
   gl.bufferData(attr.target, attr.data, gl.STATIC_DRAW)
 }
 
-const bindBufferToVertexAttribute = (gl: WebGL2RenderingContext, attribute: ExtendedAttribute, location: number) => {
+const bindBufferToVertexAttribute = (gl: WebGLRenderingContext, attribute: ExtendedAttribute, location: number) => {
   const numLoc = bufferSize(gl, attribute.type)
   const size = attribute.size / numLoc
   const stride = numLoc === 1 ? 0 : numLoc ** 3
@@ -95,7 +108,7 @@ const bindBufferToVertexAttribute = (gl: WebGL2RenderingContext, attribute: Exte
   }
 }
 
-const bufferSize = (gl: WebGL2RenderingContext, type: number) => {
+const bufferSize = (gl: WebGLRenderingContext, type: number) => {
   switch (type) {
     case gl.FLOAT_MAT2: return 2
     case gl.FLOAT_MAT3: return 3

@@ -3,7 +3,7 @@ import { extractUniforms, Uniform } from '../utils/uniform'
 import { Attribute, extractAttributes } from '../utils/attribute'
 
 type ProgramOptions = {
-  gl: WebGL2RenderingContext;
+  gl: WebGLRenderingContext;
   vertex: string;
   fragment: string;
 }
@@ -19,7 +19,7 @@ export const createProgram = (options: ProgramOptions): Program => {
 }
 
 class ProgramImpl implements Program {
-  private readonly gl: WebGL2RenderingContext
+  private readonly gl: WebGLRenderingContext
   private readonly program: WebGLProgram
 
   public readonly uniforms: Record<string, Uniform>

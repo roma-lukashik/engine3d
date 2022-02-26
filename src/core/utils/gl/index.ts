@@ -1,4 +1,4 @@
-export const compileShader = (gl: WebGL2RenderingContext, source: string, type: number): WebGLShader => {
+export const compileShader = (gl: WebGLRenderingContext, source: string, type: number): WebGLShader => {
   const shader = gl.createShader(type)
   if (!shader) {
     throw new Error('Cannot create a shader')

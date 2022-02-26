@@ -33,7 +33,7 @@ class CameraControl {
   }
 
   private onMouseDown = (event: MouseEvent) => {
-    const initialCameraPosition = toSpherical(this.camera.getPosition(), this.camera.getTarget())
+    const initialCameraPosition = toSpherical(this.camera.position, this.camera.target)
     const dragStart = v2.vector2(event.clientX, event.clientY)
     const width = this.element.clientWidth
     const height = this.element.clientHeight

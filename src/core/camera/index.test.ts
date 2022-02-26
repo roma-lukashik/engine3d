@@ -6,11 +6,11 @@ describe('camera', () => {
     const camera = createCamera({})
 
     it('has a correct position', () => {
-      expect(camera.getPosition()).toEqual([0, 0, 0])
+      expect(camera.position).toEqual([0, 0, 0])
     })
 
     it('has a correct target position', () => {
-      expect(camera.getTarget()).toEqual([0, 0, 0])
+      expect(camera.target).toEqual([0, 0, 0])
     })
   })
 

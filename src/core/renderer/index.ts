@@ -2,15 +2,16 @@ import { Mesh } from '../mesh'
 import { Camera } from '../camera'
 import { Lighting } from '../lightings/point'
 import { Program } from '../program'
+import * as m4 from '../../math/matrix4'
 
-type RendererProps = {
+type RendererOptions = {
   canvas?: HTMLCanvasElement;
   width: number;
   height: number;
 }
 
 type Renderer = {
-  gl: WebGL2RenderingContext;
+  readonly gl: WebGLRenderingContext;
   resize: (width: number, height: number) => void;
   render: (program: Program, meshes: Mesh[], camera: Camera, lighting: Lighting) => void;
 }
@@ -19,32 +20,53 @@ export const createRenderer = ({
   canvas = document.createElement('canvas'),
   width,
   height,
-}: RendererProps): Renderer => {
-  const gl = canvas.getContext('webgl2')
-  if (!gl) {
-    throw new Error('Unable to create WebGL context')
-  }
-
-  const resize = (w: number, h: number) => setSize(gl, w, h)
-  resize(width, height)
-
-  gl.clearColor(1, 1, 1, 1)
-  gl.enable(gl.CULL_FACE)
-  gl.enable(gl.DEPTH_TEST)
-
-  return {
-    gl,
-    resize,
-    render,
-  }
+}: RendererOptions): Renderer => {
+  return new RendererImpl({ canvas, width, height })
 }
 
-const setSize = (gl: WebGL2RenderingContext, width: number, height: number) => {
-  gl.canvas.width = width
-  gl.canvas.height = height
-  gl.viewport(0, 0, width, height)
-}
+class RendererImpl implements Renderer {
+  public readonly gl: WebGLRenderingContext
 
-const render = (program: Program, meshes: Mesh[], camera: Camera, lighting: Lighting) => {
-  meshes.forEach((mesh) => mesh.render(program, camera, lighting))
+  constructor({
+    canvas,
+    width,
+    height,
+  }: Required<RendererOptions>) {
+    const gl = canvas.getContext('webgl')
+    if (!gl) {
+      throw new Error('Unable to create WebGL context')
+    }
+
+    const ext = gl.getExtension('WEBGL_depth_texture')
+    if (!ext) {
+      throw new Error('Unable to get WEBGL_depth_texture extension')
+    }
+
+    this.gl = gl
+
+    this.resize(width, height)
+
+    gl.clearColor(0, 0, 0, 1)
+  }
+
+  public render(program: Program, meshes: Mesh[], camera: Camera, lighting: Lighting): void {
+    this.gl.enable(this.gl.CULL_FACE)
+    this.gl.enable(this.gl.DEPTH_TEST)
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null)
+    this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height)
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
+
+    let textureMatrix = m4.identity()
+    textureMatrix = m4.translate(textureMatrix, 0.5, 0.5, 0.5)
+    textureMatrix = m4.scale(textureMatrix, 0.5, 0.5, 0.5)
+    textureMatrix = m4.multiply(textureMatrix, lighting.projectionMatrix)
+
+    meshes.forEach((mesh) => mesh.render(program, camera, lighting, textureMatrix))
+  }
+
+  public resize(width: number, height: number): void {
+    this.gl.canvas.width = width
+    this.gl.canvas.height = height
+    this.gl.viewport(0, 0, width, height)
+  }
 }

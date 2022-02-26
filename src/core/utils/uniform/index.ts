@@ -4,7 +4,7 @@ export type Uniform = {
   value: any;
 }
 
-export const extractUniforms = (gl: WebGL2RenderingContext, program: WebGLProgram) => {
+export const extractUniforms = (gl: WebGLRenderingContext, program: WebGLProgram) => {
   const uniforms: Record<string, Uniform> = {}
   const activeUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS) as number
   for (let i = 0; i < activeUniforms; i++) {
@@ -18,7 +18,7 @@ export const extractUniforms = (gl: WebGL2RenderingContext, program: WebGLProgra
 }
 
 export const setUniform = (
-  gl: WebGL2RenderingContext,
+  gl: WebGLRenderingContext,
   type: number,
   location: WebGLUniformLocation,
   value: any,
