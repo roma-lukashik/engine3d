@@ -43,10 +43,8 @@ class RendererImpl implements Renderer {
     }
 
     this.gl = gl
-
     this.resize(width, height)
-
-    gl.clearColor(0, 0, 0, 1)
+    this.gl.clearColor(0, 0, 0, 1)
   }
 
   public render(program: Program, meshes: Mesh[], camera: Camera, lighting: Lighting): void {
@@ -56,8 +54,7 @@ class RendererImpl implements Renderer {
     this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height)
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
 
-    let textureMatrix = m4.identity()
-    textureMatrix = m4.translate(textureMatrix, 0.5, 0.5, 0.5)
+    let textureMatrix = m4.translate(m4.identity(), 0.5, 0.5, 0.5)
     textureMatrix = m4.scale(textureMatrix, 0.5, 0.5, 0.5)
     textureMatrix = m4.multiply(textureMatrix, lighting.projectionMatrix)
 
