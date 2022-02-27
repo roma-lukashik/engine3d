@@ -27,6 +27,14 @@ export const createRenderer = ({
 class RendererImpl implements Renderer {
   public readonly gl: WebGLRenderingContext
 
+  private readonly biasMatrix: m4.Matrix4 = m4.scale(
+    m4.translate(
+      m4.identity(),
+      0.5, 0.5, 0.5,
+    ),
+    0.5, 0.5, 0.5,
+  )
+
   constructor({
     canvas,
     width,
@@ -37,11 +45,6 @@ class RendererImpl implements Renderer {
       throw new Error('Unable to create WebGL context')
     }
 
-    const ext = gl.getExtension('WEBGL_depth_texture')
-    if (!ext) {
-      throw new Error('Unable to get WEBGL_depth_texture extension')
-    }
-
     this.gl = gl
     this.resize(width, height)
     this.gl.clearColor(0, 0, 0, 1)
@@ -50,14 +53,12 @@ class RendererImpl implements Renderer {
   public render(program: Program, meshes: Mesh[], camera: Camera, lighting: Lighting): void {
     this.gl.enable(this.gl.CULL_FACE)
     this.gl.enable(this.gl.DEPTH_TEST)
+    this.gl.depthMask(false)
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null)
     this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height)
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
 
-    let textureMatrix = m4.translate(m4.identity(), 0.5, 0.5, 0.5)
-    textureMatrix = m4.scale(textureMatrix, 0.5, 0.5, 0.5)
-    textureMatrix = m4.multiply(textureMatrix, lighting.projectionMatrix)
-
+    const textureMatrix = m4.multiply(this.biasMatrix, lighting.projectionMatrix)
     meshes.forEach((mesh) => mesh.render(program, camera, lighting, textureMatrix))
   }
 
