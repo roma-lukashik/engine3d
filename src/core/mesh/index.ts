@@ -14,7 +14,6 @@ type MeshOptions = {
 
 export type Mesh = {
   worldMatrix: m4.Matrix4;
-  program: Program;
   render: (camera: Camera, lighting: Lighting, textureMatrix: m4.Matrix4, program?: Program) => void;
 }
 
@@ -25,8 +24,8 @@ export const createMesh = (options: MeshOptions): Mesh => {
 class MeshImpl implements Mesh {
   private readonly gl: WebGLRenderingContext
   private readonly attributes: Record<string, ExtendedAttribute>
+  private readonly program: Program
 
-  public program: Program
   public worldMatrix: m4.Matrix4
 
   constructor({ gl, shape, program }: MeshOptions) {

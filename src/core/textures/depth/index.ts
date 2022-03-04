@@ -1,4 +1,4 @@
-import { getID } from '../utils'
+import { createTexture2D, getID } from '../utils'
 
 type DepthTextureOptions = {
   gl: WebGLRenderingContext;
@@ -7,8 +7,6 @@ type DepthTextureOptions = {
 }
 
 export class DepthTexture {
-  private readonly gl: WebGLRenderingContext
-
   public readonly width: number
   public readonly height: number
   public readonly texture: WebGLTexture
@@ -20,46 +18,33 @@ export class DepthTexture {
     width = 1024,
     height = 1024,
   }: DepthTextureOptions) {
-    Object.assign(this, { gl, width, height })
-
+    this.width = width
+    this.height = height
+    this.texture = this.createTexture(gl)
     this.buffer = gl.createFramebuffer()
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffer)
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0)
 
-    this.texture = this.createTexture()
-    gl.framebufferTexture2D(
-      gl.FRAMEBUFFER,
-      gl.COLOR_ATTACHMENT0,
-      gl.TEXTURE_2D,
-      this.texture,
-      0,
-    )
-
-    const depthBuffer = this.gl.createRenderbuffer()
-    this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, depthBuffer)
-    this.gl.renderbufferStorage(this.gl.RENDERBUFFER, this.gl.DEPTH_COMPONENT16, width, height)
-    this.gl.framebufferRenderbuffer(this.gl.FRAMEBUFFER, this.gl.DEPTH_ATTACHMENT, this.gl.RENDERBUFFER, depthBuffer)
-
-    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null)
+    const depthBuffer = gl.createRenderbuffer()
+    gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer)
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height)
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   }
 
-  private createTexture(): WebGLTexture {
-    const texture = this.gl.createTexture()
-    if (!texture) {
-      throw new Error('Cannot create a texture')
-    }
-    const target = this.gl.TEXTURE_2D
+  private createTexture(gl: WebGLRenderingContext): WebGLTexture {
+    const texture = createTexture2D(gl, this.register)
+    const target = gl.TEXTURE_2D
     const level = 0
-    const format = this.gl.RGBA
+    const format = gl.RGBA
     const internalFormat = format
-    const type = this.gl.UNSIGNED_BYTE
+    const type = gl.UNSIGNED_BYTE
     const border = 0
-    this.gl.activeTexture(this.gl.TEXTURE0 + this.register)
-    this.gl.bindTexture(target, texture)
-    this.gl.texParameteri(target, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST)
-    this.gl.texParameteri(target, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST)
-    this.gl.texParameteri(target, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE)
-    this.gl.texParameteri(target, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE)
-    this.gl.texImage2D(target, level, internalFormat, this.width, this.height, border, format, type, null)
+    gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+    gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+    gl.texParameteri(target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    gl.texImage2D(target, level, internalFormat, this.width, this.height, border, format, type, null)
     return texture
   }
 }
