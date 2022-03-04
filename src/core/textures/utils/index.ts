@@ -8,7 +8,4 @@ export const createTexture2D = (gl: WebGLRenderingContext, register: number): We
   return texture
 }
 
-let ID = 0
-export const getID = () => ID++
-
 export const isPowerOf2 = (value: number): boolean => (value & (value - 1)) === 0

@@ -1,20 +1,23 @@
-import { createTexture2D, getID } from '../utils'
+import { createTexture2D } from '../utils'
 
 type PixelTextureOptions = {
   gl: WebGLRenderingContext;
   color?: number[];
+  register: number
 }
 
 const DEFAULT_GRAY_COLOR = [100, 100, 100, 255]
 
 export class PixelTexture {
   public readonly texture: WebGLTexture
-  public readonly register: number = getID()
+  public readonly register: number
 
   constructor({
     gl,
+    register,
     color = DEFAULT_GRAY_COLOR,
   }: PixelTextureOptions) {
+    this.register = register
     this.texture = createTexture2D(gl, this.register)
 
     const level = 0

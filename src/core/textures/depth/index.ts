@@ -1,9 +1,10 @@
-import { createTexture2D, getID } from '../utils'
+import { createTexture2D } from '../utils'
 
 type DepthTextureOptions = {
   gl: WebGLRenderingContext;
   width?: number;
   height?: number;
+  register: number;
 }
 
 export class DepthTexture {
@@ -11,15 +12,17 @@ export class DepthTexture {
   public readonly height: number
   public readonly texture: WebGLTexture
   public readonly buffer: WebGLBuffer | null
-  public readonly register: number = getID()
+  public readonly register: number
 
   constructor({
     gl,
     width = 1024,
     height = 1024,
+    register,
   }: DepthTextureOptions) {
     this.width = width
     this.height = height
+    this.register = register
     this.texture = this.createTexture(gl)
     this.buffer = gl.createFramebuffer()
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffer)

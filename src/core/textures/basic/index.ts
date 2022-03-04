@@ -1,19 +1,22 @@
-import { createTexture2D, getID, isPowerOf2 } from '../utils'
+import { createTexture2D, isPowerOf2 } from '../utils'
 
 type BasicTextureOptions = {
   gl: WebGLRenderingContext;
   image: TexImageSource;
+  register: number;
 }
 
 export class BasicTexture {
   public readonly texture: WebGLTexture
   public readonly buffer: WebGLBuffer | null
-  public readonly register: number = getID()
+  public readonly register: number
 
   constructor({
     gl,
     image,
+    register,
   }: BasicTextureOptions) {
+    this.register = register
     this.texture = this.createTexture(gl, image)
     this.buffer = gl.createFramebuffer()
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffer)

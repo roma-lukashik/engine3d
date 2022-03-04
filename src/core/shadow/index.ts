@@ -2,7 +2,7 @@ import { createProgram, Program } from '../program'
 import { Mesh } from '../mesh'
 import { Lighting } from '../lightings/point'
 import * as m4 from '../../math/matrix4'
-import { DepthTexture } from '../textures/depth'
+import { textureCreator, DepthTexture } from '../textures'
 
 type Shadow = {
   readonly depthTexture: DepthTexture;
@@ -26,7 +26,7 @@ export class ShadowImpl implements Shadow {
   constructor({ gl }: ShadowOptions) {
     this.gl = gl
     this.program = createProgram({ gl, vertex, fragment })
-    this.depthTexture = new DepthTexture({ gl })
+    this.depthTexture = textureCreator.createDepthTexture({ gl })
   }
 
   public render(meshes: Mesh[], lighting: Lighting): void {
