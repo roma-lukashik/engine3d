@@ -6,13 +6,13 @@ type ProgramOptions = {
   gl: WebGLRenderingContext;
   vertex: string;
   fragment: string;
-  uniforms?: object;
 }
 
 export type Program = {
   readonly uniforms: Record<string, Uniform>;
   readonly attributes: Record<string, Attribute>;
   use: () => void;
+  setUniformValues: (values: Record<string, any>) => void;
 }
 
 export const createProgram = (options: ProgramOptions): Program => {
@@ -30,7 +30,6 @@ class ProgramImpl implements Program {
     gl,
     vertex,
     fragment,
-    uniforms = {},
   }: ProgramOptions) {
     const vertexShader = compileShader(gl, vertex, gl.VERTEX_SHADER)
     const fragmentShader = compileShader(gl, fragment, gl.FRAGMENT_SHADER)
@@ -48,11 +47,17 @@ class ProgramImpl implements Program {
 
     this.gl = gl
     this.program = program
-    this.uniforms = extractUniforms(gl, program, uniforms)
+    this.uniforms = extractUniforms(gl, program)
     this.attributes = extractAttributes(gl, program)
   }
 
   public use(): void {
     this.gl.useProgram(this.program)
+  }
+
+  public setUniformValues(values: Record<string, any>): void {
+    Object.entries(values).forEach(([name, value]) => {
+      this.uniforms[name] = { ...this.uniforms[name], value }
+    })
   }
 }

@@ -4,14 +4,14 @@ export type Uniform = {
   value: any;
 }
 
-export const extractUniforms = (gl: WebGLRenderingContext, program: WebGLProgram, extraUniforms: any) => {
+export const extractUniforms = (gl: WebGLRenderingContext, program: WebGLProgram) => {
   const uniforms: Record<string, Uniform> = {}
   const activeUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS) as number
   for (let i = 0; i < activeUniforms; i++) {
     const info = gl.getActiveUniform(program, i)
     const location = info ? gl.getUniformLocation(program, info.name) : null
     if (info && location) {
-      uniforms[info.name] = { info, location, value: extraUniforms[info.name] ?? gl.getUniform(program, location) }
+      uniforms[info.name] = { info, location, value: gl.getUniform(program, location) }
     }
   }
   return uniforms
