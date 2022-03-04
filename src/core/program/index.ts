@@ -12,7 +12,7 @@ export type Program = {
   readonly uniforms: Record<string, Uniform>;
   readonly attributes: Record<string, Attribute>;
   use: () => void;
-  setUniformValues: (values: Record<string, any>) => void;
+  updateUniforms: (values: Record<string, any>) => void;
 }
 
 export const createProgram = (options: ProgramOptions): Program => {
@@ -55,9 +55,12 @@ class ProgramImpl implements Program {
     this.gl.useProgram(this.program)
   }
 
-  public setUniformValues(values: Record<string, any>): void {
+  public updateUniforms(values: Record<string, any>): void {
     Object.entries(values).forEach(([name, value]) => {
-      this.uniforms[name] = { ...this.uniforms[name], value }
+      const uniform = this.uniforms[name]
+      if (uniform) {
+        uniform.value = value
+      }
     })
   }
 }

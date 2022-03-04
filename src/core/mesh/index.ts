@@ -3,7 +3,7 @@ import { ExtendedAttribute, createExtendedAttribute } from '../utils/attribute'
 import { Model } from '../types'
 import { Camera } from '../camera'
 import { Lighting } from '../lightings/point'
-import { setUniform, Uniform } from '../utils/uniform'
+import { setUniform } from '../utils/uniform'
 import * as m4 from '../../math/matrix4'
 
 type MeshOptions = {
@@ -52,11 +52,13 @@ class MeshImpl implements Mesh {
   ): void {
     program.use()
 
-    setUniformValue(program.uniforms.projectionMatrix, projectionMatrix)
-    setUniformValue(program.uniforms.lightPosition, lighting.position)
-    setUniformValue(program.uniforms.lightViewPosition, lighting.target)
-    setUniformValue(program.uniforms.worldMatrix, this.worldMatrix)
-    setUniformValue(program.uniforms.textureMatrix, textureMatrix)
+    program.updateUniforms({
+      projectionMatrix,
+      textureMatrix,
+      lightPosition: lighting.position,
+      lightViewPosition: lighting.target,
+      worldMatrix: this.worldMatrix,
+    })
 
     Object.values(program.uniforms).forEach((uniform) => {
       setUniform(this.gl, uniform.info.type, uniform.location, uniform.value.texture ? uniform.value.register : uniform.value)
@@ -70,12 +72,6 @@ class MeshImpl implements Mesh {
 
     // Fix?
     this.gl.drawArrays(this.gl.TRIANGLES, 0, this.attributes.position.count)
-  }
-}
-
-const setUniformValue = (uniform: Uniform | undefined, value: any) => {
-  if (uniform) {
-    uniform.value = value
   }
 }
 
