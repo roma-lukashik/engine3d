@@ -1,3 +1,5 @@
+import { getID } from '../utils'
+
 type DepthTextureOptions = {
   gl: WebGLRenderingContext;
   width?: number;
@@ -11,6 +13,7 @@ export class DepthTexture {
   public readonly height: number
   public readonly texture: WebGLTexture
   public readonly buffer: WebGLBuffer | null
+  public readonly register: number = getID()
 
   constructor({
     gl,
@@ -50,6 +53,7 @@ export class DepthTexture {
     const internalFormat = format
     const type = this.gl.UNSIGNED_BYTE
     const border = 0
+    this.gl.activeTexture(this.gl.TEXTURE0 + this.register)
     this.gl.bindTexture(target, texture)
     this.gl.texParameteri(target, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST)
     this.gl.texParameteri(target, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST)

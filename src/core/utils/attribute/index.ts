@@ -48,6 +48,6 @@ export const createExtendedAttribute = <T extends TypedArray>(
   offset: 0,
   divisor: 0,
   target: gl.ARRAY_BUFFER,
-  count: value.data.length / value.size,
+  count: value.size ? value.data.length / value.size : 1,
   buffer: gl.createBuffer(),
 })

@@ -10,12 +10,12 @@ export type SphericalCoordinate = {
 }
 
 export const toSpherical = (point: Vector3, origin: Vector3): SphericalCoordinate => {
-  const redialDirection = v3.subtract(point, origin)
-  const radius = v3.length(redialDirection)
+  const direction = v3.subtract(point, origin)
+  const radius = v3.length(direction)
   return {
     radius,
-    theta: Math.atan2(v3.x(redialDirection), v3.z(redialDirection)),
-    phi: Math.acos(clamp(v3.y(redialDirection) / radius, -1, 1)),
+    theta: Math.atan2(v3.x(direction), v3.z(direction)),
+    phi: Math.acos(clamp(v3.y(direction) / radius, -1, 1)),
   }
 }
 

@@ -3,17 +3,19 @@ import { ExtendedAttribute, createExtendedAttribute } from '../utils/attribute'
 import { Model } from '../types'
 import { Camera } from '../camera'
 import { Lighting } from '../lightings/point'
-import { setUniform } from '../utils/uniform'
+import { setUniform, Uniform } from '../utils/uniform'
 import * as m4 from '../../math/matrix4'
 
 type MeshOptions = {
   gl: WebGLRenderingContext;
   shape: Model;
+  program: Program;
 }
 
 export type Mesh = {
   worldMatrix: m4.Matrix4;
-  render: (program: Program, camera: Camera, lighting: Lighting, textureMatrix: m4.Matrix4) => void;
+  program: Program;
+  render: (camera: Camera, lighting: Lighting, textureMatrix: m4.Matrix4, program?: Program) => void;
 }
 
 export const createMesh = (options: MeshOptions): Mesh => {
@@ -24,9 +26,10 @@ class MeshImpl implements Mesh {
   private readonly gl: WebGLRenderingContext
   private readonly attributes: Record<string, ExtendedAttribute>
 
+  public program: Program
   public worldMatrix: m4.Matrix4
 
-  constructor({ gl, shape }: MeshOptions) {
+  constructor({ gl, shape, program }: MeshOptions) {
     this.attributes = Object.fromEntries(Object.entries(shape).map(([key, value]) => {
       return [key, createExtendedAttribute(gl, value)]
     }))
@@ -34,43 +37,30 @@ class MeshImpl implements Mesh {
     Object.values(this.attributes).forEach((attribute) => updateAttribute(gl, attribute))
 
     this.gl = gl
+    this.program = program
     this.worldMatrix = m4.identity()
   }
 
-  public render(program: Program, camera: Camera, lighting: Lighting, textureMatrix: m4.Matrix4): void {
-    this.drawScene(lighting, camera.projectionMatrix, textureMatrix, program)
+  public render(camera: Camera, lighting: Lighting, textureMatrix: m4.Matrix4, program?: Program): void {
+    this.drawScene(camera.projectionMatrix, textureMatrix, lighting, program)
   }
 
   private drawScene(
-    lighting: Lighting,
     projectionMatrix: m4.Matrix4,
     textureMatrix: m4.Matrix4,
-    program: Program,
+    lighting: Lighting,
+    program: Program = this.program
   ): void {
     program.use()
 
-    if (program.uniforms.projectionMatrix) {
-      program.uniforms.projectionMatrix.value = projectionMatrix
-    }
-
-    if (program.uniforms.lightPosition) {
-      program.uniforms.lightPosition.value = lighting.position
-    }
-
-    if (program.uniforms.lightViewPosition) {
-      program.uniforms.lightViewPosition.value = lighting.target
-    }
-
-    if (program.uniforms.worldMatrix) {
-      program.uniforms.worldMatrix.value = this.worldMatrix
-    }
-
-    if (program.uniforms.textureMatrix) {
-      program.uniforms.textureMatrix.value = textureMatrix
-    }
+    setUniformValue(program.uniforms.projectionMatrix, projectionMatrix)
+    setUniformValue(program.uniforms.lightPosition, lighting.position)
+    setUniformValue(program.uniforms.lightViewPosition, lighting.target)
+    setUniformValue(program.uniforms.worldMatrix, this.worldMatrix)
+    setUniformValue(program.uniforms.textureMatrix, textureMatrix)
 
     Object.values(program.uniforms).forEach((uniform) => {
-      setUniform(this.gl, uniform.info.type, uniform.location, uniform.value)
+      setUniform(this.gl, uniform.info.type, uniform.location, uniform.value.texture ? uniform.value.register : uniform.value)
     })
 
     Object.values(program.attributes).forEach(({ location, info }) => {
@@ -81,6 +71,12 @@ class MeshImpl implements Mesh {
 
     // Fix?
     this.gl.drawArrays(this.gl.TRIANGLES, 0, this.attributes.position.count)
+  }
+}
+
+const setUniformValue = (uniform: Uniform | undefined, value: any) => {
+  if (uniform) {
+    uniform.value = value
   }
 }
 

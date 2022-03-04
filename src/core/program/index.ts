@@ -6,6 +6,7 @@ type ProgramOptions = {
   gl: WebGLRenderingContext;
   vertex: string;
   fragment: string;
+  uniforms?: object;
 }
 
 export type Program = {
@@ -25,7 +26,12 @@ class ProgramImpl implements Program {
   public readonly uniforms: Record<string, Uniform>
   public readonly attributes: Record<string, Attribute>
 
-  constructor({ gl, vertex, fragment }: ProgramOptions) {
+  constructor({
+    gl,
+    vertex,
+    fragment,
+    uniforms = {},
+  }: ProgramOptions) {
     const vertexShader = compileShader(gl, vertex, gl.VERTEX_SHADER)
     const fragmentShader = compileShader(gl, fragment, gl.FRAGMENT_SHADER)
     const program = gl.createProgram()
@@ -42,7 +48,7 @@ class ProgramImpl implements Program {
 
     this.gl = gl
     this.program = program
-    this.uniforms = extractUniforms(gl, program)
+    this.uniforms = extractUniforms(gl, program, uniforms)
     this.attributes = extractAttributes(gl, program)
   }
 

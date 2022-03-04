@@ -5,6 +5,7 @@ import * as m4 from '../../math/matrix4'
 import { DepthTexture } from '../textures/depth'
 
 type Shadow = {
+  readonly depthTexture: DepthTexture;
   render: (meshes: Mesh[], lighting: Lighting) => void;
 }
 
@@ -19,11 +20,10 @@ export const createShadow = (options: ShadowOptions): Shadow => {
 export class ShadowImpl implements Shadow {
   private readonly gl: WebGLRenderingContext
   private readonly program: Program
-  private readonly depthTexture: DepthTexture
 
-  constructor({
-    gl
-  }: ShadowOptions) {
+  public readonly depthTexture: DepthTexture
+
+  constructor({ gl }: ShadowOptions) {
     this.gl = gl
     this.program = createProgram({ gl, vertex, fragment })
     this.depthTexture = new DepthTexture({ gl })
@@ -35,7 +35,7 @@ export class ShadowImpl implements Shadow {
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.depthTexture.buffer)
     this.gl.viewport(0, 0, this.depthTexture.width, this.depthTexture.height)
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
-    meshes.forEach((mesh) => mesh.render(this.program, lighting, lighting, m4.identity()))
+    meshes.forEach((mesh) => mesh.render(lighting, lighting, m4.identity(), this.program))
   }
 }
 
