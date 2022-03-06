@@ -13,7 +13,7 @@ type MeshOptions = {
 }
 
 export type Mesh = {
-  worldMatrix: m4.Matrix4;
+  modelMatrix: m4.Matrix4;
   render: (camera: Camera, lighting: Lighting, textureMatrix: m4.Matrix4, program?: Program) => void;
 }
 
@@ -26,7 +26,7 @@ class MeshImpl implements Mesh {
   private readonly attributes: Record<string, ExtendedAttribute>
   private readonly program: Program
 
-  public worldMatrix: m4.Matrix4
+  public modelMatrix: m4.Matrix4
 
   constructor({ gl, shape, program }: MeshOptions) {
     this.attributes = Object.fromEntries(Object.entries(shape).map(([key, value]) => {
@@ -37,7 +37,7 @@ class MeshImpl implements Mesh {
 
     this.gl = gl
     this.program = program
-    this.worldMatrix = m4.identity()
+    this.modelMatrix = m4.identity()
   }
 
   public render(camera: Camera, lighting: Lighting, textureMatrix: m4.Matrix4, program?: Program): void {
@@ -57,11 +57,11 @@ class MeshImpl implements Mesh {
       textureMatrix,
       lightPosition: lighting.position,
       lightViewPosition: lighting.target,
-      worldMatrix: this.worldMatrix,
+      modelMatrix: this.modelMatrix,
     })
 
     Object.values(program.uniforms).forEach((uniform) => {
-      setUniform(this.gl, uniform.info.type, uniform.location, uniform.value.texture ? uniform.value.register : uniform.value)
+      setUniform(this.gl, uniform.info.type, uniform.location, uniform.value)
     })
 
     Object.values(program.attributes).forEach(({ location, info }) => {
