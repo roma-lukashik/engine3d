@@ -1,6 +1,6 @@
 import { Mesh } from '../mesh'
 import { Camera } from '../camera'
-import { Lighting } from '../lightings/point'
+import { Light } from '../lights/types'
 import * as m4 from '../../math/matrix4'
 
 type RendererOptions = {
@@ -12,7 +12,7 @@ type RendererOptions = {
 type Renderer = {
   readonly gl: WebGLRenderingContext;
   resize: (width: number, height: number) => void;
-  render: (meshes: Mesh[], camera: Camera, lighting: Lighting) => void;
+  render: (meshes: Mesh[], camera: Camera, light: Light) => void;
 }
 
 export const createRenderer = ({
@@ -43,15 +43,15 @@ class RendererImpl implements Renderer {
     this.gl.clearColor(0, 0, 0, 1)
   }
 
-  public render(meshes: Mesh[], camera: Camera, lighting: Lighting): void {
+  public render(meshes: Mesh[], camera: Camera, light: Light): void {
     this.gl.enable(this.gl.CULL_FACE)
     this.gl.enable(this.gl.DEPTH_TEST)
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null)
     this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height)
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
 
-    const textureMatrix = m4.multiply(this.biasMatrix, lighting.projectionMatrix)
-    meshes.forEach((mesh) => mesh.render(camera, lighting, textureMatrix))
+    const textureMatrix = m4.multiply(this.biasMatrix, light.projectionMatrix)
+    meshes.forEach((mesh) => mesh.render(camera, light, textureMatrix))
   }
 
   public resize(width: number, height: number): void {

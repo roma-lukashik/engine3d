@@ -90,7 +90,7 @@ const defaultFragment = `
   }
 
   void main() {
-    float lighting = 1.0;
+    float light = 1.0;
     float specular = 0.0;
     float shadow = 1.0;
 
@@ -101,7 +101,7 @@ const defaultFragment = `
       vec3 surfaceToLightDirection = normalize(surfaceToLight);
       vec3 surfaceToViewDirection = normalize(surfaceToView);
       vec3 halfVector = normalize(surfaceToLightDirection + surfaceToViewDirection);
-      lighting = dot(normal, surfaceToLightDirection) * 1.9;
+      light = dot(normal, surfaceToLightDirection) * 2.0;
       specular = pow(dot(normal, halfVector), 150.0);
     #endif
 
@@ -113,6 +113,6 @@ const defaultFragment = `
       shadow = mix(0.2, 1.0, step(depth, occluder));
     #endif
 
-    gl_FragColor = vec4(tex * lighting * shadow + specular * shadow, 1.0);
+    gl_FragColor = vec4(tex * light * shadow + specular * shadow, 1.0);
   }
 `

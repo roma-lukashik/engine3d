@@ -126,21 +126,21 @@ export const rotateZ = (m: Matrix4, rad: number): Matrix4 => multiply(m, rotatio
 
 const rotationMatrix = (rad: number, fn: (sin: number, cos: number) => Matrix4) => fn(Math.sin(rad), Math.cos(rad))
 
-export const rotationX = (sin: number, cos: number): Matrix4 => [
+const rotationX = (sin: number, cos: number): Matrix4 => [
   1, 0, 0, 0,
   0, cos, -sin, 0,
   0, sin, cos, 0,
   0, 0, 0, 1,
 ]
 
-export const rotationY = (sin: number, cos: number): Matrix4 => [
+const rotationY = (sin: number, cos: number): Matrix4 => [
   cos, 0, sin, 0,
   0, 1, 0, 0,
   -sin, 0, cos, 0,
   0, 0, 0, 1,
 ]
 
-export const rotationZ = (sin: number, cos: number): Matrix4 => [
+const rotationZ = (sin: number, cos: number): Matrix4 => [
   cos, -sin, 0, 0,
   sin, cos, 0, 0,
   0, 0, 1, 0,

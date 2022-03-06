@@ -1,13 +1,12 @@
 import * as m4 from '../../../math/matrix4'
 import * as v3 from '../../../math/vector3'
 import { Camera, createCamera } from '../../camera'
+import { Light } from '../types'
 
 type Vector3 = v3.Vector3
 type Matrix4 = m4.Matrix4
 
-export type Lighting = Camera
-
-type LightingOptions = {
+type LightOptions = {
   up?: Vector3;
   near?: number;
   far?: number;
@@ -16,11 +15,11 @@ type LightingOptions = {
   position?: Vector3;
 }
 
-export const createLighting = (options: LightingOptions): Lighting => {
-  return new PointLighting(options)
+export const createPointLight = (options: LightOptions): Light => {
+  return new PointLight(options)
 }
 
-class PointLighting implements Lighting {
+class PointLight implements Light {
   private readonly camera: Camera
 
   get position(): Vector3 {
@@ -35,7 +34,7 @@ class PointLighting implements Lighting {
     return this.camera.projectionMatrix
   }
 
-  constructor(options: LightingOptions) {
+  constructor(options: LightOptions) {
     this.camera = createCamera(options)
   }
 
@@ -47,7 +46,7 @@ class PointLighting implements Lighting {
     this.camera.setPosition(position)
   }
 
-  setOptions(options: LightingOptions): void {
+  setOptions(options: LightOptions): void {
     this.camera.setOptions(options)
   }
 }

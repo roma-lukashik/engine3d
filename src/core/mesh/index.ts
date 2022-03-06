@@ -2,7 +2,7 @@ import { Program } from '../program'
 import { ExtendedAttribute, createExtendedAttribute } from '../utils/attribute'
 import { Model } from '../types'
 import { Camera } from '../camera'
-import { Lighting } from '../lightings/point'
+import { Light } from '../lights/types'
 import { setUniform } from '../utils/uniform'
 import * as m4 from '../../math/matrix4'
 import { createMeshProgram } from './program'
@@ -20,7 +20,7 @@ export type Mesh = {
   readonly program: Program;
   modelMatrix: m4.Matrix4;
   setTexture: (texture: Texture) => void;
-  render: (camera: Camera, lighting: Lighting, textureMatrix: m4.Matrix4, program?: Program) => void;
+  render: (camera: Camera, light: Light, textureMatrix: m4.Matrix4, program?: Program) => void;
 }
 
 export const createMesh = ({
@@ -52,14 +52,14 @@ class MeshImpl implements Mesh {
     this.program.updateUniforms({ modelTexture: texture.register })
   }
 
-  public render(camera: Camera, lighting: Lighting, textureMatrix: m4.Matrix4, program?: Program): void {
-    this.drawScene(camera.projectionMatrix, textureMatrix, lighting, program)
+  public render(camera: Camera, light: Light, textureMatrix: m4.Matrix4, program?: Program): void {
+    this.drawScene(camera.projectionMatrix, textureMatrix, light, program)
   }
 
   private drawScene(
     projectionMatrix: m4.Matrix4,
     textureMatrix: m4.Matrix4,
-    lighting: Lighting,
+    light: Light,
     program: Program = this.program
   ): void {
     program.use()
@@ -67,8 +67,8 @@ class MeshImpl implements Mesh {
     program.updateUniforms({
       projectionMatrix,
       textureMatrix,
-      lightPosition: lighting.position,
-      lightViewPosition: lighting.target,
+      lightPosition: light.position,
+      lightViewPosition: light.target,
       modelMatrix: this.modelMatrix,
     })
 

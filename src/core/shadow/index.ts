@@ -1,12 +1,12 @@
 import { createProgram, Program } from '../program'
 import { Mesh } from '../mesh'
-import { Lighting } from '../lightings/point'
+import { Light } from '../lights/types'
 import * as m4 from '../../math/matrix4'
 import { textureCreator, DepthTexture } from '../textures'
 
 type Shadow = {
   attachMeshes: (meshes: Mesh[]) => void;
-  render: (lighting: Lighting) => void;
+  render: (light: Light) => void;
 }
 
 type ShadowOptions = {
@@ -30,13 +30,13 @@ export class ShadowImpl implements Shadow {
     this.depthTexture = textureCreator.createDepthTexture({ gl })
   }
 
-  public render(lighting: Lighting): void {
+  public render(light: Light): void {
     this.gl.depthMask(true)
     this.gl.disable(this.gl.CULL_FACE)
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.depthTexture.buffer)
     this.gl.viewport(0, 0, this.depthTexture.width, this.depthTexture.height)
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
-    this.meshes.forEach((mesh) => mesh.render(lighting, lighting, m4.identity(), this.program))
+    this.meshes.forEach((mesh) => mesh.render(light, light, m4.identity(), this.program))
   }
 
   public attachMeshes(meshes: Mesh[]): void {
