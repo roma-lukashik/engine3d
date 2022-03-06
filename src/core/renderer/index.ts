@@ -26,13 +26,7 @@ export const createRenderer = ({
 class RendererImpl implements Renderer {
   public readonly gl: WebGLRenderingContext
 
-  private readonly biasMatrix: m4.Matrix4 = m4.scale(
-    m4.translate(
-      m4.identity(),
-      0.5, 0.5, 0.5,
-    ),
-    0.5, 0.5, 0.5,
-  )
+  private readonly biasMatrix: m4.Matrix4 = m4.scale(m4.translation(0.5, 0.5, 0.5), 0.5, 0.5, 0.5)
 
   constructor({
     canvas,

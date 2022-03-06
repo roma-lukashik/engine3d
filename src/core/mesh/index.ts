@@ -5,39 +5,51 @@ import { Camera } from '../camera'
 import { Lighting } from '../lightings/point'
 import { setUniform } from '../utils/uniform'
 import * as m4 from '../../math/matrix4'
+import { createMeshProgram } from './program'
+import { Texture, textureCreator } from '../textures'
 
 type MeshOptions = {
   gl: WebGLRenderingContext;
   shape: Model;
-  program: Program;
+  modelMatrix?: m4.Matrix4;
+  texture?: Texture;
+  program?: Program;
 }
 
 export type Mesh = {
+  readonly program: Program;
   modelMatrix: m4.Matrix4;
+  setTexture: (texture: Texture) => void;
   render: (camera: Camera, lighting: Lighting, textureMatrix: m4.Matrix4, program?: Program) => void;
 }
 
-export const createMesh = (options: MeshOptions): Mesh => {
-  return new MeshImpl(options)
+export const createMesh = ({
+  gl,
+  shape,
+  modelMatrix = m4.identity(),
+  texture = textureCreator.createPixelTexture({ gl }),
+  program = createMeshProgram({ gl }),
+}: MeshOptions): Mesh => {
+  return new MeshImpl({ gl, shape, modelMatrix, texture, program })
 }
 
 class MeshImpl implements Mesh {
   private readonly gl: WebGLRenderingContext
-  private readonly attributes: Record<string, ExtendedAttribute>
-  private readonly program: Program
+  private attributes: Record<string, ExtendedAttribute> = {}
 
+  public readonly program: Program
   public modelMatrix: m4.Matrix4
 
-  constructor({ gl, shape, program }: MeshOptions) {
-    this.attributes = Object.fromEntries(Object.entries(shape).map(([key, value]) => {
-      return [key, createExtendedAttribute(gl, value)]
-    }))
-
-    Object.values(this.attributes).forEach((attribute) => updateAttribute(gl, attribute))
-
+  constructor({ gl, shape, program, texture, modelMatrix }: Required<MeshOptions>) {
     this.gl = gl
     this.program = program
-    this.modelMatrix = m4.identity()
+    this.modelMatrix = modelMatrix
+    this.setTexture(texture)
+    this.setAttributes(shape)
+  }
+
+  public setTexture(texture: Texture): void {
+    this.program.updateUniforms({ modelTexture: texture.register })
   }
 
   public render(camera: Camera, lighting: Lighting, textureMatrix: m4.Matrix4, program?: Program): void {
@@ -72,6 +84,13 @@ class MeshImpl implements Mesh {
 
     // Fix?
     this.gl.drawArrays(this.gl.TRIANGLES, 0, this.attributes.position.count)
+  }
+
+  private setAttributes(shape: Model) {
+    Object.entries(shape).forEach(([key, value]) => {
+      this.attributes[key] = createExtendedAttribute(this.gl, value)
+      updateAttribute(this.gl, this.attributes[key])
+    })
   }
 }
 

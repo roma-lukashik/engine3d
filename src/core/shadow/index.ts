@@ -5,8 +5,8 @@ import * as m4 from '../../math/matrix4'
 import { textureCreator, DepthTexture } from '../textures'
 
 type Shadow = {
-  readonly depthTexture: DepthTexture;
-  render: (meshes: Mesh[], lighting: Lighting) => void;
+  attachMeshes: (meshes: Mesh[]) => void;
+  render: (lighting: Lighting) => void;
 }
 
 type ShadowOptions = {
@@ -20,22 +20,28 @@ export const createShadow = (options: ShadowOptions): Shadow => {
 export class ShadowImpl implements Shadow {
   private readonly gl: WebGLRenderingContext
   private readonly program: Program
-
-  public readonly depthTexture: DepthTexture
+  private readonly depthTexture: DepthTexture
+  private meshes: Mesh[]
 
   constructor({ gl }: ShadowOptions) {
     this.gl = gl
+    this.meshes = []
     this.program = createProgram({ gl, vertex, fragment })
     this.depthTexture = textureCreator.createDepthTexture({ gl })
   }
 
-  public render(meshes: Mesh[], lighting: Lighting): void {
+  public render(lighting: Lighting): void {
     this.gl.depthMask(true)
     this.gl.disable(this.gl.CULL_FACE)
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.depthTexture.buffer)
     this.gl.viewport(0, 0, this.depthTexture.width, this.depthTexture.height)
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
-    meshes.forEach((mesh) => mesh.render(lighting, lighting, m4.identity(), this.program))
+    this.meshes.forEach((mesh) => mesh.render(lighting, lighting, m4.identity(), this.program))
+  }
+
+  public attachMeshes(meshes: Mesh[]): void {
+    this.meshes = meshes
+    this.meshes.forEach((mesh) => mesh.program.updateUniforms({ shadowTexture: this.depthTexture.register }))
   }
 }
 

@@ -118,29 +118,29 @@ export const multiply = (a: Matrix4, b: Matrix4): Matrix4 => {
   ]
 }
 
-export const rotateX = (m: Matrix4, rad: number): Matrix4 => multiply(m, rotationMatrix(rad, rx))
+export const rotateX = (m: Matrix4, rad: number): Matrix4 => multiply(m, rotationMatrix(rad, rotationX))
 
-export const rotateY = (m: Matrix4, rad: number): Matrix4 => multiply(m, rotationMatrix(rad, ry))
+export const rotateY = (m: Matrix4, rad: number): Matrix4 => multiply(m, rotationMatrix(rad, rotationY))
 
-export const rotateZ = (m: Matrix4, rad: number): Matrix4 => multiply(m, rotationMatrix(rad, rz))
+export const rotateZ = (m: Matrix4, rad: number): Matrix4 => multiply(m, rotationMatrix(rad, rotationZ))
 
 const rotationMatrix = (rad: number, fn: (sin: number, cos: number) => Matrix4) => fn(Math.sin(rad), Math.cos(rad))
 
-const rx = (sin: number, cos: number): Matrix4 => [
+export const rotationX = (sin: number, cos: number): Matrix4 => [
   1, 0, 0, 0,
   0, cos, -sin, 0,
   0, sin, cos, 0,
   0, 0, 0, 1,
 ]
 
-const ry = (sin: number, cos: number): Matrix4 => [
+export const rotationY = (sin: number, cos: number): Matrix4 => [
   cos, 0, sin, 0,
   0, 1, 0, 0,
   -sin, 0, cos, 0,
   0, 0, 0, 1,
 ]
 
-const rz = (sin: number, cos: number): Matrix4 => [
+export const rotationZ = (sin: number, cos: number): Matrix4 => [
   cos, -sin, 0, 0,
   sin, cos, 0, 0,
   0, 0, 1, 0,
@@ -149,7 +149,7 @@ const rz = (sin: number, cos: number): Matrix4 => [
 
 export const translate = (m: Matrix4, x: number, y: number, z: number) => multiply(m, translation(x, y, z))
 
-const translation = (x: number, y: number, z: number): Matrix4 => [
+export const translation = (x: number, y: number, z: number): Matrix4 => [
   1, 0, 0, 0,
   0, 1, 0, 0,
   0, 0, 1, 0,
@@ -158,7 +158,7 @@ const translation = (x: number, y: number, z: number): Matrix4 => [
 
 export const scale = (m: Matrix4, x: number, y: number, z: number) => multiply(m, scaling(x, y, z))
 
-const scaling = (x: number, y: number, z: number): Matrix4 => [
+export const scaling = (x: number, y: number, z: number): Matrix4 => [
   x, 0, 0, 0,
   0, y, 0, 0,
   0, 0, z, 0,

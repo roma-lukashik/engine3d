@@ -27,6 +27,11 @@ class TextureCreator {
 
 export const textureCreator = new TextureCreator()
 
+export type Texture =
+  | BasicTexture
+  | PixelTexture
+  | DepthTexture
+
 export type { BasicTexture } from './basic'
 export type { PixelTexture } from './pixel'
 export type { DepthTexture } from './depth'
