@@ -5,14 +5,20 @@ export type WebGLRenderingContextState = {
   activeTextureUnit: number;
 }
 
-export const createWebGLRenderingContextState = (): WebGLRenderingContextState => {
+export const mockWebGLRenderingContext = () => {
+  const state = createWebGLRenderingContextState()
+  const gl = createWebGLRenderingContextStub(state)
+  return { state, gl }
+}
+
+const createWebGLRenderingContextState = (): WebGLRenderingContextState => {
   return {
     activeTextureUnit: WebGLConstant.TEXTURE0,
     textureUnits: Array.from({ length: 8 }, () => ({ TEXTURE_2D: null, TEXTURE_CUBE_MAP: null })),
   }
 }
 
-export const createWebGLRenderingContextStub = (state: WebGLRenderingContextState): WebGLRenderingContextStub => {
+const createWebGLRenderingContextStub = (state: WebGLRenderingContextState): WebGLRenderingContextStub => {
   const gl = {
     ...WebGLConstant,
     ...Object.fromEntries(functions.map((func) => [func, jest.fn()]))

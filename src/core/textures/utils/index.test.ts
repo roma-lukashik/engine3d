@@ -1,7 +1,6 @@
 import { createTexture2D, isPowerOf2 } from '.'
 import {
-  createWebGLRenderingContextState,
-  createWebGLRenderingContextStub,
+  mockWebGLRenderingContext,
   WebGLRenderingContextState,
   WebGLRenderingContextStub,
 } from '../../../../tests/stubs/renderingContext'
@@ -10,8 +9,7 @@ describe('Texture Utils', () => {
   let state: WebGLRenderingContextState
   let gl: WebGLRenderingContextStub
   beforeEach(() => {
-    state = createWebGLRenderingContextState()
-    gl = createWebGLRenderingContextStub(state)
+    ({ gl, state } = mockWebGLRenderingContext())
   })
 
   describe('#createTexture2D', () => {
