@@ -11,6 +11,12 @@ export const mockWebGLRenderingContext = () => {
   return { state, gl }
 }
 
+export const mockCanvas = (gl: WebGLRenderingContext) => {
+  return {
+    getContext: jest.fn().mockReturnValue(gl),
+  } as unknown as jest.Mocked<HTMLCanvasElement>
+}
+
 const createWebGLRenderingContextState = (): WebGLRenderingContextState => {
   return {
     activeTextureUnit: WebGLConstant.TEXTURE0,
@@ -21,7 +27,11 @@ const createWebGLRenderingContextState = (): WebGLRenderingContextState => {
 const createWebGLRenderingContextStub = (state: WebGLRenderingContextState): WebGLRenderingContextStub => {
   const gl = {
     ...WebGLConstant,
-    ...Object.fromEntries(functions.map((func) => [func, jest.fn()]))
+    ...Object.fromEntries(functions.map((func) => [func, jest.fn()])),
+    canvas: {
+      width: 300,
+      height: 150,
+    },
   } as unknown as WebGLRenderingContextStub
 
   gl.createTexture.mockImplementation(() => ({}))
@@ -48,10 +58,12 @@ const createWebGLRenderingContextStub = (state: WebGLRenderingContextState): Web
 }
 
 const functions: Partial<keyof WebGLRenderingContext>[] = [
-  'createTexture',
   'activeTexture',
   'bindTexture',
+  'clearColor',
+  'createTexture',
   'texImage2D',
+  'viewport',
 ]
 
 type TextureUnit = {

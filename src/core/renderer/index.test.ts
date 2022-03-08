@@ -1,16 +1,23 @@
-import { createRenderer } from '.'
+import { createRenderer, Renderer } from '.'
+import {
+  mockCanvas,
+  mockWebGLRenderingContext,
+  WebGLRenderingContextStub,
+} from '../../../tests/stubs/renderingContext'
 
 describe('renderer', () => {
-  let gl: ReturnType<typeof createRenderer>
+  let renderer: Renderer
+  let gl: WebGLRenderingContextStub
   beforeEach(() => {
-    gl = createRenderer({
-      canvas: document.createElement('canvas'),
+    ({ gl } = mockWebGLRenderingContext())
+    renderer = createRenderer({
+      canvas: mockCanvas(gl),
       width: 640,
       height: 480,
     })
   })
 
-  it.skip('should return renderer', () => {
-    expect(gl).toBeDefined()
+  it('should return renderer', () => {
+    expect(renderer).toBeDefined()
   })
 })
