@@ -7,26 +7,6 @@ export type Matrix4 = [
   number, number, number, number,
 ]
 
-export const m00 = (m: Matrix4) => m[0]
-export const m01 = (m: Matrix4) => m[1]
-export const m02 = (m: Matrix4) => m[2]
-export const m03 = (m: Matrix4) => m[3]
-
-export const m10 = (m: Matrix4) => m[4]
-export const m11 = (m: Matrix4) => m[5]
-export const m12 = (m: Matrix4) => m[6]
-export const m13 = (m: Matrix4) => m[7]
-
-export const m20 = (m: Matrix4) => m[8]
-export const m21 = (m: Matrix4) => m[9]
-export const m22 = (m: Matrix4) => m[10]
-export const m23 = (m: Matrix4) => m[11]
-
-export const m30 = (m: Matrix4) => m[12]
-export const m31 = (m: Matrix4) => m[13]
-export const m32 = (m: Matrix4) => m[14]
-export const m33 = (m: Matrix4) => m[15]
-
 export const identity = (): Matrix4 => [
   1, 0, 0, 0,
   0, 1, 0, 0,
@@ -41,41 +21,64 @@ export const zero = (): Matrix4 => [
   0, 0, 0, 0,
 ]
 
-export const det = (m: Matrix4): number =>
-  (m00(m) * m11(m) - m01(m) * m10(m)) * (m22(m) * m33(m) - m23(m) * m32(m)) -
-  (m00(m) * m12(m) - m02(m) * m10(m)) * (m21(m) * m33(m) - m23(m) * m31(m)) +
-  (m00(m) * m13(m) - m03(m) * m10(m)) * (m21(m) * m32(m) - m22(m) * m31(m)) +
-  (m01(m) * m12(m) - m02(m) * m11(m)) * (m20(m) * m33(m) - m23(m) * m30(m)) -
-  (m01(m) * m13(m) - m03(m) * m11(m)) * (m20(m) * m32(m) - m22(m) * m30(m)) +
-  (m02(m) * m13(m) - m03(m) * m12(m)) * (m20(m) * m31(m) - m21(m) * m30(m))
+export const det = (m: Matrix4): number => {
+  const [
+    a00, a01, a02, a03,
+    a10, a11, a12, a13,
+    a20, a21, a22, a23,
+    a30, a31, a32, a33,
+  ] = m
+  return (
+    (a00 * a11 - a01 * a10) * (a22 * a33 - a23 * a32) -
+    (a00 * a12 - a02 * a10) * (a21 * a33 - a23 * a31) +
+    (a00 * a13 - a03 * a10) * (a21 * a32 - a22 * a31) +
+    (a01 * a12 - a02 * a11) * (a20 * a33 - a23 * a30) -
+    (a01 * a13 - a03 * a11) * (a20 * a32 - a22 * a30) +
+    (a02 * a13 - a03 * a12) * (a20 * a31 - a21 * a30)
+  )
+}
 
-export const transpose = (m: Matrix4): Matrix4 => [
-  m00(m), m10(m), m20(m), m30(m),
-  m01(m), m11(m), m21(m), m31(m),
-  m02(m), m12(m), m22(m), m32(m),
-  m03(m), m13(m), m23(m), m33(m),
-]
+export const transpose = (m: Matrix4): Matrix4 => {
+  const [
+    a00, a01, a02, a03,
+    a10, a11, a12, a13,
+    a20, a21, a22, a23,
+    a30, a31, a32, a33,
+  ] = m
+  return [
+    a00, a10, a20, a30,
+    a01, a11, a21, a31,
+    a02, a12, a22, a32,
+    a03, a13, a23, a33,
+  ]
+}
 
 export const invert = (m: Matrix4): Matrix4 => {
   const d = det(m)
   if (d === 0) return zero()
+  const [
+    a00, a01, a02, a03,
+    a10, a11, a12, a13,
+    a20, a21, a22, a23,
+    a30, a31, a32, a33,
+  ] = m
   return [
-    (m11(m) * (m22(m) * m33(m) - m23(m) * m32(m)) - m12(m) * (m21(m) * m33(m) - m23(m) * m31(m)) + m13(m) * (m21(m) * m32(m) - m22(m) * m31(m))) / d,
-    (m02(m) * (m21(m) * m33(m) - m23(m) * m31(m)) - m01(m) * (m22(m) * m33(m) - m23(m) * m32(m)) - m03(m) * (m21(m) * m32(m) - m22(m) * m31(m))) / d,
-    (m31(m) * (m02(m) * m13(m) - m03(m) * m12(m)) - m32(m) * (m01(m) * m13(m) - m03(m) * m11(m)) + m33(m) * (m01(m) * m12(m) - m02(m) * m11(m))) / d,
-    (m22(m) * (m01(m) * m13(m) - m03(m) * m11(m)) - m21(m) * (m02(m) * m13(m) - m03(m) * m12(m)) - m23(m) * (m01(m) * m12(m) - m02(m) * m11(m))) / d,
-    (m12(m) * (m20(m) * m33(m) - m23(m) * m30(m)) - m10(m) * (m22(m) * m33(m) - m23(m) * m32(m)) - m13(m) * (m20(m) * m32(m) - m22(m) * m30(m))) / d,
-    (m00(m) * (m22(m) * m33(m) - m23(m) * m32(m)) - m02(m) * (m20(m) * m33(m) - m23(m) * m30(m)) + m03(m) * (m20(m) * m32(m) - m22(m) * m30(m))) / d,
-    (m32(m) * (m00(m) * m13(m) - m03(m) * m10(m)) - m30(m) * (m02(m) * m13(m) - m03(m) * m12(m)) - m33(m) * (m00(m) * m12(m) - m02(m) * m10(m))) / d,
-    (m20(m) * (m02(m) * m13(m) - m03(m) * m12(m)) - m22(m) * (m00(m) * m13(m) - m03(m) * m10(m)) + m23(m) * (m00(m) * m12(m) - m02(m) * m10(m))) / d,
-    (m10(m) * (m21(m) * m33(m) - m23(m) * m31(m)) - m11(m) * (m20(m) * m33(m) - m23(m) * m30(m)) + m13(m) * (m20(m) * m31(m) - m21(m) * m30(m))) / d,
-    (m01(m) * (m20(m) * m33(m) - m23(m) * m30(m)) - m00(m) * (m21(m) * m33(m) - m23(m) * m31(m)) - m03(m) * (m20(m) * m31(m) - m21(m) * m30(m))) / d,
-    (m30(m) * (m01(m) * m13(m) - m03(m) * m11(m)) - m31(m) * (m00(m) * m13(m) - m03(m) * m10(m)) + m33(m) * (m00(m) * m11(m) - m01(m) * m10(m))) / d,
-    (m21(m) * (m00(m) * m13(m) - m03(m) * m10(m)) - m20(m) * (m01(m) * m13(m) - m03(m) * m11(m)) - m23(m) * (m00(m) * m11(m) - m01(m) * m10(m))) / d,
-    (m11(m) * (m20(m) * m32(m) - m22(m) * m30(m)) - m10(m) * (m21(m) * m32(m) - m22(m) * m31(m)) - m12(m) * (m20(m) * m31(m) - m21(m) * m30(m))) / d,
-    (m00(m) * (m21(m) * m32(m) - m22(m) * m31(m)) - m01(m) * (m20(m) * m32(m) - m22(m) * m30(m)) + m02(m) * (m20(m) * m31(m) - m21(m) * m30(m))) / d,
-    (m31(m) * (m00(m) * m12(m) - m02(m) * m10(m)) - m30(m) * (m01(m) * m12(m) - m02(m) * m11(m)) - m32(m) * (m00(m) * m11(m) - m01(m) * m10(m))) / d,
-    (m20(m) * (m01(m) * m12(m) - m02(m) * m11(m)) - m21(m) * (m00(m) * m12(m) - m02(m) * m10(m)) + m22(m) * (m00(m) * m11(m) - m01(m) * m10(m))) / d,
+    (a11 * (a22 * a33 - a23 * a32) - a12 * (a21 * a33 - a23 * a31) + a13 * (a21 * a32 - a22 * a31)) / d,
+    (a02 * (a21 * a33 - a23 * a31) - a01 * (a22 * a33 - a23 * a32) - a03 * (a21 * a32 - a22 * a31)) / d,
+    (a31 * (a02 * a13 - a03 * a12) - a32 * (a01 * a13 - a03 * a11) + a33 * (a01 * a12 - a02 * a11)) / d,
+    (a22 * (a01 * a13 - a03 * a11) - a21 * (a02 * a13 - a03 * a12) - a23 * (a01 * a12 - a02 * a11)) / d,
+    (a12 * (a20 * a33 - a23 * a30) - a10 * (a22 * a33 - a23 * a32) - a13 * (a20 * a32 - a22 * a30)) / d,
+    (a00 * (a22 * a33 - a23 * a32) - a02 * (a20 * a33 - a23 * a30) + a03 * (a20 * a32 - a22 * a30)) / d,
+    (a32 * (a00 * a13 - a03 * a10) - a30 * (a02 * a13 - a03 * a12) - a33 * (a00 * a12 - a02 * a10)) / d,
+    (a20 * (a02 * a13 - a03 * a12) - a22 * (a00 * a13 - a03 * a10) + a23 * (a00 * a12 - a02 * a10)) / d,
+    (a10 * (a21 * a33 - a23 * a31) - a11 * (a20 * a33 - a23 * a30) + a13 * (a20 * a31 - a21 * a30)) / d,
+    (a01 * (a20 * a33 - a23 * a30) - a00 * (a21 * a33 - a23 * a31) - a03 * (a20 * a31 - a21 * a30)) / d,
+    (a30 * (a01 * a13 - a03 * a11) - a31 * (a00 * a13 - a03 * a10) + a33 * (a00 * a11 - a01 * a10)) / d,
+    (a21 * (a00 * a13 - a03 * a10) - a20 * (a01 * a13 - a03 * a11) - a23 * (a00 * a11 - a01 * a10)) / d,
+    (a11 * (a20 * a32 - a22 * a30) - a10 * (a21 * a32 - a22 * a31) - a12 * (a20 * a31 - a21 * a30)) / d,
+    (a00 * (a21 * a32 - a22 * a31) - a01 * (a20 * a32 - a22 * a30) + a02 * (a20 * a31 - a21 * a30)) / d,
+    (a31 * (a00 * a12 - a02 * a10) - a30 * (a01 * a12 - a02 * a11) - a32 * (a00 * a11 - a01 * a10)) / d,
+    (a20 * (a01 * a12 - a02 * a11) - a21 * (a00 * a12 - a02 * a10) + a22 * (a00 * a11 - a01 * a10)) / d,
   ]
 }
 
