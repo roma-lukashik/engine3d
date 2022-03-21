@@ -225,8 +225,8 @@ describe('matrix4', () => {
     })
   })
 
-  describe("#translate", () => {
-    it("works correctly", () => {
+  describe('#translate', () => {
+    it('works correctly', () => {
       const m: Matrix4 = [
         1, 2,	3, 4,
         4, 1,	3, 2,
@@ -242,8 +242,8 @@ describe('matrix4', () => {
     })
   })
 
-  describe("#scale", () => {
-    it("works correctly", () => {
+  describe('#scale', () => {
+    it('works correctly', () => {
       const m: Matrix4 = [
         1, 2,	3, 4,
         4, 1,	3, 2,
@@ -254,7 +254,7 @@ describe('matrix4', () => {
         2, 4, 6, 8,
         12, 3, 9, 6,
         16, 12, 8, 4,
-        3, 2, 4, 1
+        3, 2, 4, 1,
       ])
     })
   })

@@ -76,8 +76,8 @@ const addVertex = (vertex: string, data: SeparatedVertices, webglVertexData: Web
 
 const createModel = ([position, uv, normal]: WebglVertexData): Model => {
   return {
-    position: { size: 3, data: new Float32Array(position) },
-    normal: { size: 3, data: new Float32Array(normal) },
-    uv: { size: 2, data: new Float32Array(uv) },
+    position: { size: 3, data: position },
+    normal: { size: 3, data: normal },
+    uv: { size: 2, data: uv },
   }
 }

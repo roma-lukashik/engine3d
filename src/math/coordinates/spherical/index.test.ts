@@ -22,7 +22,7 @@ describe('sphericalCoordinateSystem', () => {
       expect(fromSpherical(s)).toPrettyEqual([
         2,
         4 * Math.sqrt(3),
-        2 * Math.sqrt(3)
+        2 * Math.sqrt(3),
       ])
     })
   })

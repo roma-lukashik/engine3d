@@ -8,35 +8,30 @@ import * as v2 from '../../math/vector2'
 import { clamp } from '../../math/operators'
 import { PI, PI2 } from '../../math/constants'
 
-type CameraControlOptions = {
+type Props = {
   camera: Camera;
-  element?: HTMLElement;
+  element?: HTMLElement | Document;
   rotationSpeed?: number;
 }
 
-export const createCameraControl = ({
-  camera,
-  element = document.body,
-  rotationSpeed = 1,
-}: CameraControlOptions) => {
-  return new CameraControl({ camera, element, rotationSpeed })
-}
-
-class CameraControl {
+export class CameraControl {
   private camera: Camera
-  private element: HTMLElement
+  private element: HTMLElement | Document
   private rotationSpeed: number
 
-  constructor(options: Required<CameraControlOptions>) {
-    Object.assign(this, options)
+  constructor({
+    camera,
+    element = document,
+    rotationSpeed = 1,
+  }: Props) {
+    Object.assign(this, { camera, element, rotationSpeed })
     this.element.addEventListener('mousedown', this.onMouseDown, false)
   }
 
   private onMouseDown = (event: MouseEvent) => {
     const initialCameraPosition = toSpherical(this.camera.position, this.camera.target)
     const dragStart = v2.vector2(event.clientX, event.clientY)
-    const width = this.element.clientWidth
-    const height = this.element.clientHeight
+    const { width, height } = this.getElementSize()
 
     const mouseMove = (event: MouseEvent) => {
       const offset = v2.subtract(v2.vector2(event.clientX, event.clientY), dragStart)
@@ -57,9 +52,21 @@ class CameraControl {
     this.camera.setPosition(
       fromSpherical({
         theta: theta - PI2 * v2.x(v) / width,
-        phi: clamp(phi - PI2 * v2.y(v) / height, 0.00001, PI),
+        phi: clamp(phi - PI2 * v2.y(v) / height, 0.00001, PI / 2),
         radius,
       }),
     )
+  }
+
+  private getElementSize(): { width: number; height: number; } {
+    if (this.isDocument(this.element)) {
+      return { width: window.innerWidth, height: window.innerHeight }
+    } else {
+      return { width: this.element.clientWidth, height: this.element.clientHeight }
+    }
+  }
+
+  private isDocument(element: HTMLElement | Document): element is Document {
+    return element === document
   }
 }

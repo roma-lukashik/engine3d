@@ -170,7 +170,7 @@ describe('matrix3', () => {
   })
 
   describe('#rotateX', () => {
-    it("works correctly", () => {
+    it('works correctly', () => {
       const m: Matrix3 = [
         1, 2, 3,
         3, 2, 1,
@@ -185,7 +185,7 @@ describe('matrix3', () => {
   })
 
   describe('#rotateY', () => {
-    it("works correctly", () => {
+    it('works correctly', () => {
       const m: Matrix3 = [
         1, 2, 3,
         3, 2, 1,
@@ -200,7 +200,7 @@ describe('matrix3', () => {
   })
 
   describe('#rotateZ', () => {
-    it("works correctly", () => {
+    it('works correctly', () => {
       const m: Matrix3 = [
         1, 2, 3,
         3, 2, 1,
