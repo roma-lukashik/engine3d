@@ -2,7 +2,7 @@ import { bindBufferToVertexAttribute, ExtendedAttribute } from '../gl'
 
 type Attribute = {
   location: number;
-  info: WebGLActiveInfo;
+  name: WebGLActiveInfo['name'];
 }
 
 type Props = {
@@ -13,7 +13,7 @@ type Props = {
 export class Attributes {
   private readonly gl: WebGLRenderingContext
   private readonly program: WebGLProgram
-  private readonly data: Record<string, Attribute> = {}
+  private readonly data: Attribute[] = []
 
   constructor({ gl, program }: Props) {
     this.gl = gl
@@ -22,8 +22,8 @@ export class Attributes {
   }
 
   public update(attributes: Record<string, ExtendedAttribute>): void {
-    Object.values(this.data).forEach(({ location, info }) => {
-      const attribute = attributes[info.name]
+    this.data.forEach(({ location, name }) => {
+      const attribute = attributes[name]
       this.gl.bindBuffer(attribute.target, attribute.buffer)
       bindBufferToVertexAttribute(this.gl, attribute, location)
     })
@@ -40,7 +40,7 @@ export class Attributes {
       if (location === null) {
         return
       }
-      this.data[info.name] = { info, location }
+      this.data.push({ location, name: info.name })
     }
   }
 }
