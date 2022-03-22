@@ -8,14 +8,14 @@ type Props<T extends any = any> = {
 }
 
 export class Uniform<T extends any = any> {
-  private gl: WebGLRenderingContext
+  private readonly gl: WebGLRenderingContext
+  private readonly location: WebGLUniformLocation
+  private readonly type: number
+  private readonly structProperty?: string
+  private readonly arrayIndex?: number
 
+  public readonly name: string
   public value: T
-  public type: number
-  public name: string
-  public location: WebGLUniformLocation
-  public structProperty?: string
-  public arrayIndex?: number
 
   constructor({ gl, activeInfo, location,  value }: Props) {
     const split = activeInfo.name.match(/(\w+)/g)
@@ -43,11 +43,11 @@ export class Uniform<T extends any = any> {
   }
 
   public setValue(value: any): void {
-    if (this.isStruct() && this.isArray()) {
+    if (this.structProperty !== undefined && this.arrayIndex !== undefined) {
       this.value = value[this.arrayIndex][this.structProperty]
-    } else if (this.isStruct()) {
+    } else if (this.structProperty !== undefined) {
       this.value = value[this.structProperty]
-    } else if (this.isArray()) {
+    } else if (this.arrayIndex !== undefined) {
       this.value = value.flat()
     } else {
       this.value = value
@@ -85,13 +85,5 @@ export class Uniform<T extends any = any> {
       case this.gl.FLOAT_MAT4:
         return this.gl.uniformMatrix4fv(this.location, false, value)
     }
-  }
-
-  private isArray(): this is Uniform & Required<Pick<Uniform, 'arrayIndex'>> {
-    return this.arrayIndex !== undefined
-  }
-
-  private isStruct(): this is Uniform & Required<Pick<Uniform, 'structProperty'>> {
-    return this.structProperty !== undefined
   }
 }
