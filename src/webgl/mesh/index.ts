@@ -1,6 +1,6 @@
 import { Program } from '../program'
 import { createWebGLTexture } from '../textures'
-import { MainUniformValues } from '../renderer/program'
+import { MainUniformValues } from '../program/main'
 import { Mesh } from '../../core/mesh'
 import { WebGLBaseTexture } from '../textures/types'
 import { createExtendedAttribute, ExtendedAttribute } from '../utils/gl'

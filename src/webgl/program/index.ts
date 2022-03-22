@@ -1,5 +1,5 @@
 import { compileShader } from '../utils/gl'
-import { UniformValues, Uniforms } from '../utils/uniform'
+import { UniformValues, Uniforms } from '../utils/uniforms'
 import { Attributes } from '../utils/attribute'
 
 type Props = {
@@ -8,13 +8,7 @@ type Props = {
   fragment: string;
 }
 
-export type Program<U extends UniformValues> = {
-  readonly uniforms: Uniforms<U>;
-  readonly attributes: Attributes;
-  use(): void;
-}
-
-export class BaseProgram<U extends UniformValues> implements Program<U> {
+export class Program<U extends UniformValues> {
   private readonly gl: WebGLRenderingContext
   private readonly program: WebGLProgram
 

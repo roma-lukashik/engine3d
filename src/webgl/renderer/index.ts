@@ -2,7 +2,7 @@ import * as m4 from '../../math/matrix4'
 import { Scene } from '../scene'
 import { Camera } from '../../core/camera'
 import { Program } from '../program'
-import { createMainProgram, MainUniformValues } from './program'
+import { createMainProgram, MainUniformValues } from '../program/main'
 
 type Props = {
   canvas?: HTMLCanvasElement;
@@ -35,7 +35,7 @@ export class Renderer {
     if (scene.dirty) {
       this.program = createMainProgram({
         gl: this.gl,
-        lightsAmount: scene.lights.length,
+        pointLightsAmount: scene.lights.length,
         shadowsAmount: shadowLights.length,
       })
       scene.dirty = false
@@ -59,8 +59,7 @@ export class Renderer {
     this.program.uniforms.setValues({
       projectionMatrix: camera.projectionMatrix,
       textureMatrix: textureMatrix,
-      lightPosition: scene.lights.map((light) => light.position),
-      lightViewPosition: scene.lights.map((light) => light.target),
+      pointLights: scene.lights.map(({ position, target }) => ({ position, target })),
       shadowTexture: scene.shadow.depthTexture,
     })
 

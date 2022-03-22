@@ -1,11 +1,11 @@
-import { BaseProgram, Program } from '../program'
-import { Matrix4 } from '../../math/matrix4'
-import { Vector3 } from '../../math/vector3'
-import { WebGLBaseTexture } from '../textures/types'
+import { Program } from '..'
+import { Matrix4 } from '../../../math/matrix4'
+import { Vector3 } from '../../../math/vector3'
+import { WebGLBaseTexture } from '../../textures/types'
 
 type Props = {
   gl: WebGLRenderingContext;
-  lightsAmount?: number;
+  pointLightsAmount?: number;
   shadowsAmount?: number;
 }
 
@@ -13,45 +13,49 @@ export type MainUniformValues = {
   modelMatrix?: Matrix4;
   textureMatrix?: Matrix4[];
   projectionMatrix?: Matrix4;
-  lightPosition?: Vector3[];
-  lightViewPosition?: Vector3[];
+  pointLights?: PointLight[];
   modelTexture?: WebGLBaseTexture;
   shadowTexture?: WebGLBaseTexture;
 }
 
+type PointLight = {
+  position: Vector3;
+  target: Vector3;
+}
+
 export const createMainProgram = ({
   gl,
-  lightsAmount = 0,
+  pointLightsAmount = 0,
   shadowsAmount = 0,
 }: Props): Program<MainUniformValues> => {
-  const useLight = lightsAmount > 0
+  const usePointLights = pointLightsAmount > 0
   const useShadow = shadowsAmount > 0
   const transform = (shader: string) => {
-    shader = addDefs(shader, { useLight, useShadow })
+    shader = addDefs(shader, { usePointLights, useShadow })
     shader = replaceShadowsAmount(shader, shadowsAmount)
-    shader = replaceLightsAmount(shader, lightsAmount)
+    shader = replaceLightsAmount(shader, pointLightsAmount)
     return shader
   }
   const vertex = transform(defaultVertex)
   const fragment = transform(defaultFragment)
-  return new BaseProgram({ gl, vertex, fragment })
+  return new Program({ gl, vertex, fragment })
 }
 
 const replaceLightsAmount = (shader: string, lightsAmount: number): string => {
-  return shader.replace(/LIGHTS_AMOUNT/g, lightsAmount.toString())
+  return shader.replace(/POINT_LIGHTS_AMOUNT/g, lightsAmount.toString())
 }
 
 const replaceShadowsAmount = (shader: string, shadowsAmount: number): string => {
   return shader.replace(/SHADOWS_AMOUNT/g, shadowsAmount.toString())
 }
 
-const addDefs = (shader: string, options: { useLight: boolean; useShadow: boolean; }): string => {
+const addDefs = (shader: string, options: { usePointLights: boolean; useShadow: boolean; }): string => {
   return defs(options) + shader
 }
 
-const defs = ({ useLight, useShadow }: { useLight: boolean; useShadow: boolean; }): string => {
+const defs = ({ usePointLights, useShadow }: { usePointLights: boolean; useShadow: boolean; }): string => {
   const defs = [
-    useLight ? '#define USE_LIGHT' : '',
+    usePointLights ? '#define USE_POINT_LIGHT' : '',
     useShadow ? '#define USE_SHADOW' : '',
   ]
   return defs.filter(Boolean).join('\n')
@@ -68,17 +72,29 @@ const defaultVertex = `
   varying vec3 vNormal;
   varying vec2 vUv;
 
-  #ifdef USE_LIGHT
-    uniform vec3 lightPosition[LIGHTS_AMOUNT];
-    uniform vec3 lightViewPosition[LIGHTS_AMOUNT];
+  struct PointLight {
+    vec3 position;
+    vec3 target;
 
-    varying vec3 surfaceToLight[LIGHTS_AMOUNT];
-    varying vec3 surfaceToView[LIGHTS_AMOUNT];
+    // float constant;
+    // float linear;
+    // float quadratic;
+    //
+    // vec3 ambient;
+    // vec3 diffuse;
+    // vec3 specular;
+  };
+
+  #ifdef USE_POINT_LIGHT
+    uniform PointLight pointLights[POINT_LIGHTS_AMOUNT];
+
+    varying vec3 surfaceToLight[POINT_LIGHTS_AMOUNT];
+    varying vec3 surfaceToView[POINT_LIGHTS_AMOUNT];
   #endif
 
   #ifdef USE_SHADOW
     uniform mat4 textureMatrix[SHADOWS_AMOUNT];
-    varying vec4 projectedTexcoord[SHADOWS_AMOUNT];
+    varying vec4 projectedTextureCoordinate[SHADOWS_AMOUNT];
   #endif
 
   void main() {
@@ -86,16 +102,16 @@ const defaultVertex = `
     vec4 modelPosition = modelMatrix * vec4(position, 1.0);
     vNormal = mat3(modelMatrix) * normal;
 
-    #ifdef USE_LIGHT
-      for(int i = 0; i < LIGHTS_AMOUNT; i++) {
-        surfaceToLight[i] = normalize(lightPosition[i] - modelPosition.xyz);
-        surfaceToView[i] = normalize(lightViewPosition[i] - modelPosition.xyz);
+    #ifdef USE_POINT_LIGHT
+      for(int i = 0; i < POINT_LIGHTS_AMOUNT; i++) {
+        surfaceToLight[i] = normalize(pointLights[i].position - modelPosition.xyz);
+        surfaceToView[i] = normalize(pointLights[i].target - modelPosition.xyz);
       }
     #endif
 
     #ifdef USE_SHADOW
       for(int i = 0; i < SHADOWS_AMOUNT; i++) {
-        projectedTexcoord[i] = textureMatrix[i] * modelPosition;
+        projectedTextureCoordinate[i] = textureMatrix[i] * modelPosition;
       }
     #endif
 
@@ -111,14 +127,14 @@ const defaultFragment = `
   varying vec3 vNormal;
   varying vec2 vUv;
 
-  #ifdef USE_LIGHT
-    varying vec3 surfaceToLight[LIGHTS_AMOUNT];
-    varying vec3 surfaceToView[LIGHTS_AMOUNT];
+  #ifdef USE_POINT_LIGHT
+    varying vec3 surfaceToLight[POINT_LIGHTS_AMOUNT];
+    varying vec3 surfaceToView[POINT_LIGHTS_AMOUNT];
   #endif
 
   #ifdef USE_SHADOW
     uniform sampler2D shadowTexture;
-    varying vec4 projectedTexcoord[SHADOWS_AMOUNT];
+    varying vec4 projectedTextureCoordinate[SHADOWS_AMOUNT];
   #endif
 
   float unpackRGBA (vec4 v) {
@@ -133,8 +149,8 @@ const defaultFragment = `
     vec3 normal = normalize(vNormal);
     vec3 tex = texture2D(modelTexture, vUv).rgb;
 
-    #ifdef USE_LIGHT
-      for(int i = 0; i < LIGHTS_AMOUNT; i++) {
+    #ifdef USE_POINT_LIGHT
+      for(int i = 0; i < POINT_LIGHTS_AMOUNT; i++) {
         vec3 halfVector = normalize(surfaceToLight[i] + surfaceToView[i]);
         light += max(dot(normal, surfaceToLight[i]), 0.0) * 0.5;
         specular += pow(dot(normal, halfVector), 150.0) * 0.15;
@@ -144,7 +160,7 @@ const defaultFragment = `
     #ifdef USE_SHADOW
       float bias = 0.0001;
       for(int i = 0; i < SHADOWS_AMOUNT; i++) {
-        vec3 lightPosition = projectedTexcoord[i].xyz / projectedTexcoord[i].w;
+        vec3 lightPosition = projectedTextureCoordinate[i].xyz / projectedTextureCoordinate[i].w;
         float depth = lightPosition.z - bias;
         float occluder = unpackRGBA(texture2D(shadowTexture, lightPosition.xy));
         shadow += mix(0.2, 1.0, step(depth, occluder));

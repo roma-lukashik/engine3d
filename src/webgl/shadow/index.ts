@@ -1,4 +1,4 @@
-import { BaseProgram, Program } from '../program'
+import { Program } from '../program'
 import { WebGLMesh } from '../mesh'
 import { WebGLDepthTexture } from '../textures/depth'
 import { Matrix4 } from '../../math/matrix4'
@@ -22,7 +22,7 @@ export class Shadow {
 
   constructor({ gl }: Props) {
     this.gl = gl
-    this.program = new BaseProgram({ gl, vertex, fragment })
+    this.program = new Program({ gl, vertex, fragment })
     this.depthTexture = new WebGLDepthTexture({ gl })
   }
 

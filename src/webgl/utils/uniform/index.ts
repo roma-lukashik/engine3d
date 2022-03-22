@@ -1,115 +1,97 @@
-import { bindTexture } from '../../textures/utils'
 import { WebGLBaseTexture } from '../../textures/types'
 
-type Uniform<T extends any = any> = {
-  value: T;
-  type: number;
-  location: WebGLUniformLocation;
-  isTexture?: boolean;
-  isArray?: boolean;
-}
-
-export type UniformValues = {
-  [key: string]: any;
-}
-
-type Props = {
+type Props<T extends any = any> = {
   gl: WebGLRenderingContext;
-  program: WebGLProgram;
+  activeInfo: WebGLActiveInfo;
+  location: WebGLUniformLocation;
+  value: T;
 }
 
-export class Uniforms<U extends UniformValues> {
-  private readonly gl: WebGLRenderingContext
-  private readonly program: WebGLProgram
-  private readonly data = {} as { [key in keyof U]: Uniform<U[key]> }
+export class Uniform<T extends any = any> {
+  private gl: WebGLRenderingContext
 
-  constructor({ gl, program }: Props) {
+  public value: T
+  public type: number
+  public name: string
+  public location: WebGLUniformLocation
+  public structProperty?: string
+  public arrayIndex?: number
+
+  constructor({ gl, activeInfo, location,  value }: Props) {
+    const split = activeInfo.name.match(/(\w+)/g)
+    if (!split) {
+      throw new Error(`Uniform ${activeInfo.name} contains an error.`)
+    }
+
     this.gl = gl
-    this.program = program
-    this.extractUniforms()
-  }
-
-  public update() {
-    let textureSlot = 0
-    Object.values(this.data).forEach((uniform) => {
-      if (isTextureUniform(uniform)) {
-        bindTexture(this.gl, uniform.value.texture, textureSlot)
-        setUniform(this.gl, { ...uniform, value: textureSlot })
-        textureSlot++
-      } else {
-        setUniform(this.gl, uniform)
-      }
-    })
-  }
-
-  public setValues(values: U): void {
-    Object.entries(values).forEach(([key, value]) => {
-      if (this.data[key]) {
-        this.data[key].value = this.data[key].isArray ? value.flat() : value
-      }
-    })
-  }
-
-  private extractUniforms() {
-    const activeUniforms = this.gl.getProgramParameter(this.program, this.gl.ACTIVE_UNIFORMS) as number
-    for (let i = 0; i < activeUniforms; i++) {
-      const info = this.gl.getActiveUniform(this.program, i)
-      if (info === null) {
-        return
-      }
-      const location = this.gl.getUniformLocation(this.program, info?.name)
-      if (location === null) {
-        return
-      }
-      const name = info.name.replace('[0]', '') as keyof U
-      this.data[name] = {
-        location,
-        type: info.type,
-        isTexture: isTextureType(this.gl, info.type),
-        isArray: info.name.includes('[0]'),
-        value: this.gl.getUniform(this.program, location),
-      }
+    this.value = value
+    this.type = activeInfo.type
+    this.location = location
+    this.name = split[0]
+    if (split.length === 3) {
+      this.arrayIndex = Number(split[1])
+      this.structProperty = split[2]
+    } else if (split.length === 2 && isNaN(Number(split[1]))) {
+      this.structProperty = split[1]
+    } else if (split.length === 2) {
+      this.arrayIndex = Number(split[1])
     }
   }
-}
 
-const isTextureUniform = (uniform: Uniform): uniform is Uniform<WebGLBaseTexture> => {
-  return !!uniform.isTexture
-}
+  public isTexture(): this is Uniform<WebGLBaseTexture> {
+    return this.type === this.gl.SAMPLER_2D || this.type === this.gl.SAMPLER_CUBE
+  }
 
-const isTextureType = (gl: WebGLRenderingContext, type: number): boolean => {
-  return type === gl.SAMPLER_2D || type === gl.SAMPLER_CUBE
-}
+  public setValue(value: any): void {
+    if (this.isStruct() && this.isArray()) {
+      this.value = value[this.arrayIndex][this.structProperty]
+    } else if (this.isStruct()) {
+      this.value = value[this.structProperty]
+    } else if (this.isArray()) {
+      this.value = value.flat()
+    } else {
+      this.value = value
+    }
+  }
 
-const setUniform = (gl: WebGLRenderingContext, { type, location, value }: Uniform): void => {
-  switch (type) {
-    case gl.FLOAT:
-      return value.length ? gl.uniform1fv(location, value) : gl.uniform1f(location, value)
-    case gl.FLOAT_VEC2:
-      return gl.uniform2fv(location, value)
-    case gl.FLOAT_VEC3:
-      return gl.uniform3fv(location, value)
-    case gl.FLOAT_VEC4:
-      return gl.uniform4fv(location, value)
-    case gl.BOOL:
-    case gl.INT:
-    case gl.SAMPLER_2D:
-    case gl.SAMPLER_CUBE:
-      return value.length ? gl.uniform1iv(location, value) : gl.uniform1i(location, value)
-    case gl.BOOL_VEC2:
-    case gl.INT_VEC2:
-      return gl.uniform2iv(location, value)
-    case gl.BOOL_VEC3:
-    case gl.INT_VEC3:
-      return gl.uniform3iv(location, value)
-    case gl.BOOL_VEC4:
-    case gl.INT_VEC4:
-      return gl.uniform4iv(location, value)
-    case gl.FLOAT_MAT2:
-      return gl.uniformMatrix2fv(location, false, value)
-    case gl.FLOAT_MAT3:
-      return gl.uniformMatrix3fv(location, false, value)
-    case gl.FLOAT_MAT4:
-      return gl.uniformMatrix4fv(location, false, value)
+  public specifyValue(value: any = this.value): void {
+    switch (this.type) {
+      case this.gl.FLOAT:
+        return value.length ? this.gl.uniform1fv(this.location, value) : this.gl.uniform1f(this.location, value)
+      case this.gl.FLOAT_VEC2:
+        return this.gl.uniform2fv(this.location, value)
+      case this.gl.FLOAT_VEC3:
+        return this.gl.uniform3fv(this.location, value)
+      case this.gl.FLOAT_VEC4:
+        return this.gl.uniform4fv(this.location, value)
+      case this.gl.BOOL:
+      case this.gl.INT:
+      case this.gl.SAMPLER_2D:
+      case this.gl.SAMPLER_CUBE:
+        return value.length ? this.gl.uniform1iv(this.location, value) : this.gl.uniform1i(this.location, value)
+      case this.gl.BOOL_VEC2:
+      case this.gl.INT_VEC2:
+        return this.gl.uniform2iv(this.location, value)
+      case this.gl.BOOL_VEC3:
+      case this.gl.INT_VEC3:
+        return this.gl.uniform3iv(this.location, value)
+      case this.gl.BOOL_VEC4:
+      case this.gl.INT_VEC4:
+        return this.gl.uniform4iv(this.location, value)
+      case this.gl.FLOAT_MAT2:
+        return this.gl.uniformMatrix2fv(this.location, false, value)
+      case this.gl.FLOAT_MAT3:
+        return this.gl.uniformMatrix3fv(this.location, false, value)
+      case this.gl.FLOAT_MAT4:
+        return this.gl.uniformMatrix4fv(this.location, false, value)
+    }
+  }
+
+  private isArray(): this is Uniform & Required<Pick<Uniform, 'arrayIndex'>> {
+    return this.arrayIndex !== undefined
+  }
+
+  private isStruct(): this is Uniform & Required<Pick<Uniform, 'structProperty'>> {
+    return this.structProperty !== undefined
   }
 }
