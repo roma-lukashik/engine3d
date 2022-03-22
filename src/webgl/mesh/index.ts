@@ -26,7 +26,7 @@ export class WebGLMesh {
     this.setAttributes()
   }
 
-  public render(program: Program<MainUniformValues>, uniforms: MainUniformValues): void {
+  public render(program: Program<MainUniformValues>, uniforms: MainUniformValues = {}): void {
     program.use()
     program.uniforms.setValues({
       modelMatrix: this.mesh.modelMatrix,

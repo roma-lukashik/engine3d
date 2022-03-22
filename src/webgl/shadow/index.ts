@@ -7,7 +7,6 @@ import { Mesh } from '../../core/mesh'
 
 type Props = {
   gl: WebGLRenderingContext;
-  lights: Light[];
 }
 
 type ShadowUniforms = {
@@ -18,25 +17,23 @@ type ShadowUniforms = {
 export class Shadow {
   private readonly gl: WebGLRenderingContext
   private readonly program: Program<ShadowUniforms>
-  private readonly lights: Light[]
 
   public readonly depthTexture: WebGLDepthTexture
 
-  constructor({ gl, lights }: Props) {
+  constructor({ gl }: Props) {
     this.gl = gl
-    this.lights = lights
     this.program = new BaseProgram({ gl, vertex, fragment })
     this.depthTexture = new WebGLDepthTexture({ gl })
   }
 
-  public render(meshes: Map<Mesh, WebGLMesh>): void {
+  public render(lights: Light[], meshes: Map<Mesh, WebGLMesh>): void {
     this.gl.depthMask(true)
     this.gl.disable(this.gl.CULL_FACE)
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.depthTexture.buffer)
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
-    const width = this.depthTexture.width / this.lights.length
+    const width = this.depthTexture.width / lights.length
 
-    this.lights.forEach((light, i) => {
+    lights.forEach((light, i) => {
       this.gl.viewport(width * i, 0, width, this.depthTexture.height)
       meshes.forEach((mesh) => {
         mesh.render(this.program, { projectionMatrix: light.projectionMatrix })

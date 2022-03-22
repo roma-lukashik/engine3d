@@ -40,7 +40,7 @@ export class Renderer {
       })
       scene.dirty = false
     }
-    scene.shadow.render(scene.meshes)
+    scene.shadow.render(shadowLights, scene.meshes)
 
     this.gl.enable(this.gl.CULL_FACE)
     this.gl.enable(this.gl.DEPTH_TEST)
@@ -56,15 +56,15 @@ export class Renderer {
       )
     })
 
-    scene.meshes.forEach((mesh) => {
-      mesh.render(this.program, {
-        projectionMatrix: camera.projectionMatrix,
-        textureMatrix: textureMatrix,
-        lightPosition: scene.lights.map((light) => light.position),
-        lightViewPosition: scene.lights.map((light) => light.target),
-        shadowTexture: scene.shadow.depthTexture,
-      })
+    this.program.uniforms.setValues({
+      projectionMatrix: camera.projectionMatrix,
+      textureMatrix: textureMatrix,
+      lightPosition: scene.lights.map((light) => light.position),
+      lightViewPosition: scene.lights.map((light) => light.target),
+      shadowTexture: scene.shadow.depthTexture,
     })
+
+    scene.meshes.forEach((mesh) => mesh.render(this.program))
   }
 
   public resize(width: number, height: number): void {

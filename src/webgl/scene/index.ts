@@ -17,6 +17,7 @@ export class Scene {
 
   constructor({ gl }: Props) {
     this.gl = gl
+    this.shadow = new Shadow({ gl: this.gl })
   }
 
   public addMesh(...meshes: Mesh[]): void {
@@ -27,9 +28,6 @@ export class Scene {
 
   public addLight(...lights: Light[]): void {
     this.lights.push(...lights)
-    if (lights.some((light) => light.castShadow)) {
-      this.shadow = new Shadow({ gl: this.gl, lights: this.lights.filter((light) => light.castShadow) })
-    }
     this.dirty = true
   }
 }
