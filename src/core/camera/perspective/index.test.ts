@@ -3,7 +3,7 @@ import { vector3 } from '../../../math/vector3'
 
 describe('camera', () => {
   describe('with default options', () => {
-    const camera = new PerspectiveCamera({})
+    const camera = new PerspectiveCamera()
 
     it('has a correct position', () => {
       expect(camera.position).toEqual([0, 0, 0])
@@ -18,7 +18,7 @@ describe('camera', () => {
     const position = vector3(10, 5, 2)
 
     it('calculates projection correctly #1', () => {
-      const camera = new PerspectiveCamera({})
+      const camera = new PerspectiveCamera()
       camera.setPosition(position)
       expect(camera.projectionMatrix).toPrettyEqual([
         0.3397, -0.7477, -0.88, -0.88,
@@ -29,7 +29,7 @@ describe('camera', () => {
     })
 
     it('calculates projection correctly #2', () => {
-      const camera = new PerspectiveCamera({})
+      const camera = new PerspectiveCamera()
       camera.setPosition(position)
       camera.lookAt(vector3(1, 1, 1))
       expect(camera.projectionMatrix).toPrettyEqual([
@@ -58,7 +58,7 @@ describe('camera', () => {
     })
 
     it('sets options correctly', () => {
-      const camera = new PerspectiveCamera({})
+      const camera = new PerspectiveCamera()
       camera.setPosition(position)
       camera.setOptions({
         near: 1,

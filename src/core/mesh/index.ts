@@ -15,7 +15,7 @@ export class Mesh {
 
   constructor({
     data,
-    texture = new PixelTexture({}),
+    texture = new PixelTexture(),
     modelMatrix = m4.identity(),
   }: Props) {
     this.data = data

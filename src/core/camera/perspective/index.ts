@@ -32,7 +32,7 @@ export class PerspectiveCamera implements Camera<Props> {
     far = 2000,
     aspect = 1,
     fovy = toRadian(60),
-  }: Props) {
+  }: Props = {}) {
     this.setOptions({ up, near, far, aspect, fovy })
   }
 

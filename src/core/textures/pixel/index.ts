@@ -10,7 +10,7 @@ export class PixelTexture implements Texture {
 
   constructor({
     color = 0x646464,
-  }: Props) {
+  }: Props = {}) {
     this.color = color
   }
 }
