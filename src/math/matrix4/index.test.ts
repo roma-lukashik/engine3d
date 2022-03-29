@@ -5,6 +5,7 @@ import {
   invert,
   Matrix4,
   multiply,
+  orthographic,
   rotateX,
   rotateY,
   rotateZ,
@@ -255,6 +256,18 @@ describe('matrix4', () => {
         12, 3, 9, 6,
         16, 12, 8, 4,
         3, 2, 4, 1,
+      ])
+    })
+  })
+
+  describe('orthographic', () => {
+    it('creates a orthographic matrix', () => {
+      const m = orthographic(-10, 10, -10, 10, 1, 100)
+      expect(m).toPrettyEqual([
+        0.1, 0, 0, 0,
+        0, -0.1, 0, 0,
+        0, 0, -0.02, 0,
+        0, 0, -1.02, 1,
       ])
     })
   })

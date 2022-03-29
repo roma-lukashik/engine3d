@@ -181,6 +181,18 @@ export const perspective = (fovy: number, aspect: number, near: number, far: num
   ]
 }
 
+export const orthographic = (left: number, right: number, top: number, bottom: number, near: number, far: number): Matrix4 => {
+  const lr = 1 / (left - right)
+  const bt = 1 / (bottom - top)
+  const nf = 1 / (near - far)
+  return [
+    -2 * lr, 0, 0, 0,
+    0, -2 * bt, 0, 0,
+    0, 0, 2 * nf, 0,
+    (left + right) * lr, (top + bottom) * bt, (far + near) * nf, 1,
+  ]
+}
+
 export const lookAt = (eye: v3.Vector3, target: v3.Vector3, up: v3.Vector3): Matrix4 => {
   const z = v3.normalize(v3.subtract(eye, target))
   const x = v3.normalize(v3.cross(up, z))
