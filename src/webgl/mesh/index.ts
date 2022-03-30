@@ -1,6 +1,5 @@
 import { Program } from '../program'
 import { createWebGLTexture } from '../textures'
-import { MainUniformValues } from '../program/main'
 import { Mesh } from '../../core/mesh'
 import { WebGLBaseTexture } from '../textures/types'
 import { createExtendedAttribute, ExtendedAttribute } from '../utils/gl'
@@ -26,7 +25,7 @@ export class WebGLMesh {
     this.setAttributes()
   }
 
-  public render(program: Program<MainUniformValues>, uniforms: MainUniformValues = {}): void {
+  public render<T extends Record<string, any>>(program: Program<T>, uniforms: T = {} as T): void {
     program.use()
     program.uniforms.setValues({
       modelMatrix: this.mesh.modelMatrix,

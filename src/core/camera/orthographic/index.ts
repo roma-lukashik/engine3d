@@ -15,7 +15,7 @@ type Props = {
   far?: number;
 }
 
-export class OrthographicCamera implements Camera<Props> {
+export class OrthographicCamera implements Camera {
   private left: number
   private right: number
   private top: number
@@ -26,7 +26,7 @@ export class OrthographicCamera implements Camera<Props> {
   private up: Vector3 = v3.vector3(0, 1, 0)
   private orthographicMatrix: Matrix4 = m4.identity()
 
-  public position: Vector3 = v3.zero()
+  public position: Vector3 = v3.vector3(0, 1, 0)
   public target: Vector3 = v3.zero()
   public projectionMatrix: Matrix4 = m4.identity()
 
@@ -52,7 +52,7 @@ export class OrthographicCamera implements Camera<Props> {
     this.updateProjectionMatrix()
   }
 
-  public setOptions(options: Props): void {
+  public setOptions(options: Partial<Props>): void {
     Object.assign(this, options)
     this.updateOrthographicMatrix()
     this.updateProjectionMatrix()

@@ -1,3 +1,3 @@
-import { PI_180 } from '../constants'
+import { RAD2DEG } from '../constants'
 
-export const toRadian = (deg: number): number => deg * PI_180
+export const toRadian = (deg: number): number => deg * RAD2DEG

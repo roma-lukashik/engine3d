@@ -4,36 +4,56 @@ import { Vector3 } from '../../../math/vector3'
 import { WebGLBaseTexture } from '../../textures/types'
 
 type Props = {
-  gl: WebGLRenderingContext;
-  pointLightsAmount?: number;
-  shadowsAmount?: number;
+  gl: WebGLRenderingContext
+  ambientLightsAmount?: number
+  pointLightsAmount?: number
+  directionalLightsAmount?: number
+  shadowsAmount?: number
 }
 
-export type MainUniformValues = {
-  modelMatrix?: Matrix4;
-  textureMatrix?: Matrix4[];
-  projectionMatrix?: Matrix4;
-  pointLights?: PointLight[];
-  modelTexture?: WebGLBaseTexture;
-  shadowTexture?: WebGLBaseTexture;
+type MainUniformValues = {
+  modelMatrix?: Matrix4
+  textureMatrix?: Matrix4[]
+  projectionMatrix?: Matrix4
+  cameraPosition?: Vector3
+  ambientLights?: AmbientLight[]
+  pointLights?: PointLight[]
+  directionalLight?: DirectionalLight[]
+  modelTexture?: WebGLBaseTexture
+  shadowTexture?: WebGLBaseTexture
 }
 
 type PointLight = {
-  position: Vector3;
-  target: Vector3;
+  color: Vector3
+  position: Vector3
 }
+
+type AmbientLight = {
+  color: Vector3
+  intensity: number
+}
+
+type DirectionalLight = {
+  color: Vector3
+  intensity: number
+  direction: Vector3
+}
+
+export type MainProgram = Program<MainUniformValues>
 
 export const createMainProgram = ({
   gl,
+  ambientLightsAmount = 0,
   pointLightsAmount = 0,
+  directionalLightsAmount = 0,
   shadowsAmount = 0,
-}: Props): Program<MainUniformValues> => {
-  const usePointLights = pointLightsAmount > 0
-  const useShadow = shadowsAmount > 0
+}: Props): MainProgram => {
   const transform = (shader: string) => {
-    shader = addDefs(shader, { usePointLights, useShadow })
+    shader = addDefs(shader, { ambientLightsAmount, pointLightsAmount, directionalLightsAmount, shadowsAmount })
     shader = replaceShadowsAmount(shader, shadowsAmount)
-    shader = replaceLightsAmount(shader, pointLightsAmount)
+    shader = replacePointLightsAmount(shader, pointLightsAmount)
+    shader = replaceDirectionalLightsAmount(shader, pointLightsAmount)
+    shader = replaceAmbientLightsAmount(shader, ambientLightsAmount)
     return shader
   }
   const vertex = transform(defaultVertex)
@@ -41,21 +61,44 @@ export const createMainProgram = ({
   return new Program({ gl, vertex, fragment })
 }
 
-const replaceLightsAmount = (shader: string, lightsAmount: number): string => {
+const replacePointLightsAmount = (shader: string, lightsAmount: number): string => {
   return shader.replace(/POINT_LIGHTS_AMOUNT/g, lightsAmount.toString())
+}
+
+const replaceDirectionalLightsAmount = (shader: string, lightsAmount: number): string => {
+  return shader.replace(/DIRECTIONAL_LIGHTS_AMOUNT/g, lightsAmount.toString())
+}
+
+const replaceAmbientLightsAmount = (shader: string, lightsAmount: number): string => {
+  return shader.replace(/AMBIENT_LIGHTS_AMOUNT/g, lightsAmount.toString())
 }
 
 const replaceShadowsAmount = (shader: string, shadowsAmount: number): string => {
   return shader.replace(/SHADOWS_AMOUNT/g, shadowsAmount.toString())
 }
 
-const addDefs = (shader: string, options: { usePointLights: boolean; useShadow: boolean; }): string => {
+type DefsOptions = {
+  usePointLights: boolean
+  useAmbientLights: boolean
+  useDirectionalLights: boolean
+  useShadow: boolean
+}
+
+const addDefs = (shader: string, props: Omit<Required<Props>, 'gl'>): string => {
+  const options: DefsOptions = {
+    useAmbientLights: props.ambientLightsAmount > 0,
+    usePointLights: props.pointLightsAmount > 0,
+    useDirectionalLights: props.directionalLightsAmount > 0,
+    useShadow: props.shadowsAmount > 0,
+  }
   return defs(options) + shader
 }
 
-const defs = ({ usePointLights, useShadow }: { usePointLights: boolean; useShadow: boolean; }): string => {
+const defs = ({ useAmbientLights, usePointLights, useDirectionalLights, useShadow }: DefsOptions): string => {
   const defs = [
+    useAmbientLights ? '#define USE_AMBIENT_LIGHT' : '',
     usePointLights ? '#define USE_POINT_LIGHT' : '',
+    useDirectionalLights ? '#define USE_DIRECTIONAL_LIGHT' : '',
     useShadow ? '#define USE_SHADOW' : '',
   ]
   return defs.filter(Boolean).join('\n')
@@ -66,15 +109,28 @@ const defaultVertex = `
   attribute vec3 normal;
   attribute vec2 uv;
 
+  uniform vec3 cameraPosition;
   uniform mat4 projectionMatrix;
   uniform mat4 modelMatrix;
 
+  varying vec3 vViewDirection;
   varying vec3 vNormal;
   varying vec2 vUv;
 
+  #ifdef USE_AMBIENT_LIGHT
+  struct AmbientLight {
+    vec3 color;
+    float intensity;
+  };
+
+  uniform AmbientLight ambientLights[AMBIENT_LIGHTS_AMOUNT];
+  varying vec3 ambientColor;
+  #endif
+
+  #ifdef USE_POINT_LIGHT
   struct PointLight {
     vec3 position;
-    vec3 target;
+    vec3 color;
 
     // float constant;
     // float linear;
@@ -84,35 +140,41 @@ const defaultVertex = `
     // vec3 diffuse;
     // vec3 specular;
   };
-
-  #ifdef USE_POINT_LIGHT
-    uniform PointLight pointLights[POINT_LIGHTS_AMOUNT];
-
-    varying vec3 surfaceToLight[POINT_LIGHTS_AMOUNT];
-    varying vec3 surfaceToView[POINT_LIGHTS_AMOUNT];
+  uniform PointLight pointLights[POINT_LIGHTS_AMOUNT];
+  varying vec3 surfaceToLight[POINT_LIGHTS_AMOUNT];
+  varying float distancesToPointLights[POINT_LIGHTS_AMOUNT];
   #endif
 
   #ifdef USE_SHADOW
-    uniform mat4 textureMatrix[SHADOWS_AMOUNT];
-    varying vec4 projectedTextureCoordinate[SHADOWS_AMOUNT];
+  uniform mat4 textureMatrix[SHADOWS_AMOUNT];
+  varying vec4 projectedTextureCoordinate[SHADOWS_AMOUNT];
   #endif
 
   void main() {
     vUv = uv;
     vec4 modelPosition = modelMatrix * vec4(position, 1.0);
     vNormal = mat3(modelMatrix) * normal;
+    vViewDirection = normalize(cameraPosition - position);
+
+    #ifdef USE_AMBIENT_LIGHT
+    ambientColor = vec3(0.0);
+    for(int i = 0; i < AMBIENT_LIGHTS_AMOUNT; i++) {
+      ambientColor += ambientLights[i].color * ambientLights[i].intensity / 255.0;
+    }
+    #endif
 
     #ifdef USE_POINT_LIGHT
-      for(int i = 0; i < POINT_LIGHTS_AMOUNT; i++) {
-        surfaceToLight[i] = normalize(pointLights[i].position - modelPosition.xyz);
-        surfaceToView[i] = normalize(pointLights[i].target - modelPosition.xyz);
-      }
+    for(int i = 0; i < POINT_LIGHTS_AMOUNT; i++) {
+      vec3 direction = pointLights[i].position - modelPosition.xyz;
+      surfaceToLight[i] = normalize(direction);
+      distancesToPointLights[i] = length(direction);
+    }
     #endif
 
     #ifdef USE_SHADOW
-      for(int i = 0; i < SHADOWS_AMOUNT; i++) {
-        projectedTextureCoordinate[i] = textureMatrix[i] * modelPosition;
-      }
+    for(int i = 0; i < SHADOWS_AMOUNT; i++) {
+      projectedTextureCoordinate[i] = textureMatrix[i] * modelPosition;
+    }
     #endif
 
     gl_Position = projectionMatrix * modelPosition;
@@ -124,49 +186,86 @@ const defaultFragment = `
 
   uniform sampler2D modelTexture;
 
+  varying vec3 vViewDirection;
   varying vec3 vNormal;
   varying vec2 vUv;
 
+  #ifdef USE_AMBIENT_LIGHT
+  varying vec3 ambientColor;
+
+  vec3 calcAmbientLight(vec3 tex) {
+    return tex * ambientColor;
+  }
+  #endif
+
   #ifdef USE_POINT_LIGHT
-    varying vec3 surfaceToLight[POINT_LIGHTS_AMOUNT];
-    varying vec3 surfaceToView[POINT_LIGHTS_AMOUNT];
+  struct PointLight {
+    vec3 position;
+    vec3 color;
+  };
+
+  uniform PointLight pointLights[POINT_LIGHTS_AMOUNT];
+  varying vec3 surfaceToLight[POINT_LIGHTS_AMOUNT];
+  varying float distancesToPointLights[POINT_LIGHTS_AMOUNT];
+
+  vec3 calcPointLight(vec3 normal, vec3 tex) {
+    vec3 diffuseColor = vec3(0.0);
+    vec3 specularColor = vec3(0.0);
+
+    for(int i = 0; i < POINT_LIGHTS_AMOUNT; i++) {
+      vec3 reflection = reflect(-surfaceToLight[i], normal);
+      float diffuse = max(dot(normal, surfaceToLight[i]), 0.0);
+      float specular = pow(max(dot(vViewDirection, reflection), 0.0), 256.0); // TODO: use shininess
+      float attenuation = 1.0 / (1.0 + 0.1 * distancesToPointLights[i]); // TODO: use constant, linear, quadratic
+
+      specularColor += pointLights[i].color / 255.0 * specular * attenuation;
+      diffuseColor += pointLights[i].color / 255.0 * diffuse * attenuation;
+    }
+    return tex * (diffuseColor + specularColor);
+  }
   #endif
 
   #ifdef USE_SHADOW
-    uniform sampler2D shadowTexture;
-    varying vec4 projectedTextureCoordinate[SHADOWS_AMOUNT];
-  #endif
+  uniform sampler2D shadowTexture;
+  varying vec4 projectedTextureCoordinate[SHADOWS_AMOUNT];
 
-  float unpackRGBA (vec4 v) {
+  float unpackRGBA(vec4 v) {
     return dot(v, 1.0 / vec4(1.0, 255.0, 65025.0, 16581375.0));
   }
 
-  void main() {
-    float light = 0.0;
-    float specular = 0.0;
+  float calcShadow() {
+    float bias = 0.0001;
     float shadow = 0.0;
+    for(int i = 0; i < SHADOWS_AMOUNT; i++) {
+      vec3 lightPosition = projectedTextureCoordinate[i].xyz / projectedTextureCoordinate[i].w;
+      float depth = lightPosition.z - bias;
+      float occluder = unpackRGBA(texture2D(shadowTexture, lightPosition.xy));
+      shadow += mix(0.2, 1.0, step(depth, occluder));
+    }
+    return shadow;
+  }
+  #endif
 
+  void main() {
     vec3 normal = normalize(vNormal);
     vec3 tex = texture2D(modelTexture, vUv).rgb;
 
+    vec3 ambientLight = vec3(0.0);
+    vec3 pointLight = vec3(0.0);
+    float shadow = 1.0;
+
+    #ifdef USE_AMBIENT_LIGHT
+    ambientLight = calcAmbientLight(tex);
+    #endif
+
     #ifdef USE_POINT_LIGHT
-      for(int i = 0; i < POINT_LIGHTS_AMOUNT; i++) {
-        vec3 halfVector = normalize(surfaceToLight[i] + surfaceToView[i]);
-        light += max(dot(normal, surfaceToLight[i]), 0.0) * 0.5;
-        specular += pow(dot(normal, halfVector), 150.0) * 0.15;
-      }
+    pointLight = calcPointLight(normal, tex);
     #endif
 
     #ifdef USE_SHADOW
-      float bias = 0.0001;
-      for(int i = 0; i < SHADOWS_AMOUNT; i++) {
-        vec3 lightPosition = projectedTextureCoordinate[i].xyz / projectedTextureCoordinate[i].w;
-        float depth = lightPosition.z - bias;
-        float occluder = unpackRGBA(texture2D(shadowTexture, lightPosition.xy));
-        shadow += mix(0.2, 1.0, step(depth, occluder));
-      }
+    shadow = calcShadow();
     #endif
 
-    gl_FragColor = vec4(tex * light * shadow + specular * shadow, 1.0);
+    gl_FragColor = vec4((ambientLight + pointLight) * shadow, 1.0);
   }
 `

@@ -1,1 +1,5 @@
-export type { Light } from './types'
+export type { Light, LightWithShadow, LightType } from './types'
+export * from './utils'
+export { AmbientLight } from './ambient'
+export { PointLight } from './point'
+export { DirectionalLight } from './directional'

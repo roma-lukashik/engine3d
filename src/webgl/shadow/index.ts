@@ -1,32 +1,26 @@
-import { Program } from '../program'
 import { WebGLMesh } from '../mesh'
 import { WebGLDepthTexture } from '../textures/depth'
-import { Matrix4 } from '../../math/matrix4'
-import { Light } from '../../core/lights'
+import { LightWithShadow } from '../../core/lights'
 import { Mesh } from '../../core/mesh'
+import { createShadowProgram, ShadowProgram } from '../program/shadow'
 
 type Props = {
-  gl: WebGLRenderingContext;
-}
-
-type ShadowUniforms = {
-  projectionMatrix: Matrix4;
-  modelMatrix: Matrix4;
+  gl: WebGLRenderingContext
 }
 
 export class Shadow {
   private readonly gl: WebGLRenderingContext
-  private readonly program: Program<ShadowUniforms>
+  private readonly program: ShadowProgram
 
   public readonly depthTexture: WebGLDepthTexture
 
   constructor({ gl }: Props) {
     this.gl = gl
-    this.program = new Program({ gl, vertex, fragment })
+    this.program = createShadowProgram({ gl })
     this.depthTexture = new WebGLDepthTexture({ gl })
   }
 
-  public render(lights: Light[], meshes: Map<Mesh, WebGLMesh>): void {
+  public render(lights: LightWithShadow[], meshes: Map<Mesh, WebGLMesh>): void {
     this.gl.depthMask(true)
     this.gl.disable(this.gl.CULL_FACE)
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.depthTexture.buffer)
@@ -41,28 +35,3 @@ export class Shadow {
     })
   }
 }
-
-const vertex = `
-  attribute vec3 position;
-
-  uniform mat4 projectionMatrix;
-  uniform mat4 modelMatrix;
-
-  void main() {
-    gl_Position = projectionMatrix * modelMatrix * vec4(position, 1.0);
-  }
-`
-
-const fragment = `
-  precision highp float;
-
-  vec4 packRGBA (float v) {
-    vec4 pack = fract(vec4(1.0, 255.0, 65025.0, 16581375.0) * v);
-    pack -= pack.yzww * vec2(1.0 / 255.0, 0.0).xxxy;
-    return pack;
-  }
-
-  void main() {
-    gl_FragColor = packRGBA(gl_FragCoord.z);
-  }
-`

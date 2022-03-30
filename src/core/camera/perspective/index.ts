@@ -14,7 +14,7 @@ type Props = {
   fovy?: number;
 }
 
-export class PerspectiveCamera implements Camera<Props> {
+export class PerspectiveCamera implements Camera {
   private near: number
   private far: number
   private aspect: number

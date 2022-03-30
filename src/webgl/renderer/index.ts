@@ -1,8 +1,7 @@
 import * as m4 from '../../math/matrix4'
 import { Scene } from '../scene'
 import { Camera } from '../../core/camera'
-import { Program } from '../program'
-import { createMainProgram, MainUniformValues } from '../program/main'
+import { createMainProgram, MainProgram } from '../program/main'
 
 type Props = {
   canvas?: HTMLCanvasElement;
@@ -11,7 +10,7 @@ type Props = {
 }
 
 export class Renderer {
-  private program: Program<MainUniformValues>
+  private program: MainProgram
 
   public readonly gl: WebGLRenderingContext
 
@@ -31,11 +30,12 @@ export class Renderer {
   }
 
   public render(scene: Scene, camera: Camera): void {
-    const shadowLights = scene.lights.filter((light) => light.castShadow)
+    const shadowLights = scene.shadowLights
     if (scene.dirty) {
       this.program = createMainProgram({
         gl: this.gl,
-        pointLightsAmount: scene.lights.length,
+        ambientLightsAmount: scene.ambientLights.length,
+        pointLightsAmount: scene.pointLights.length,
         shadowsAmount: shadowLights.length,
       })
       scene.dirty = false
@@ -59,7 +59,10 @@ export class Renderer {
     this.program.uniforms.setValues({
       projectionMatrix: camera.projectionMatrix,
       textureMatrix: textureMatrix,
-      pointLights: scene.lights.map(({ position, target }) => ({ position, target })),
+      cameraPosition: camera.position,
+      ambientLights: scene.ambientLights.map(({ color, intensity }) => ({ color, intensity })),
+      pointLights: scene.pointLights.map(({ color, position }) => ({ color, position })),
+      directionalLight: scene.directionalLights.map(({ color, intensity, direction }) => ({ color, intensity, direction })),
       shadowTexture: scene.shadow.depthTexture,
     })
 
