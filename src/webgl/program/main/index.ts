@@ -1,6 +1,17 @@
 import { Program } from '..'
 import { Matrix4 } from '../../../math/matrix4'
 import { Vector3 } from '../../../math/vector3'
+import {
+  AMBIENT_LIGHTS_AMOUNT,
+  define, DIRECTIONAL_LIGHTS_AMOUNT,
+  ifdef, POINT_LIGHTS_AMOUNT,
+  replaceValue,
+  SHADOWS_AMOUNT,
+  USE_AMBIENT_LIGHT,
+  USE_DIRECTIONAL_LIGHT,
+  USE_POINT_LIGHT,
+  USE_SHADOW,
+} from '../../glsl'
 import { WebGLBaseTexture } from '../../textures/types'
 
 type Props = {
@@ -48,12 +59,18 @@ export const createMainProgram = ({
   directionalLightsAmount = 0,
   shadowsAmount = 0,
 }: Props): MainProgram => {
+  const defs = [
+    ambientLightsAmount > 0 ? define(USE_AMBIENT_LIGHT) : '',
+    pointLightsAmount > 0 ? define(USE_POINT_LIGHT) : '',
+    directionalLightsAmount > 0 ? define(USE_DIRECTIONAL_LIGHT) : '',
+    shadowsAmount > 0 ? define(USE_SHADOW) : '',
+  ]
   const transform = (shader: string) => {
-    shader = addDefs(shader, { ambientLightsAmount, pointLightsAmount, directionalLightsAmount, shadowsAmount })
-    shader = replaceShadowsAmount(shader, shadowsAmount)
-    shader = replacePointLightsAmount(shader, pointLightsAmount)
-    shader = replaceDirectionalLightsAmount(shader, pointLightsAmount)
-    shader = replaceAmbientLightsAmount(shader, ambientLightsAmount)
+    shader = addDefs(shader, defs)
+    shader = replaceValue(shader, AMBIENT_LIGHTS_AMOUNT, ambientLightsAmount)
+    shader = replaceValue(shader, POINT_LIGHTS_AMOUNT, pointLightsAmount)
+    shader = replaceValue(shader, DIRECTIONAL_LIGHTS_AMOUNT, directionalLightsAmount)
+    shader = replaceValue(shader, SHADOWS_AMOUNT, shadowsAmount)
     return shader
   }
   const vertex = transform(defaultVertex)
@@ -61,47 +78,8 @@ export const createMainProgram = ({
   return new Program({ gl, vertex, fragment })
 }
 
-const replacePointLightsAmount = (shader: string, lightsAmount: number): string => {
-  return shader.replace(/POINT_LIGHTS_AMOUNT/g, lightsAmount.toString())
-}
-
-const replaceDirectionalLightsAmount = (shader: string, lightsAmount: number): string => {
-  return shader.replace(/DIRECTIONAL_LIGHTS_AMOUNT/g, lightsAmount.toString())
-}
-
-const replaceAmbientLightsAmount = (shader: string, lightsAmount: number): string => {
-  return shader.replace(/AMBIENT_LIGHTS_AMOUNT/g, lightsAmount.toString())
-}
-
-const replaceShadowsAmount = (shader: string, shadowsAmount: number): string => {
-  return shader.replace(/SHADOWS_AMOUNT/g, shadowsAmount.toString())
-}
-
-type DefsOptions = {
-  usePointLights: boolean
-  useAmbientLights: boolean
-  useDirectionalLights: boolean
-  useShadow: boolean
-}
-
-const addDefs = (shader: string, props: Omit<Required<Props>, 'gl'>): string => {
-  const options: DefsOptions = {
-    useAmbientLights: props.ambientLightsAmount > 0,
-    usePointLights: props.pointLightsAmount > 0,
-    useDirectionalLights: props.directionalLightsAmount > 0,
-    useShadow: props.shadowsAmount > 0,
-  }
-  return defs(options) + shader
-}
-
-const defs = ({ useAmbientLights, usePointLights, useDirectionalLights, useShadow }: DefsOptions): string => {
-  const defs = [
-    useAmbientLights ? '#define USE_AMBIENT_LIGHT' : '',
-    usePointLights ? '#define USE_POINT_LIGHT' : '',
-    useDirectionalLights ? '#define USE_DIRECTIONAL_LIGHT' : '',
-    useShadow ? '#define USE_SHADOW' : '',
-  ]
-  return defs.filter(Boolean).join('\n')
+const addDefs = (shader: string, defs: string[]): string => {
+  return defs.filter(Boolean).join('\n') + shader
 }
 
 const defaultVertex = `
@@ -117,38 +95,41 @@ const defaultVertex = `
   varying vec3 vNormal;
   varying vec2 vUv;
 
-  #ifdef USE_AMBIENT_LIGHT
-  struct AmbientLight {
-    vec3 color;
-    float intensity;
-  };
+  ${ifdef(USE_AMBIENT_LIGHT, `
+    struct AmbientLight {
+      vec3 color;
+      float intensity;
+    };
 
-  uniform AmbientLight ambientLights[AMBIENT_LIGHTS_AMOUNT];
-  varying vec3 ambientColor;
-  #endif
+    uniform AmbientLight ambientLights[${AMBIENT_LIGHTS_AMOUNT}];
+    varying vec3 ambientColor;
+  `)}
 
-  #ifdef USE_POINT_LIGHT
-  struct PointLight {
-    vec3 position;
-    vec3 color;
+  ${ifdef(USE_POINT_LIGHT, `
+    struct PointLight {
+      vec3 position;
+      vec3 color;
+    };
 
-    // float constant;
-    // float linear;
-    // float quadratic;
-    //
-    // vec3 ambient;
-    // vec3 diffuse;
-    // vec3 specular;
-  };
-  uniform PointLight pointLights[POINT_LIGHTS_AMOUNT];
-  varying vec3 surfaceToLight[POINT_LIGHTS_AMOUNT];
-  varying float distancesToPointLights[POINT_LIGHTS_AMOUNT];
-  #endif
+    uniform PointLight pointLights[${POINT_LIGHTS_AMOUNT}];
+    varying vec3 surfaceToLight[${POINT_LIGHTS_AMOUNT}];
+    varying float distancesToPointLights[${POINT_LIGHTS_AMOUNT}];
+  `)}
 
-  #ifdef USE_SHADOW
-  uniform mat4 textureMatrix[SHADOWS_AMOUNT];
-  varying vec4 projectedTextureCoordinate[SHADOWS_AMOUNT];
-  #endif
+  ${ifdef(USE_DIRECTIONAL_LIGHT, `
+    struct DirectionalLight {
+      vec3 direction;
+      vec3 color;
+      float intensity;
+    };
+
+    uniform DirectionalLight directionalLights[${DIRECTIONAL_LIGHTS_AMOUNT}];
+  `)}
+
+  ${ifdef(USE_SHADOW, `
+    uniform mat4 textureMatrix[${SHADOWS_AMOUNT}];
+    varying vec4 projectedTextureCoordinate[${SHADOWS_AMOUNT}];
+  `)}
 
   void main() {
     vUv = uv;
@@ -156,26 +137,26 @@ const defaultVertex = `
     vNormal = mat3(modelMatrix) * normal;
     vViewDirection = normalize(cameraPosition - position);
 
-    #ifdef USE_AMBIENT_LIGHT
-    ambientColor = vec3(0.0);
-    for(int i = 0; i < AMBIENT_LIGHTS_AMOUNT; i++) {
-      ambientColor += ambientLights[i].color * ambientLights[i].intensity / 255.0;
-    }
-    #endif
+    ${ifdef(USE_AMBIENT_LIGHT, `
+      ambientColor = vec3(0.0);
+      for(int i = 0; i < ${AMBIENT_LIGHTS_AMOUNT}; i++) {
+        ambientColor += ambientLights[i].color * ambientLights[i].intensity;
+      }
+    `)}
 
-    #ifdef USE_POINT_LIGHT
-    for(int i = 0; i < POINT_LIGHTS_AMOUNT; i++) {
-      vec3 direction = pointLights[i].position - modelPosition.xyz;
-      surfaceToLight[i] = normalize(direction);
-      distancesToPointLights[i] = length(direction);
-    }
-    #endif
+    ${ifdef(USE_POINT_LIGHT, `
+      for(int i = 0; i < ${POINT_LIGHTS_AMOUNT}; i++) {
+        vec3 direction = pointLights[i].position - modelPosition.xyz;
+        surfaceToLight[i] = normalize(direction);
+        distancesToPointLights[i] = length(direction);
+      }
+    `)}
 
-    #ifdef USE_SHADOW
-    for(int i = 0; i < SHADOWS_AMOUNT; i++) {
-      projectedTextureCoordinate[i] = textureMatrix[i] * modelPosition;
-    }
-    #endif
+    ${ifdef(USE_SHADOW, `
+      for(int i = 0; i < ${SHADOWS_AMOUNT}; i++) {
+        projectedTextureCoordinate[i] = textureMatrix[i] * modelPosition;
+      }
+    `)}
 
     gl_Position = projectionMatrix * modelPosition;
   }
@@ -190,61 +171,61 @@ const defaultFragment = `
   varying vec3 vNormal;
   varying vec2 vUv;
 
-  #ifdef USE_AMBIENT_LIGHT
-  varying vec3 ambientColor;
+  ${ifdef(USE_AMBIENT_LIGHT, `
+    varying vec3 ambientColor;
 
-  vec3 calcAmbientLight(vec3 tex) {
-    return tex * ambientColor;
-  }
-  #endif
-
-  #ifdef USE_POINT_LIGHT
-  struct PointLight {
-    vec3 position;
-    vec3 color;
-  };
-
-  uniform PointLight pointLights[POINT_LIGHTS_AMOUNT];
-  varying vec3 surfaceToLight[POINT_LIGHTS_AMOUNT];
-  varying float distancesToPointLights[POINT_LIGHTS_AMOUNT];
-
-  vec3 calcPointLight(vec3 normal, vec3 tex) {
-    vec3 diffuseColor = vec3(0.0);
-    vec3 specularColor = vec3(0.0);
-
-    for(int i = 0; i < POINT_LIGHTS_AMOUNT; i++) {
-      vec3 reflection = reflect(-surfaceToLight[i], normal);
-      float diffuse = max(dot(normal, surfaceToLight[i]), 0.0);
-      float specular = pow(max(dot(vViewDirection, reflection), 0.0), 256.0); // TODO: use shininess
-      float attenuation = 1.0 / (1.0 + 0.1 * distancesToPointLights[i]); // TODO: use constant, linear, quadratic
-
-      specularColor += pointLights[i].color / 255.0 * specular * attenuation;
-      diffuseColor += pointLights[i].color / 255.0 * diffuse * attenuation;
+    vec3 calcAmbientLight(vec3 tex) {
+      return tex * ambientColor;
     }
-    return tex * (diffuseColor + specularColor);
-  }
-  #endif
+  `)}
 
-  #ifdef USE_SHADOW
-  uniform sampler2D shadowTexture;
-  varying vec4 projectedTextureCoordinate[SHADOWS_AMOUNT];
+  ${ifdef(USE_POINT_LIGHT, `
+    struct PointLight {
+      vec3 position;
+      vec3 color;
+    };
 
-  float unpackRGBA(vec4 v) {
-    return dot(v, 1.0 / vec4(1.0, 255.0, 65025.0, 16581375.0));
-  }
+    uniform PointLight pointLights[${POINT_LIGHTS_AMOUNT}];
+    varying vec3 surfaceToLight[${POINT_LIGHTS_AMOUNT}];
+    varying float distancesToPointLights[${POINT_LIGHTS_AMOUNT}];
 
-  float calcShadow() {
-    float bias = 0.0001;
-    float shadow = 0.0;
-    for(int i = 0; i < SHADOWS_AMOUNT; i++) {
-      vec3 lightPosition = projectedTextureCoordinate[i].xyz / projectedTextureCoordinate[i].w;
-      float depth = lightPosition.z - bias;
-      float occluder = unpackRGBA(texture2D(shadowTexture, lightPosition.xy));
-      shadow += mix(0.2, 1.0, step(depth, occluder));
+    vec3 calcPointLight(vec3 normal, vec3 tex) {
+      vec3 diffuseColor = vec3(0.0);
+      vec3 specularColor = vec3(0.0);
+
+      for(int i = 0; i < ${POINT_LIGHTS_AMOUNT}; i++) {
+        vec3 reflection = reflect(-surfaceToLight[i], normal);
+        float diffuse = max(dot(normal, surfaceToLight[i]), 0.0);
+        float specular = pow(max(dot(vViewDirection, reflection), 0.0), 256.0); // TODO: use shininess
+        float attenuation = 1.0 / (1.0 + 0.1 * distancesToPointLights[i]); // TODO: use constant, linear, quadratic
+
+        specularColor += pointLights[i].color * specular * attenuation;
+        diffuseColor += pointLights[i].color * diffuse * attenuation;
+      }
+      return tex * (diffuseColor + specularColor);
     }
-    return shadow;
-  }
-  #endif
+  `)}
+
+  ${ifdef(USE_SHADOW, `
+    uniform sampler2D shadowTexture;
+    varying vec4 projectedTextureCoordinate[${SHADOWS_AMOUNT}];
+
+    float unpackRGBA(vec4 v) {
+      return dot(v, 1.0 / vec4(1.0, 255.0, 65025.0, 16581375.0));
+    }
+
+    float calcShadow() {
+      float bias = 0.0001;
+      float shadow = 0.0;
+      for(int i = 0; i < ${SHADOWS_AMOUNT}; i++) {
+        vec3 lightPosition = projectedTextureCoordinate[i].xyz / projectedTextureCoordinate[i].w;
+        float depth = lightPosition.z - bias;
+        float occluder = unpackRGBA(texture2D(shadowTexture, lightPosition.xy));
+        shadow += mix(0.2, 1.0, step(depth, occluder));
+      }
+      return shadow;
+    }
+  `)}
 
   void main() {
     vec3 normal = normalize(vNormal);
@@ -254,17 +235,17 @@ const defaultFragment = `
     vec3 pointLight = vec3(0.0);
     float shadow = 1.0;
 
-    #ifdef USE_AMBIENT_LIGHT
-    ambientLight = calcAmbientLight(tex);
-    #endif
+    ${ifdef(USE_AMBIENT_LIGHT, `
+      ambientLight = calcAmbientLight(tex);
+    `)}
 
-    #ifdef USE_POINT_LIGHT
-    pointLight = calcPointLight(normal, tex);
-    #endif
+    ${ifdef(USE_POINT_LIGHT, `
+      pointLight = calcPointLight(normal, tex);
+    `)}
 
-    #ifdef USE_SHADOW
-    shadow = calcShadow();
-    #endif
+    ${ifdef(USE_SHADOW, `
+      shadow = calcShadow();
+    `)}
 
     gl_FragColor = vec4((ambientLight + pointLight) * shadow, 1.0);
   }
