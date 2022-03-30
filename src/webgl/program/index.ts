@@ -8,7 +8,7 @@ type Props = {
   fragment: string;
 }
 
-export class Program<U extends UniformValues> {
+export class Program<U extends UniformValues = UniformValues> {
   private readonly gl: WebGLRenderingContext
   private readonly program: WebGLProgram
 

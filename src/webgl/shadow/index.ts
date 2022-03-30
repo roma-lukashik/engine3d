@@ -29,9 +29,8 @@ export class Shadow {
 
     lights.forEach((light, i) => {
       this.gl.viewport(width * i, 0, width, this.depthTexture.height)
-      meshes.forEach((mesh) => {
-        mesh.render(this.program, { projectionMatrix: light.projectionMatrix })
-      })
+      this.program.uniforms.setValues({ projectionMatrix: light.projectionMatrix })
+      meshes.forEach((mesh) => mesh.render(this.program))
     })
   }
 }

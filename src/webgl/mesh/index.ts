@@ -25,12 +25,11 @@ export class WebGLMesh {
     this.setAttributes()
   }
 
-  public render<T extends Record<string, any>>(program: Program<T>, uniforms: T = {} as T): void {
+  public render(program: Program): void {
     program.use()
     program.uniforms.setValues({
       modelMatrix: this.mesh.modelMatrix,
       modelTexture: this.texture,
-      ...uniforms,
     })
     program.uniforms.update()
     program.attributes.update(this.attributes)
