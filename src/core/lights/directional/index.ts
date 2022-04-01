@@ -36,10 +36,10 @@ export class DirectionalLight implements Light, LightWithShadow {
     this.castShadow = castShadow
     this.intensity = intensity
     this.camera = new OrthographicCamera({
-      left: -5,
-      right: 5,
-      top: 5,
-      bottom: -5,
+      left: -50,
+      right: 50,
+      top: 50,
+      bottom: -50,
       near: 0.5,
       far: 500,
     })
@@ -57,6 +57,6 @@ export class DirectionalLight implements Light, LightWithShadow {
   }
 
   private updateDirection(): void {
-    this.direction = v3.subtract(this.camera.position, this.camera.target)
+    this.direction = v3.normalize(v3.subtract(this.camera.position, this.camera.target))
   }
 }

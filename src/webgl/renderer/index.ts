@@ -36,6 +36,7 @@ export class Renderer {
         gl: this.gl,
         ambientLightsAmount: scene.ambientLights.length,
         pointLightsAmount: scene.pointLights.length,
+        directionalLightsAmount: scene.directionalLights.length,
         shadowsAmount: shadowLights.length,
       })
       scene.dirty = false
@@ -62,7 +63,7 @@ export class Renderer {
       cameraPosition: camera.position,
       ambientLights: scene.ambientLights.map(({ color, intensity }) => ({ color, intensity })),
       pointLights: scene.pointLights.map(({ color, position }) => ({ color, position })),
-      directionalLight: scene.directionalLights.map(({ color, intensity, direction }) => ({ color, intensity, direction })),
+      directionalLights: scene.directionalLights.map(({ color, intensity, direction }) => ({ color, intensity, direction })),
       shadowTexture: scene.shadow.depthTexture,
     })
 

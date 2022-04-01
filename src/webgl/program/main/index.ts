@@ -3,15 +3,17 @@ import { Matrix4 } from '../../../math/matrix4'
 import { Vector3 } from '../../../math/vector3'
 import {
   AMBIENT_LIGHTS_AMOUNT,
-  define, DIRECTIONAL_LIGHTS_AMOUNT,
-  ifdef, POINT_LIGHTS_AMOUNT,
+  define,
+  DIRECTIONAL_LIGHTS_AMOUNT,
+  ifdef,
+  POINT_LIGHTS_AMOUNT,
   replaceValue,
   SHADOWS_AMOUNT,
   USE_AMBIENT_LIGHT,
   USE_DIRECTIONAL_LIGHT,
   USE_POINT_LIGHT,
   USE_SHADOW,
-} from '../../glsl'
+} from '../../utils/glsl'
 import { WebGLBaseTexture } from '../../textures/types'
 
 type Props = {
@@ -29,7 +31,7 @@ type MainUniformValues = {
   cameraPosition?: Vector3
   ambientLights?: AmbientLight[]
   pointLights?: PointLight[]
-  directionalLight?: DirectionalLight[]
+  directionalLights?: DirectionalLight[]
   modelTexture?: WebGLBaseTexture
   shadowTexture?: WebGLBaseTexture
 }
@@ -78,9 +80,8 @@ export const createMainProgram = ({
   return new Program({ gl, vertex, fragment })
 }
 
-const addDefs = (shader: string, defs: string[]): string => {
-  return defs.filter(Boolean).join('\n') + shader
-}
+const addDefs = (shader: string, defs: string[]): string =>
+  defs.filter(Boolean).join('\n') + shader
 
 const defaultVertex = `
   attribute vec3 position;
@@ -116,16 +117,6 @@ const defaultVertex = `
     varying float distancesToPointLights[${POINT_LIGHTS_AMOUNT}];
   `)}
 
-  ${ifdef(USE_DIRECTIONAL_LIGHT, `
-    struct DirectionalLight {
-      vec3 direction;
-      vec3 color;
-      float intensity;
-    };
-
-    uniform DirectionalLight directionalLights[${DIRECTIONAL_LIGHTS_AMOUNT}];
-  `)}
-
   ${ifdef(USE_SHADOW, `
     uniform mat4 textureMatrix[${SHADOWS_AMOUNT}];
     varying vec4 projectedTextureCoordinate[${SHADOWS_AMOUNT}];
@@ -134,7 +125,7 @@ const defaultVertex = `
   void main() {
     vUv = uv;
     vec4 modelPosition = modelMatrix * vec4(position, 1.0);
-    vNormal = mat3(modelMatrix) * normal;
+    vNormal = normalize(mat3(modelMatrix) * normal);
     vViewDirection = normalize(cameraPosition - position);
 
     ${ifdef(USE_AMBIENT_LIGHT, `
@@ -206,6 +197,25 @@ const defaultFragment = `
     }
   `)}
 
+  ${ifdef(USE_DIRECTIONAL_LIGHT, `
+    struct DirectionalLight {
+      vec3 direction;
+      vec3 color;
+      float intensity;
+    };
+
+    uniform DirectionalLight directionalLights[${DIRECTIONAL_LIGHTS_AMOUNT}];
+
+    vec3 calcDirectionalLight(vec3 normal, vec3 tex) {
+      vec3 diffuseColor = vec3(0.0);
+      for(int i = 0; i < ${DIRECTIONAL_LIGHTS_AMOUNT}; i++) {
+        float diffuse = max(dot(normal, directionalLights[i].direction), 0.0);
+        diffuseColor += directionalLights[i].color * directionalLights[i].intensity * diffuse;
+      }
+      return tex * diffuseColor;
+    }
+  `)}
+
   ${ifdef(USE_SHADOW, `
     uniform sampler2D shadowTexture;
     varying vec4 projectedTextureCoordinate[${SHADOWS_AMOUNT}];
@@ -215,7 +225,7 @@ const defaultFragment = `
     }
 
     float calcShadow() {
-      float bias = 0.0001;
+      float bias = 0.001;
       float shadow = 0.0;
       for(int i = 0; i < ${SHADOWS_AMOUNT}; i++) {
         vec3 lightPosition = projectedTextureCoordinate[i].xyz / projectedTextureCoordinate[i].w;
@@ -228,11 +238,11 @@ const defaultFragment = `
   `)}
 
   void main() {
-    vec3 normal = normalize(vNormal);
     vec3 tex = texture2D(modelTexture, vUv).rgb;
 
     vec3 ambientLight = vec3(0.0);
     vec3 pointLight = vec3(0.0);
+    vec3 directionalLight = vec3(0.0);
     float shadow = 1.0;
 
     ${ifdef(USE_AMBIENT_LIGHT, `
@@ -240,13 +250,17 @@ const defaultFragment = `
     `)}
 
     ${ifdef(USE_POINT_LIGHT, `
-      pointLight = calcPointLight(normal, tex);
+      pointLight = calcPointLight(vNormal, tex);
+    `)}
+
+    ${ifdef(USE_DIRECTIONAL_LIGHT, `
+      directionalLight = calcDirectionalLight(vNormal, tex);
     `)}
 
     ${ifdef(USE_SHADOW, `
       shadow = calcShadow();
     `)}
 
-    gl_FragColor = vec4((ambientLight + pointLight) * shadow, 1.0);
+    gl_FragColor = vec4((ambientLight + pointLight + directionalLight) * shadow, 1.0);
   }
 `
