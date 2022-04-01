@@ -261,6 +261,6 @@ const defaultFragment = `
       shadow = calcShadow();
     `)}
 
-    gl_FragColor = vec4((ambientLight + pointLight + directionalLight) * shadow, 1.0);
+    gl_FragColor = vec4(ambientLight + (pointLight + directionalLight) * shadow, 1.0);
   }
 `

@@ -23,6 +23,7 @@ export class Shadow {
   public render(lights: LightWithShadow[], meshes: Map<Mesh, WebGLMesh>): void {
     this.gl.depthMask(true)
     this.gl.disable(this.gl.CULL_FACE)
+    this.gl.cullFace(this.gl.FRONT)
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.depthTexture.buffer)
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
     const width = this.depthTexture.width / lights.length

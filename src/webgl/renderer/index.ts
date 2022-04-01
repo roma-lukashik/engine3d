@@ -44,15 +44,16 @@ export class Renderer {
     scene.shadow.render(shadowLights, scene.meshes)
 
     this.gl.enable(this.gl.CULL_FACE)
+    this.gl.cullFace(this.gl.BACK)
     this.gl.enable(this.gl.DEPTH_TEST)
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null)
     this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height)
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
 
+    const step = 1 / shadowLights.length
     const textureMatrix = shadowLights.map((light, i) => {
-      const step = 0.5 / shadowLights.length
       return m4.multiply(
-        m4.scale(m4.translation(step + i / shadowLights.length, 0.5, 0.5), step, 0.5, 0.5),
+        m4.scale(m4.translation((0.5 + i) * step, 0.5, 0.5), step / 2, 0.5, 0.5),
         light.projectionMatrix,
       )
     })
