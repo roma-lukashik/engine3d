@@ -2,7 +2,7 @@ import { WebGLMesh } from '../mesh'
 import { WebGLDepthTexture } from '../textures/depth'
 import { LightWithShadow } from '../../core/lights'
 import { Mesh } from '../../core/mesh'
-import { createShadowProgram, ShadowProgram } from '../program/shadow'
+import { ShadowProgram } from '../program/shadow'
 
 type Props = {
   gl: WebGLRenderingContext
@@ -16,12 +16,11 @@ export class Shadow {
 
   constructor({ gl }: Props) {
     this.gl = gl
-    this.program = createShadowProgram({ gl })
+    this.program = new ShadowProgram({ gl })
     this.depthTexture = new WebGLDepthTexture({ gl })
   }
 
   public render(lights: LightWithShadow[], meshes: Map<Mesh, WebGLMesh>): void {
-    this.gl.depthMask(true)
     this.gl.disable(this.gl.CULL_FACE)
     this.gl.cullFace(this.gl.FRONT)
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.depthTexture.buffer)

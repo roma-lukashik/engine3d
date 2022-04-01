@@ -7,6 +7,7 @@ export type Light = {
 
 export type LightWithShadow = {
   readonly projectionMatrix: Matrix4
+  intensity: number
 }
 
 export enum LightType {

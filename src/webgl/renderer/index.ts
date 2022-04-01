@@ -43,6 +43,7 @@ export class Renderer {
     }
     scene.shadow.render(shadowLights, scene.meshes)
 
+    this.gl.depthMask(true)
     this.gl.enable(this.gl.CULL_FACE)
     this.gl.cullFace(this.gl.BACK)
     this.gl.enable(this.gl.DEPTH_TEST)

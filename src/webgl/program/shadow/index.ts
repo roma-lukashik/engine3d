@@ -10,10 +10,10 @@ type Props = {
   gl: WebGLRenderingContext
 }
 
-export type ShadowProgram = Program<ShadowUniforms>
-
-export const createShadowProgram = ({ gl }: Props): ShadowProgram => {
-  return new Program({ gl, vertex, fragment })
+export class ShadowProgram extends Program<ShadowUniforms> {
+  constructor({ gl }: Props) {
+    super({ gl, vertex, fragment })
+  }
 }
 
 const vertex = `
