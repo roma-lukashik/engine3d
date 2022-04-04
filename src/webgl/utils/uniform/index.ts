@@ -42,6 +42,10 @@ export class Uniform<T extends any = any> {
     return this.type === this.gl.SAMPLER_2D || this.type === this.gl.SAMPLER_CUBE
   }
 
+  public isTextureArray(): this is Uniform<WebGLBaseTexture[]> {
+    return this.isTexture() && Array.isArray(this.value)
+  }
+
   public setValue(value: any): void {
     if (this.structProperty !== undefined && this.arrayIndex !== undefined) {
       this.value = value[this.arrayIndex][this.structProperty]

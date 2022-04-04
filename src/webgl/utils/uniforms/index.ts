@@ -1,5 +1,6 @@
 import { bindTexture } from '../../textures/utils'
 import { Uniform } from '../uniform'
+import { TextureSlot } from '../textureSlot'
 
 export type UniformValues = {
   [key: string]: any;
@@ -22,15 +23,28 @@ export class Uniforms<U extends UniformValues> {
   }
 
   public update() {
-    let textureSlot = 0
+    const textureSlot = new TextureSlot({ gl: this.gl })
+
     this.data.forEach((uniform) => {
-      if (uniform.isTexture()) {
-        bindTexture(this.gl, uniform.value.texture, textureSlot)
-        uniform.specifyValue(textureSlot)
-        textureSlot++
-      } else {
-        uniform.specifyValue()
+      if (uniform.isTextureArray()) {
+        const slots: number[] = []
+        uniform.value.forEach((texture) => {
+          const slot = textureSlot.next()
+          bindTexture(this.gl, texture.texture, slot)
+          slots.push(slot)
+        })
+        uniform.specifyValue(slots)
+        return
       }
+
+      if (uniform.isTexture()) {
+        const slot = textureSlot.next()
+        bindTexture(this.gl, uniform.value.texture, slot)
+        uniform.specifyValue(slot)
+        return
+      }
+
+      uniform.specifyValue()
     })
   }
 

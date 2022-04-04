@@ -6,31 +6,30 @@ import { ShadowProgram } from '../program/shadow'
 
 type Props = {
   gl: WebGLRenderingContext
+  light: LightWithShadow
 }
 
 export class Shadow {
   private readonly gl: WebGLRenderingContext
   private readonly program: ShadowProgram
+  private readonly light: LightWithShadow
 
-  public readonly depthTexture: WebGLDepthTexture
+  public depthTexture: WebGLDepthTexture
 
-  constructor({ gl }: Props) {
+  constructor({ gl, light }: Props) {
     this.gl = gl
+    this.light = light
     this.program = new ShadowProgram({ gl })
     this.depthTexture = new WebGLDepthTexture({ gl })
   }
 
-  public render(lights: LightWithShadow[], meshes: Map<Mesh, WebGLMesh>): void {
+  public render(meshes: Map<Mesh, WebGLMesh>): void {
     this.gl.disable(this.gl.CULL_FACE)
     this.gl.cullFace(this.gl.FRONT)
-    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.depthTexture.buffer)
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.depthTexture.frameBuffer)
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
-    const width = this.depthTexture.width / lights.length
-
-    lights.forEach((light, i) => {
-      this.gl.viewport(width * i, 0, width, this.depthTexture.height)
-      this.program.uniforms.setValues({ projectionMatrix: light.projectionMatrix })
-      meshes.forEach((mesh) => mesh.render(this.program))
-    })
+    this.gl.viewport(0, 0, this.depthTexture.width, this.depthTexture.height)
+    this.program.uniforms.setValues({ projectionMatrix: this.light.projectionMatrix })
+    meshes.forEach((mesh) => mesh.render(this.program))
   }
 }

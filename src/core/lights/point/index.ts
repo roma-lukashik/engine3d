@@ -1,9 +1,9 @@
 import * as m4 from '../../../math/matrix4'
 import * as v3 from '../../../math/vector3'
 import { Camera, PerspectiveCamera } from '../../camera'
-import { Light, LightType, LightWithShadow } from '../types'
+import { LightType, LightWithShadow } from '../types'
 import { toRadian } from '../../../math/angle'
-import { hex2rbgNormalized } from '../../../math/color'
+import { Color } from '../../../math/color'
 
 type Vector3 = v3.Vector3
 type Matrix4 = m4.Matrix4
@@ -14,12 +14,12 @@ type Props = {
   intensity?: number
 }
 
-export class PointLight implements Light, LightWithShadow {
+export class PointLight implements LightWithShadow {
   private readonly camera: Camera
 
   public readonly type: LightType
   public readonly castShadow: boolean
-  public color: Vector3
+  public color: Color
   public intensity: number
 
   public get position(): Vector3 {
@@ -36,7 +36,7 @@ export class PointLight implements Light, LightWithShadow {
     intensity = 1,
   }: Props = {}) {
     this.type = LightType.Point
-    this.color = hex2rbgNormalized(color)
+    this.color = new Color(color)
     this.castShadow = castShadow
     this.intensity = intensity
     this.camera = new PerspectiveCamera({

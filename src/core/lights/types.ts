@@ -3,11 +3,11 @@ import { Matrix4 } from '../../math/matrix4'
 export type Light = {
   readonly type: LightType
   readonly castShadow: boolean
+  intensity: number
 }
 
-export type LightWithShadow = {
+export type LightWithShadow = Light & {
   readonly projectionMatrix: Matrix4
-  intensity: number
 }
 
 export enum LightType {

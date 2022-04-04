@@ -26,14 +26,14 @@ type Props = {
 
 type MainUniformValues = {
   modelMatrix?: Matrix4
-  textureMatrix?: Matrix4[]
+  textureMatrices?: Matrix4[]
   projectionMatrix?: Matrix4
   cameraPosition?: Vector3
   ambientLights?: AmbientLight[]
   pointLights?: PointLight[]
   directionalLights?: DirectionalLight[]
   modelTexture?: WebGLBaseTexture
-  shadowTexture?: WebGLBaseTexture
+  shadowTextures?: WebGLBaseTexture[]
 }
 
 type PointLight = {
@@ -118,8 +118,8 @@ const defaultVertex = `
   `)}
 
   ${ifdef(USE_SHADOW, `
-    uniform mat4 textureMatrix[${SHADOWS_AMOUNT}];
-    varying vec4 projectedTextureCoordinate[${SHADOWS_AMOUNT}];
+    uniform mat4 textureMatrices[${SHADOWS_AMOUNT}];
+    varying vec4 projectedTextureCoordinates[${SHADOWS_AMOUNT}];
   `)}
 
   void main() {
@@ -145,7 +145,7 @@ const defaultVertex = `
 
     ${ifdef(USE_SHADOW, `
       for(int i = 0; i < ${SHADOWS_AMOUNT}; i++) {
-        projectedTextureCoordinate[i] = textureMatrix[i] * modelPosition;
+        projectedTextureCoordinates[i] = textureMatrices[i] * modelPosition;
       }
     `)}
 
@@ -217,20 +217,20 @@ const defaultFragment = `
   `)}
 
   ${ifdef(USE_SHADOW, `
-    uniform sampler2D shadowTexture;
-    varying vec4 projectedTextureCoordinate[${SHADOWS_AMOUNT}];
+    uniform sampler2D shadowTextures[${SHADOWS_AMOUNT}];
+    varying vec4 projectedTextureCoordinates[${SHADOWS_AMOUNT}];
 
     float unpackRGBA(vec4 v) {
       return dot(v, 1.0 / vec4(1.0, 255.0, 65025.0, 16581375.0));
     }
 
-    float calcShadow() {
+    float calcShadow(sampler2D textures[${SHADOWS_AMOUNT}]) {
       float bias = 0.001;
       float shadow = 0.0;
       for(int i = 0; i < ${SHADOWS_AMOUNT}; i++) {
-        vec3 lightPosition = projectedTextureCoordinate[i].xyz / projectedTextureCoordinate[i].w;
+        vec3 lightPosition = projectedTextureCoordinates[i].xyz / projectedTextureCoordinates[i].w;
         float depth = lightPosition.z - bias;
-        float occluder = unpackRGBA(texture2D(shadowTexture, lightPosition.xy));
+        float occluder = unpackRGBA(texture2D(textures[i], lightPosition.xy));
         shadow += mix(0.2, 1.0, step(depth, occluder));
       }
       return shadow;
@@ -258,7 +258,7 @@ const defaultFragment = `
     `)}
 
     ${ifdef(USE_SHADOW, `
-      shadow = calcShadow();
+      shadow = calcShadow(shadowTextures);
     `)}
 
     gl_FragColor = vec4(ambientLight + (pointLight + directionalLight) * shadow, 1.0);

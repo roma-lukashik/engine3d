@@ -3,7 +3,7 @@ import { PointLight } from './point'
 import { AmbientLight } from './ambient'
 import { DirectionalLight } from './directional'
 
-export const isShadowLight = (light: Light): light is Light & LightWithShadow => light.castShadow
+export const isShadowLight = (light: Light): light is LightWithShadow => light.castShadow
 
 export const isPointLight = (light: Light): light is PointLight => light.type === LightType.Point
 

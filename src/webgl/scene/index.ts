@@ -14,7 +14,7 @@ import {
 import { Shadow } from '../shadow'
 
 type Props = {
-  gl: WebGLRenderingContext;
+  gl: WebGLRenderingContext
 }
 
 export class Scene {
@@ -22,7 +22,7 @@ export class Scene {
 
   public meshes: Map<Mesh, WebGLMesh> = new Map()
   public lights: Light[] = []
-  public shadow: Shadow
+  public shadows: Shadow[] = []
   public dirty: boolean = false
 
   public get pointLights(): PointLight[] {
@@ -37,13 +37,12 @@ export class Scene {
     return this.lights.filter(isAmbientLight)
   }
 
-  public get shadowLights(): Array<Light & LightWithShadow> {
+  public get shadowLights(): Array<LightWithShadow> {
     return this.lights.filter(isShadowLight)
   }
 
   constructor({ gl }: Props) {
     this.gl = gl
-    this.shadow = new Shadow({ gl: this.gl })
   }
 
   public addMesh(...meshes: Mesh[]): void {
@@ -53,7 +52,8 @@ export class Scene {
   }
 
   public addLight(...lights: Light[]): void {
-    this.lights.push(...lights)
     this.dirty = true
+    this.lights.push(...lights)
+    this.shadows.push(...lights.filter(isShadowLight).map((light) => new Shadow({ gl: this.gl, light })))
   }
 }
