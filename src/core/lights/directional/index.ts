@@ -2,7 +2,7 @@ import * as m4 from '../../../math/matrix4'
 import * as v3 from '../../../math/vector3'
 import { Camera, OrthographicCamera } from '../../camera'
 import { LightType, LightWithShadow } from '../types'
-import { Color } from '../../../math/color'
+import { Color } from '../../../utils/color'
 
 type Vector3 = v3.Vector3
 type Matrix4 = m4.Matrix4

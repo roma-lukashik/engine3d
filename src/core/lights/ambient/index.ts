@@ -1,5 +1,5 @@
 import { Light, LightType } from '../types'
-import { Color } from '../../../math/color'
+import { Color } from '../../../utils/color'
 
 type Props = {
   color?: number

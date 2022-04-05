@@ -3,19 +3,17 @@ import { Uniform } from '../uniform'
 import { TextureSlot } from '../textureSlot'
 import { range } from '../../../utils/array'
 
-export type UniformValues = {
-  [key: string]: any;
-}
+export type UniformValues = Record<string, any>
 
 type Props = {
-  gl: WebGLRenderingContext;
-  program: WebGLProgram;
+  gl: WebGLRenderingContext
+  program: WebGLProgram
 }
 
 export class Uniforms<U extends UniformValues> {
   private readonly gl: WebGLRenderingContext
   private readonly program: WebGLProgram
-  private readonly data: Uniform[] = []
+  private readonly uniforms: Uniform[] = []
 
   constructor({ gl, program }: Props) {
     this.gl = gl
@@ -26,7 +24,7 @@ export class Uniforms<U extends UniformValues> {
   public update() {
     const textureSlot = new TextureSlot({ gl: this.gl })
 
-    this.data.forEach((uniform) => {
+    this.uniforms.forEach((uniform) => {
       if (uniform.isTextureArray()) {
         const firstSlot = textureSlot.current
         uniform.value.forEach((texture) => {
@@ -49,7 +47,7 @@ export class Uniforms<U extends UniformValues> {
   }
 
   public setValues(values: U): void {
-    this.data.forEach((uniform) => {
+    this.uniforms.forEach((uniform) => {
       if (values[uniform.name]) {
         uniform.setValue(values[uniform.name])
       }
@@ -68,7 +66,7 @@ export class Uniforms<U extends UniformValues> {
         return
       }
       const value = this.gl.getUniform(this.program, location)
-      this.data.push(new Uniform({ gl: this.gl, location, activeInfo, value }))
+      this.uniforms.push(new Uniform({ gl: this.gl, location, activeInfo, value }))
     }
   }
 }

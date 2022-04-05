@@ -1,5 +1,5 @@
-import { divide, Vector3 } from '../vector3'
-import { Vector4 } from '../vector4'
+import { divide, Vector3 } from '../../math/vector3'
+import { Vector4 } from '../../math/vector4'
 
 const MAX_BYTE = 255
 

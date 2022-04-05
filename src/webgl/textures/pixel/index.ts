@@ -1,6 +1,6 @@
+import { Color } from '../../../utils/color'
 import { WebGLBaseTexture } from '../types'
 import { createTexture2D } from '../utils'
-import { Color } from '../../../math/color'
 
 type Props = {
   gl: WebGLRenderingContext

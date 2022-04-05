@@ -1,13 +1,13 @@
 import { WebGLBaseTexture } from '../../textures/types'
 
-type Props<T extends any = any> = {
-  gl: WebGLRenderingContext;
-  activeInfo: WebGLActiveInfo;
-  location: WebGLUniformLocation;
-  value: T;
+type Props<T = any> = {
+  gl: WebGLRenderingContext
+  activeInfo: WebGLActiveInfo
+  location: WebGLUniformLocation
+  value: T
 }
 
-export class Uniform<T extends any = any> {
+export class Uniform<T = any> {
   private readonly gl: WebGLRenderingContext
   private readonly location: WebGLUniformLocation
   private readonly type: number
@@ -17,7 +17,7 @@ export class Uniform<T extends any = any> {
   public readonly name: string
   public value: T
 
-  constructor({ gl, activeInfo, location,  value }: Props) {
+  constructor({ gl, activeInfo, location,  value }: Props<T>) {
     const split = activeInfo.name.match(/(\w+)/g)
     if (!split) {
       throw new Error(`Uniform ${activeInfo.name} contains an error.`)
