@@ -13,5 +13,6 @@ export type LightWithShadow = Light & {
 export enum LightType {
   Ambient,
   Point,
+  SpotLight,
   Directional,
 }

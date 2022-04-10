@@ -7,9 +7,11 @@ import {
   isDirectionalLight,
   isPointLight,
   isShadowLight,
+  isSpotLight,
   Light,
   LightWithShadow,
   PointLight,
+  SpotLight,
 } from '../../core/lights'
 import { Shadow } from '../shadow'
 
@@ -27,6 +29,10 @@ export class Scene {
 
   public get pointLights(): PointLight[] {
     return this.lights.filter(isPointLight)
+  }
+
+  public get spotLights(): SpotLight[] {
+    return this.lights.filter(isSpotLight)
   }
 
   public get directionalLights(): DirectionalLight[] {

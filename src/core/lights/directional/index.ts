@@ -2,7 +2,7 @@ import * as m4 from '../../../math/matrix4'
 import * as v3 from '../../../math/vector3'
 import { Camera, OrthographicCamera } from '../../camera'
 import { LightType, LightWithShadow } from '../types'
-import { Color } from '../../../utils/color'
+import { normHex2rgb } from '../../../utils/color'
 
 type Vector3 = v3.Vector3
 type Matrix4 = m4.Matrix4
@@ -19,7 +19,7 @@ export class DirectionalLight implements LightWithShadow {
   public readonly type: LightType
   public readonly castShadow: boolean
   public direction: Vector3
-  public color: Color
+  public color: Vector3
   public intensity: number
 
   public get projectionMatrix(): Matrix4 {
@@ -32,7 +32,7 @@ export class DirectionalLight implements LightWithShadow {
     color = 0xFFFFFF,
   }: Props = {}) {
     this.type = LightType.Directional
-    this.color = new Color(color)
+    this.color = normHex2rgb(color)
     this.castShadow = castShadow
     this.intensity = intensity
     this.camera = new OrthographicCamera({

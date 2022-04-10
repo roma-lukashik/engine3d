@@ -1,5 +1,6 @@
 import { Light, LightType } from '../types'
-import { Color } from '../../../utils/color'
+import { normHex2rgb } from '../../../utils/color'
+import { Vector3 } from '../../../math/vector3'
 
 type Props = {
   color?: number
@@ -9,7 +10,7 @@ type Props = {
 export class AmbientLight implements Light {
   public readonly type: LightType
   public readonly castShadow: boolean
-  public color: Color
+  public color: Vector3
   public intensity: number
 
   constructor({
@@ -18,7 +19,7 @@ export class AmbientLight implements Light {
   }: Props = {}) {
     this.type = LightType.Ambient
     this.castShadow = false
-    this.color = new Color(color)
+    this.color = normHex2rgb(color)
     this.intensity = intensity
   }
 }

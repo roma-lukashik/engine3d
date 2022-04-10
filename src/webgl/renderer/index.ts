@@ -1,4 +1,5 @@
 import * as m4 from '../../math/matrix4'
+import * as v3 from '../../math/vector3'
 import { Scene } from '../scene'
 import { Camera } from '../../core/camera'
 import { createMainProgram, MainProgram } from '../program/main'
@@ -35,6 +36,7 @@ export class Renderer {
         gl: this.gl,
         ambientLightsAmount: scene.ambientLights.length,
         pointLightsAmount: scene.pointLights.length,
+        spotLightsAmount: scene.spotLights.length,
         directionalLightsAmount: scene.directionalLights.length,
         shadowsAmount: scene.shadows.length,
       })
@@ -66,11 +68,11 @@ export class Renderer {
 
     this.program.uniforms.setValues({
       projectionMatrix: camera.projectionMatrix,
-      cameraPosition: camera.position,
       textureMatrices: scene.shadowLights.map((light) => m4.multiply(bias, light.projectionMatrix)),
-      ambientLights: scene.ambientLights.map(({ color, intensity }) => ({ color: color.normalized, intensity })),
-      pointLights: scene.pointLights.map(({ color, position }) => ({ color: color.normalized, position })),
-      directionalLights: scene.directionalLights.map(({ color, intensity, direction }) => ({ color: color.normalized, intensity, direction })),
+      ambientLights: scene.ambientLights.map(({ color, intensity }) => ({ color: v3.multiply(color, intensity) })),
+      pointLights: scene.pointLights.map(({ color, position }) => ({ color, position })),
+      spotLights: scene.spotLights.map(({ color, intensity, position, target, distance, angle, penumbra }) => ({ color: v3.multiply(color, intensity), position, distance, target, coneCos: Math.cos(angle), penumbraCos: Math.cos(angle * (1 - penumbra)) })),
+      directionalLights: scene.directionalLights.map(({ color, intensity, direction }) => ({ color: v3.multiply(color, intensity), direction })),
       shadowTextures: scene.shadows.map(({ depthTexture }) => depthTexture),
     })
   }
