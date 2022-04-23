@@ -3,7 +3,11 @@ import { normHex2rgb } from '../../../utils/color'
 import { Vector3 } from '../../../math/vector3'
 
 type Props = {
+  // Hexadecimal color of the light.
+  // Default is 0xFFFFFF (white).
   color?: number
+  // The light's strength/intensity value.
+  // Takes values between 0 and 1. Default is 0.1.
   intensity?: number
 }
 

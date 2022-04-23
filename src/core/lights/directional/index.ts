@@ -8,8 +8,14 @@ type Vector3 = v3.Vector3
 type Matrix4 = m4.Matrix4
 
 type Props = {
+  // Hexadecimal color of the light.
+  // Default is 0xFFFFFF (white).
   color?: number
+  // The light's strength/intensity value.
+  // Takes values between 0 and 1. Default is 1.
   intensity?: number
+  // The flag to enable or disable dynamic shadows.
+  // Default if true (shadow is enabled).
   castShadow?: boolean
 }
 

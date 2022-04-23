@@ -8,18 +8,22 @@ type Vector3 = v3.Vector3
 type Matrix4 = m4.Matrix4
 
 type Props = {
+  // Hexadecimal color of the light.
+  // Default is 0xFFFFFF (white).
   color?: number
-  castShadow?: boolean
-  // The spotlight's strength/intensity value.
+  // The light's strength/intensity value.
   // Takes values between 0 and 1. Default is 1.
   intensity?: number
-  // Maximum range of the spotlight.
+  // The flag to enable or disable dynamic shadows.
+  // Default if true (shadow is enabled).
+  castShadow?: boolean
+  // Maximum range of the light.
   // Default is 0 (no limit).
   distance?: number
-  // Maximum angle (in radian) of the spotlight dispersion from its direction.
+  // Maximum angle (in radian) of the light dispersion from its direction.
   // Takes values between 0 abd PI/2. Default is PI/3.
   angle?: number
-  // Percent of the spotlight cone that is attenuated due to penumbra.
+  // Percent of the light cone that is attenuated due to penumbra.
   // Takes values between 0 and 1. Default is 0.
   penumbra?: number
 }
