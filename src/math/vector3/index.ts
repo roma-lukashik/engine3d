@@ -14,6 +14,8 @@ export const z = (v: Vector3) => v[2]
 
 export const zero = () => vector3(0, 0, 0)
 
+export const one = () => vector3(1, 1, 1)
+
 export const add = (a: Vector3, b: Vector3) => vector3(x(a) + x(b), y(a) + y(b), z(a) + z(b))
 
 export const subtract = (a: Vector3, b: Vector3) => vector3(x(a) - x(b), y(a) - y(b), z(a) - z(b))
