@@ -106,7 +106,7 @@ type MeshPrimitive = {
   extras?: any
 }
 
-type MeshPrimitiveAttributes = {
+export type MeshPrimitiveAttributes = {
   POSITION?: ResourceId
   NORMAL?: ResourceId
   TANGENT?: ResourceId

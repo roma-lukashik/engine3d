@@ -1,4 +1,5 @@
 import { Model } from '../../types'
+import { BufferAttribute } from '../gltf/bufferAttribute'
 
 type SeparatedVertices = [
   position: number[][],
@@ -76,8 +77,8 @@ const addVertex = (vertex: string, data: SeparatedVertices, webglVertexData: Web
 
 const createModel = ([position, uv, normal]: WebglVertexData): Model => {
   return {
-    position: { size: 3, data: position },
-    normal: { size: 3, data: normal },
-    uv: { size: 2, data: uv },
+    position: new BufferAttribute(new Float32Array(position), 3, false),
+    normal: new BufferAttribute(new Float32Array(normal), 3, false),
+    uv: new BufferAttribute(new Float32Array(uv), 2, false),
   }
 }

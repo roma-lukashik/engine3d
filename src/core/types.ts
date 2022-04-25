@@ -1,10 +1,7 @@
-export type Model = {
-  position: CoordinatesData;
-  normal: CoordinatesData;
-  uv: CoordinatesData;
-}
+import { BufferAttribute } from './loaders/gltf/bufferAttribute'
 
-type CoordinatesData = {
-  size: number;
-  data: number[];
+export type Model = {
+  position: BufferAttribute
+  normal: BufferAttribute
+  uv: BufferAttribute
 }

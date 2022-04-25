@@ -3,6 +3,8 @@ import { Material } from './material'
 import { Node } from './node'
 import { Mesh } from './mesh'
 import { BufferAttribute } from './bufferAttribute'
+import { Geometry } from './geometry'
+import { forEachKey } from '../../../utils/object'
 
 export const parseGltf = (data: Gltf, binaryData: ArrayBuffer) => {
   const version = Number(data.asset?.version ?? 0)
@@ -41,21 +43,23 @@ const parseMeshes = (data: Gltf, binaryData: ArrayBuffer): Mesh[] => {
   const meshes: Mesh[] = []
   data.meshes?.forEach((mesh) => {
     mesh.primitives.forEach((primitive) => {
-      const geometry = {} as Record<string, BufferAttribute | undefined>
-
-      Object.entries(primitive.attributes).forEach(([attribute, value]) => {
-        geometry[attribute] = parseAttributeAccessor(data, value, binaryData)
+      const geometry = new Geometry()
+      forEachKey(primitive.attributes, (attribute, value) => {
+        geometry.setAttribute(attribute, parseAttributeAccessor(data, value, binaryData))
       })
 
       const gltfMaterial = primitive.material !== undefined ? data.materials?.[primitive.material] : undefined
       const material = new Material(gltfMaterial)
-      meshes.push(createMesh(geometry, material))
+      const mesh = createMesh(geometry, material, primitive.mode)
+      if (mesh) {
+        meshes.push(mesh)
+      }
     })
   })
   return meshes
 }
 
-const createMesh = (geometry: any, material: Material, mode?: MeshPrimitiveMode): Mesh => {
+const createMesh = (geometry: Geometry, material: Material, mode?: MeshPrimitiveMode): Mesh | undefined => {
   switch (mode) {
     case MeshPrimitiveMode.Triangles:
     case MeshPrimitiveMode.TriangleStrip:
@@ -70,7 +74,7 @@ const createMesh = (geometry: any, material: Material, mode?: MeshPrimitiveMode)
     case MeshPrimitiveMode.Points:
       // Not implemented yet.
     default:
-      throw new Error(`Unsupported mesh ${mode}`)
+      return
   }
 }
 

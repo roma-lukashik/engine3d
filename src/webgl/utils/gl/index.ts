@@ -1,3 +1,5 @@
+import { BufferAttribute } from '../../../core/loaders/gltf/bufferAttribute'
+
 export const compileShader = (gl: WebGLRenderingContext, source: string, type: number): WebGLShader => {
   const shader = gl.createShader(type)
   if (!shader) {
@@ -42,7 +44,7 @@ const bufferSize = (gl: WebGLRenderingContext, type: number) => {
 
 export type ExtendedAttribute = {
   size: number;
-  data: Float32Array;
+  data: BufferAttribute['array'];
   type: number;
   normalized: boolean;
   stride: number;
@@ -55,19 +57,20 @@ export type ExtendedAttribute = {
 
 export const createExtendedAttribute = (
   gl: WebGLRenderingContext,
-  value: {
-    size: number,
-    data: number[],
-  },
+  value: BufferAttribute,
 ): ExtendedAttribute => ({
-  size: value.size,
-  data: new Float32Array(value.data),
-  type: gl.FLOAT,
-  normalized: false,
+  size: value.itemSize,
+  data: value.array,
+  type: value.array.constructor === Float32Array ?
+    gl.FLOAT :
+    value.array.constructor === Uint16Array ?
+      gl.UNSIGNED_SHORT :
+      gl.UNSIGNED_INT,
+  normalized: value.normalized,
   stride: 0,
   offset: 0,
   divisor: 0,
   target: gl.ARRAY_BUFFER,
-  count: value.size ? value.data.length / value.size : 1,
+  count: value.count,
   buffer: gl.createBuffer(),
 })
