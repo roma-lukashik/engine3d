@@ -12,6 +12,7 @@ export type Gltf = {
   meshes?: GltfMesh[]
   nodes?: GltfNode[]
   materials?: GltfMaterial[]
+  skins?: GltfSkin[]
   animations?: GltfAnimation[]
   textures?: GltfTexture[]
   images: GltfImage[]
@@ -96,7 +97,7 @@ export enum MeshPrimitiveMode {
   TriangleFan,
 }
 
-type MeshPrimitive = {
+export type MeshPrimitive = {
   indices?: ResourceId // The index of the accessor that contains the indices.
   material?: ResourceId
   mode?: MeshPrimitiveMode
@@ -172,6 +173,15 @@ type MaterialNormalTextureInfo = {
   index?: any
   texCoord?: any
   scale?: number
+  extensions?: any
+  extras?: any
+}
+
+type GltfSkin = {
+  inverseBindMatrices?: ResourceId
+  skeleton?: ResourceId
+  joints: ResourceId[]
+  name?: string
   extensions?: any
   extras?: any
 }

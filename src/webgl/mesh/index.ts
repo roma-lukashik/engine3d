@@ -5,6 +5,7 @@ import { WebGLBaseTexture } from '../textures/types'
 import { createExtendedAttribute, ExtendedAttribute } from '../utils/gl'
 import { Model } from '../../core/types'
 import { Matrix4 } from '../../math/matrix4'
+import { forEachKey } from '../../utils/object'
 
 type Props = {
   gl: WebGLRenderingContext
@@ -13,7 +14,7 @@ type Props = {
 
 export class WebGLMesh {
   private readonly gl: WebGLRenderingContext
-  private readonly attributes: Record<string, ExtendedAttribute> = {}
+  private readonly attributes: Record<keyof Model, ExtendedAttribute> = {} as Record<keyof Model, ExtendedAttribute>
   private readonly modelMatrix: Matrix4
   private readonly modelTexture: WebGLBaseTexture
 
@@ -35,15 +36,25 @@ export class WebGLMesh {
     })
     program.uniforms.update()
     program.attributes.update(this.attributes)
-    this.gl.drawArrays(this.gl.TRIANGLES, 0, this.attributes.position.count)
+    if (!this.attributes.index) {
+      this.gl.drawArrays(this.gl.TRIANGLES, 0, this.attributes.position.count)
+    } else {
+      this.gl.drawElements(this.gl.TRIANGLES, this.attributes.index.count, this.attributes.index.type, this.attributes.index.offset)
+    }
   }
 
-  private setAttributes(model: Model) {
-    Object.entries(model).forEach(([key, value]) => {
+  private setAttributes({ position, normal, uv, index }: Model) {
+    forEachKey({ position, normal, uv }, (key, value) => {
       const attribute = createExtendedAttribute(this.gl, value)
       this.gl.bindBuffer(attribute.target, attribute.buffer)
       this.gl.bufferData(attribute.target, attribute.data, this.gl.STATIC_DRAW)
       this.attributes[key] = attribute
     })
+    if (index) {
+      const attribute = createExtendedAttribute(this.gl, index)
+      this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, attribute.buffer)
+      this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, attribute.data, this.gl.STATIC_DRAW)
+      this.attributes.index = attribute
+    }
   }
 }

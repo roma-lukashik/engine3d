@@ -10,9 +10,14 @@ export class Geometry {
   public color?: BufferAttribute
   public skinWeight?: BufferAttribute
   public skinIndex?: BufferAttribute
+  public index?: BufferAttribute
 
   public setAttribute(key: keyof MeshPrimitiveAttributes, value?: BufferAttribute): void {
     this[ATTRIBUTES[key]] = value
+  }
+
+  public setIndices(indices?: BufferAttribute): void {
+    this.index = indices
   }
 }
 

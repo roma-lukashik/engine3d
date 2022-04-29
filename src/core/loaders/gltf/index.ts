@@ -1,10 +1,11 @@
-import { AccessorType, ComponentType, Gltf, MeshPrimitiveMode } from '../types'
+import { AccessorType, ComponentType, Gltf, MeshPrimitive, MeshPrimitiveMode } from '../types'
 import { Material } from './material'
-import { Node } from './node'
 import { Mesh } from './mesh'
 import { BufferAttribute } from './bufferAttribute'
 import { Geometry } from './geometry'
 import { forEachKey } from '../../../utils/object'
+import { Object3d } from './object3d'
+import { mapOption } from '../../../utils/array'
 
 export const parseGltf = (data: Gltf, binaryData: ArrayBuffer) => {
   const version = Number(data.asset?.version ?? 0)
@@ -12,18 +13,16 @@ export const parseGltf = (data: Gltf, binaryData: ArrayBuffer) => {
     throw new Error('Unsupported *.gltf file. Version should be >= 2.0.')
   }
 
-  return [parseScenes(data), parseMeshes(data, binaryData)] as const
+  const nodes = parseNodes(data, binaryData)
+  return nodes
 }
 
-const parseScenes = (data: Gltf): Node[] => {
-  const nodes: Node[] = []
-  const scenes = getScenes(data)
-  scenes?.forEach((scene) => {
-    scene.nodes?.forEach((nodeId) => {
-      nodes.push(...parseNode(data, nodeId))
-    })
+const parseNodes = (data: Gltf, binaryData: ArrayBuffer): Object3d[] => {
+  const scenes = getScenes(data) ?? []
+  return scenes?.flatMap((scene) => {
+    const nodes = scene.nodes ?? []
+    return nodes.flatMap((nodeId) => parseNode(data, nodeId, binaryData) ?? [])
   })
-  return nodes
 }
 
 const getScenes = (data: Gltf): Gltf['scenes'] => {
@@ -31,40 +30,58 @@ const getScenes = (data: Gltf): Gltf['scenes'] => {
   return defaultScene ? [defaultScene] : data.scenes
 }
 
-const parseNode = (data: Gltf, nodeId: number): Node[] => {
-  const node = data.nodes?.[nodeId]
-  if (!node) {
-    return []
+const parseNode = (data: Gltf, nodeId: number, binaryData: ArrayBuffer): Object3d | undefined => {
+  const gltfNode = data.nodes?.[nodeId]
+  if (!gltfNode) {
+    return
   }
-  return [new Node(node), ...node.children?.flatMap((id) => parseNode(data, id)) ?? []]
+  const node = new Object3d(gltfNode)
+  if (gltfNode.mesh) {
+    const mesh = parseMesh(data, gltfNode.mesh, binaryData)
+    if (mesh) {
+      node.add(mesh)
+    }
+  }
+  // if (gltfNode.skin) {
+  //   const skin = parseSkin(data, node, gltfNode.skin, binaryData)
+  // }
+  const children = mapOption(gltfNode.children, (child) => parseNode(data, child, binaryData))
+  node.add(...children)
+  return node
 }
 
-const parseMeshes = (data: Gltf, binaryData: ArrayBuffer): Mesh[] => {
-  const meshes: Mesh[] = []
-  data.meshes?.forEach((mesh) => {
-    mesh.primitives.forEach((primitive) => {
-      const geometry = new Geometry()
-      forEachKey(primitive.attributes, (attribute, value) => {
-        geometry.setAttribute(attribute, parseAttributeAccessor(data, value, binaryData))
-      })
-
-      const gltfMaterial = primitive.material !== undefined ? data.materials?.[primitive.material] : undefined
-      const material = new Material(gltfMaterial)
-      const mesh = createMesh(geometry, material, primitive.mode)
-      if (mesh) {
-        meshes.push(mesh)
-      }
-    })
+const parseMesh = (data: Gltf, meshIndex: number, binaryData: ArrayBuffer): Object3d | undefined => {
+  const gltfMesh = data.meshes?.[meshIndex]
+  if (!gltfMesh) {
+    return
+  }
+  const meshes = gltfMesh.primitives.map((primitive) => {
+    return parsePrimitive(data, primitive, binaryData)
   })
-  return meshes
+  const object3d = new Object3d()
+  object3d.add(...meshes)
+  return object3d
 }
 
-const createMesh = (geometry: Geometry, material: Material, mode?: MeshPrimitiveMode): Mesh | undefined => {
+const parsePrimitive = (data: Gltf, primitive: MeshPrimitive, binaryData: ArrayBuffer): Mesh => {
+  const geometry = new Geometry()
+  forEachKey(primitive.attributes, (attribute, value) => {
+    geometry.setAttribute(attribute, parseAttributeAccessor(data, value, binaryData))
+  })
+  if (primitive.indices) {
+    geometry.setIndices(parseAttributeAccessor(data, primitive.indices, binaryData))
+  }
+  const gltfMaterial = primitive.material !== undefined ? data.materials?.[primitive.material] : undefined
+  const material = new Material(gltfMaterial)
+  return createMesh(geometry, material, primitive.mode)
+}
+
+const createMesh = (geometry: Geometry, material: Material, mode?: MeshPrimitiveMode): Mesh => {
   switch (mode) {
     case MeshPrimitiveMode.Triangles:
     case MeshPrimitiveMode.TriangleStrip:
     case MeshPrimitiveMode.TriangleFan:
-      return new Mesh(geometry, material)
+      return new Mesh({ geometry, material })
     case MeshPrimitiveMode.Lines:
       // Not implemented yet.
     case MeshPrimitiveMode.LineLoop:
@@ -74,7 +91,7 @@ const createMesh = (geometry: Geometry, material: Material, mode?: MeshPrimitive
     case MeshPrimitiveMode.Points:
       // Not implemented yet.
     default:
-      return
+      return new Mesh({ geometry, material })
   }
 }
 
@@ -89,14 +106,13 @@ const parseAttributeAccessor = (data: Gltf, accessorIndex: number, binaryData: A
   const TypedArray = TypedArrayByComponentType[accessor.componentType]
   const byteOffset = accessor.byteOffset ?? 0
   const normalized = accessor.normalized === true
-  // Handle byteStride has not been implemented yet.
   // const elementBytes = TypedArray.BYTES_PER_ELEMENT
   // const itemBytes = elementBytes * itemSize
-  // const byteStride = accessor.bufferView !== undefined ? data.bufferViews?.[accessor.bufferView].byteStride : undefined
+  const stride = accessor.bufferView !== undefined ? data.bufferViews?.[accessor.bufferView].byteStride : undefined
   const array = bufferView ?
     new TypedArray(bufferView, byteOffset, accessor.count * itemSize) :
     new TypedArray(accessor.count * itemSize)
-  return new BufferAttribute(array, itemSize, normalized)
+  return new BufferAttribute({ array, itemSize, normalized, stride })
 }
 
 const AccessorTypeSizes = {
@@ -137,8 +153,18 @@ const parseBuffer = (data: Gltf, bufferIndex: number, binaryData: ArrayBuffer): 
   }
 }
 
-// const parsePrimitive = () => {
-//
+// const parseSkin = (data: Gltf, node: Object3d, skinIndex: number, binaryData: ArrayBuffer) => {
+//   const skin = data.skins?.[skinIndex]
+//   if (!skin) {
+//     return
+//   }
+//   const s: any = {
+//     joints: skin.joints,
+//   }
+//   if (skin.inverseBindMatrices) {
+//     s.inverseBindMatrices = parseAttributeAccessor(data, skin.inverseBindMatrices, binaryData)
+//   }
+//   const jointNodes = skin.joints.map((joint) => parseNode(data, joint, binaryData))
 // }
 
 // const parseAnimations = (data: Gltf) => {

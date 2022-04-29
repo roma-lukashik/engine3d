@@ -7,12 +7,12 @@ const json = {
   },
   scene: 0,
   scenes: [
-    { name: "Scene" },
+    { name: 'Scene' },
   ],
 }
 
 const jsonUint8Array = new TextEncoder().encode(JSON.stringify(json))
-const magic = 0x46546c67
+const magic = 0x46546C67
 const version = 0x2
 const jsonLength = jsonUint8Array.byteLength
 const headerLength = 12
