@@ -52,6 +52,7 @@ export class WebGLMesh {
     })
     if (index) {
       const attribute = createExtendedAttribute(this.gl, index)
+      attribute.target = this.gl.ELEMENT_ARRAY_BUFFER
       this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, attribute.buffer)
       this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, attribute.data, this.gl.STATIC_DRAW)
       this.attributes.index = attribute

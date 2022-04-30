@@ -28,22 +28,26 @@ export const parseGlb = (buffer: ArrayBufferLike): Glb => {
     throw new Error(`Unsupported legacy binary file. Provided version is ${version}, but supported is 2.0.`)
   }
 
-  const [jsonLength, jsonFormat] = new Uint32Array(buffer, BINARY_HEADER_LENGTH, 2)
+  const [jsonLength, jsonFormat] = getHeader(buffer, BINARY_HEADER_LENGTH)
   if (jsonFormat !== BINARY_CHUNK_JSON_TYPES) {
     throw new Error('Unexpected GLB layout.')
   }
-  const jsonOffset = 20
+  const jsonOffset = BINARY_HEADER_LENGTH + 2 * UINT_SIZE
   const jsonBuffer = buffer.slice(jsonOffset, jsonOffset + jsonLength)
   const json = JSON.parse(decodeText(jsonBuffer))
 
-  const [binaryLength, binaryFormat] = new Uint32Array(buffer, jsonOffset + jsonLength, 2)
+  const [binaryLength, binaryFormat] = getHeader(buffer, jsonOffset + jsonLength)
   if (binaryFormat !== BINARY_CHUNK_BIN_TYPES) {
     throw new Error('Unexpected GLB layout.')
   }
-  const binaryOffset = jsonOffset + jsonLength + 8
-  const data =  buffer.slice(binaryOffset, binaryOffset + binaryLength)
+  const binaryOffset = jsonOffset + jsonLength + 2 * UINT_SIZE
+  const data = buffer.slice(binaryOffset, binaryOffset + binaryLength)
 
   return { json, data }
+}
+
+const getHeader = (buffer: ArrayBufferLike, offset: number): [length: number, format: number] => {
+  return [...new Uint32Array(buffer, offset, 2)] as [number, number]
 }
 
 const decodeText = (buffer: ArrayBufferLike): string => {

@@ -67,8 +67,8 @@ export const createExtendedAttribute = (
       gl.UNSIGNED_SHORT :
       gl.UNSIGNED_INT,
   normalized: value.normalized,
-  stride: 0,
-  offset: 0,
+  stride: value.stride,
+  offset: value.offset,
   divisor: 0,
   target: gl.ARRAY_BUFFER,
   count: value.count,

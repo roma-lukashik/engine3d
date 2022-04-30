@@ -27,6 +27,9 @@ export class Attributes {
       this.gl.bindBuffer(attribute.target, attribute.buffer)
       bindBufferToVertexAttribute(this.gl, attribute, location)
     })
+    if (attributes.index) {
+      this.gl.bindBuffer(attributes.index.target, attributes.index.buffer)
+    }
   }
 
   private extractAttributes(): void {
