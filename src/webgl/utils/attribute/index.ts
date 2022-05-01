@@ -1,8 +1,9 @@
-import { bindBufferToVertexAttribute, ExtendedAttribute } from '../gl'
+import { ExtendedAttribute } from '../gl'
+import { Model } from '../../../core/types'
 
 type Attribute = {
   location: number;
-  name: WebGLActiveInfo['name'];
+  name: keyof Model;
 }
 
 type Props = {
@@ -21,11 +22,11 @@ export class Attributes {
     this.extractAttributes()
   }
 
-  public update(attributes: Record<string, ExtendedAttribute>): void {
+  public update(attributes: Record<keyof Model, ExtendedAttribute>): void {
     this.data.forEach(({ location, name }) => {
       const attribute = attributes[name]
       this.gl.bindBuffer(attribute.target, attribute.buffer)
-      bindBufferToVertexAttribute(this.gl, attribute, location)
+      this.bindBufferToVertexAttribute(attribute, location)
     })
     if (attributes.index) {
       this.gl.bindBuffer(attributes.index.target, attributes.index.buffer)
@@ -37,13 +38,41 @@ export class Attributes {
     for (let i = 0; i < activeAttributes; i++) {
       const info = this.gl.getActiveAttrib(this.program, i)
       if (info === null) {
-        return
+        continue
       }
       const location = this.gl.getAttribLocation(this.program, info.name)
       if (location === null) {
-        return
+        continue
       }
-      this.data.push({ location, name: info.name })
+      this.data.push({ location, name: info.name as keyof Model})
+    }
+  }
+
+  private bindBufferToVertexAttribute(attribute: ExtendedAttribute, location: number): void {
+    const numLoc = this.bufferSize(attribute.type)
+    const size = attribute.size / numLoc
+    const stride = numLoc === 1 ? 0 : numLoc ** 3
+    const offset = numLoc === 1 ? 0 : numLoc ** 2
+
+    for (let i = 0; i < numLoc; i++) {
+      this.gl.vertexAttribPointer(
+        location + i,
+        size,
+        attribute.type,
+        attribute.normalized,
+        attribute.stride + stride,
+        attribute.offset + i * offset,
+      )
+      this.gl.enableVertexAttribArray(location + i)
+    }
+  }
+
+  private bufferSize(type: number): number {
+    switch (type) {
+      case this.gl.FLOAT_MAT2: return 2
+      case this.gl.FLOAT_MAT3: return 3
+      case this.gl.FLOAT_MAT4: return 4
+      default: return 1
     }
   }
 }

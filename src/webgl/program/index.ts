@@ -1,4 +1,3 @@
-import { compileShader } from '../utils/gl'
 import { UniformValues, Uniforms } from '../utils/uniforms'
 import { Attributes } from '../utils/attribute'
 
@@ -20,8 +19,10 @@ export class Program<U extends UniformValues = UniformValues> {
     vertex,
     fragment,
   }: Props) {
-    const vertexShader = compileShader(gl, vertex, gl.VERTEX_SHADER)
-    const fragmentShader = compileShader(gl, fragment, gl.FRAGMENT_SHADER)
+    this.gl = gl
+
+    const vertexShader = this.compileShader(vertex, gl.VERTEX_SHADER)
+    const fragmentShader = this.compileShader(fragment, gl.FRAGMENT_SHADER)
     const program = gl.createProgram()
 
     if (!program) {
@@ -34,7 +35,6 @@ export class Program<U extends UniformValues = UniformValues> {
     gl.deleteShader(vertexShader)
     gl.deleteShader(fragmentShader)
 
-    this.gl = gl
     this.program = program
     this.uniforms = new Uniforms({ gl, program })
     this.attributes = new Attributes({ gl, program })
@@ -42,5 +42,15 @@ export class Program<U extends UniformValues = UniformValues> {
 
   public use(): void {
     this.gl.useProgram(this.program)
+  }
+
+  private compileShader(source: string, type: number): WebGLShader {
+    const shader = this.gl.createShader(type)
+    if (!shader) {
+      throw new Error('Cannot create a shader')
+    }
+    this.gl.shaderSource(shader, source)
+    this.gl.compileShader(shader)
+    return shader
   }
 }

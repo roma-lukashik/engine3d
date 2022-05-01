@@ -36,26 +36,25 @@ export class WebGLMesh {
     })
     program.uniforms.update()
     program.attributes.update(this.attributes)
-    if (!this.attributes.index) {
-      this.gl.drawArrays(this.gl.TRIANGLES, 0, this.attributes.position.count)
-    } else {
-      this.gl.drawElements(this.gl.TRIANGLES, this.attributes.index.count, this.attributes.index.type, this.attributes.index.offset)
-    }
+    this.drawBuffer()
   }
 
-  private setAttributes({ position, normal, uv, index }: Model) {
-    forEachKey({ position, normal, uv }, (key, value) => {
-      const attribute = createExtendedAttribute(this.gl, value)
+  private setAttributes(attributes: Model): void {
+    forEachKey(attributes, (key, value) => {
+      const target = key === 'index' ? this.gl.ELEMENT_ARRAY_BUFFER : this.gl.ARRAY_BUFFER
+      const attribute = createExtendedAttribute(this.gl, value, target)
       this.gl.bindBuffer(attribute.target, attribute.buffer)
       this.gl.bufferData(attribute.target, attribute.data, this.gl.STATIC_DRAW)
       this.attributes[key] = attribute
     })
+  }
+
+  private drawBuffer(): void {
+    const { index } = this.attributes
     if (index) {
-      const attribute = createExtendedAttribute(this.gl, index)
-      attribute.target = this.gl.ELEMENT_ARRAY_BUFFER
-      this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, attribute.buffer)
-      this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, attribute.data, this.gl.STATIC_DRAW)
-      this.attributes.index = attribute
+      this.gl.drawElements(this.gl.TRIANGLES, index.count, index.type, index.offset)
+    } else {
+      this.gl.drawArrays(this.gl.TRIANGLES, 0, this.attributes.position.count)
     }
   }
 }

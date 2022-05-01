@@ -59,11 +59,11 @@ export class Uniforms<U extends UniformValues> {
     for (let i = 0; i < activeUniforms; i++) {
       const activeInfo = this.gl.getActiveUniform(this.program, i)
       if (activeInfo === null) {
-        return
+        continue
       }
       const location = this.gl.getUniformLocation(this.program, activeInfo.name)
       if (location === null) {
-        return
+        continue
       }
       const value = this.gl.getUniform(this.program, location)
       this.uniforms.push(new Uniform({ gl: this.gl, location, activeInfo, value }))
