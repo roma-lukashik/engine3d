@@ -1,5 +1,5 @@
 import { Light, LightType } from '../types'
-import { normHex2rgb } from '../../../utils/color'
+import { hexToNormRgb } from '../../../utils/color'
 import { Vector3 } from '../../../math/vector3'
 
 type Props = {
@@ -23,7 +23,7 @@ export class AmbientLight implements Light {
   }: Props = {}) {
     this.type = LightType.Ambient
     this.castShadow = false
-    this.color = normHex2rgb(color)
+    this.color = hexToNormRgb(color)
     this.intensity = intensity
   }
 }

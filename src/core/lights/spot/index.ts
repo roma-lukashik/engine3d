@@ -2,7 +2,7 @@ import * as m4 from '../../../math/matrix4'
 import * as v3 from '../../../math/vector3'
 import { Camera, PerspectiveCamera } from '../../camera'
 import { LightType, LightWithShadow } from '../types'
-import { normHex2rgb } from '../../../utils/color'
+import { hexToNormRgb } from '../../../utils/color'
 
 type Vector3 = v3.Vector3
 type Matrix4 = m4.Matrix4
@@ -60,7 +60,7 @@ export class SpotLight implements LightWithShadow {
     penumbra = 0,
   }: Props = {}) {
     this.type = LightType.SpotLight
-    this.color = normHex2rgb(color)
+    this.color = hexToNormRgb(color)
     this.castShadow = castShadow
     this.intensity = intensity
     this.distance = distance
