@@ -1,3 +1,5 @@
+import { BufferViewTarget } from '../../types'
+
 type TypedArray =
   | Int8Array
   | Uint8Array
@@ -12,7 +14,7 @@ type Props = {
   normalized?: boolean
   stride?: number
   offset?: number
-  divisor?: number
+  target?: BufferViewTarget
 }
 
 export class BufferAttribute {
@@ -22,8 +24,7 @@ export class BufferAttribute {
   public count: number
   public stride: number
   public offset: number
-  public divisor: number
-  public type: number
+  public target: BufferViewTarget
 
   constructor({
     array,
@@ -31,15 +32,14 @@ export class BufferAttribute {
     normalized = false,
     stride = 0,
     offset = 0,
-    divisor = 0,
+    target = BufferViewTarget.ArrayBuffer,
   }: Props) {
     this.array = array
     this.itemSize = itemSize
     this.normalized = normalized
     this.stride = stride
     this.offset = offset
-    this.divisor = divisor
     this.count = array.length / itemSize
-    this.type = 4 // Replace
+    this.target = target
   }
 }

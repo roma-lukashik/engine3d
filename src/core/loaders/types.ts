@@ -71,6 +71,12 @@ type GltfBufferViews = {
   byteLength: number
   byteOffset: number
   byteStride?: number
+  target?: BufferViewTarget
+}
+
+export enum BufferViewTarget {
+  ArrayBuffer = 34962,
+  ElementArrayBuffer = 34963,
 }
 
 type GltfScene = {

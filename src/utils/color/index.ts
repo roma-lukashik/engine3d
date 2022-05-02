@@ -11,4 +11,8 @@ export const hex2rgb = (hex: number): Vector3 => {
   return [r, g, b]
 }
 
+export const rbg2hex = ([r, g, b]: Vector3): number => {
+  return (r * MAX_BYTE << 16) + (g * MAX_BYTE << 8) + b * MAX_BYTE
+}
+
 const normalize = (rgb: Vector3): Vector3 => divide(rgb, MAX_BYTE)

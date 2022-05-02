@@ -41,8 +41,7 @@ export class WebGLMesh {
 
   private setAttributes(attributes: Model): void {
     forEachKey(attributes, (key, value) => {
-      const target = key === 'index' ? this.gl.ELEMENT_ARRAY_BUFFER : this.gl.ARRAY_BUFFER
-      const attribute = createExtendedAttribute(this.gl, value, target)
+      const attribute = createExtendedAttribute(this.gl, value)
       this.gl.bindBuffer(attribute.target, attribute.buffer)
       this.gl.bufferData(attribute.target, attribute.data, this.gl.STATIC_DRAW)
       this.attributes[key] = attribute

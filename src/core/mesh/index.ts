@@ -1,5 +1,5 @@
 import * as m4 from '../../math/matrix4'
-import { PixelTexture, Texture } from '../textures'
+import { ColorTexture, Texture } from '../textures'
 import { Model } from '../types'
 
 type Props = {
@@ -15,7 +15,7 @@ export class Mesh {
 
   constructor({
     data,
-    texture = new PixelTexture(),
+    texture = new ColorTexture(),
     modelMatrix = m4.identity(),
   }: Props) {
     this.data = data

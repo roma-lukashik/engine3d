@@ -4,9 +4,9 @@ type Props = {
   color?: number;
 }
 
-export class PixelTexture implements Texture {
+export class ColorTexture implements Texture {
   public color: number
-  public type: TextureType = TextureType.Pixel
+  public type: TextureType = TextureType.Color
 
   constructor({
     color = 0x646464,

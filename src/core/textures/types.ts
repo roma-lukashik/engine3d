@@ -1,6 +1,6 @@
 export enum TextureType {
   Image,
-  Pixel,
+  Color,
   Depth,
 }
 

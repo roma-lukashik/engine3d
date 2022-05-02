@@ -1,4 +1,4 @@
-import { WebGLPixelTexture } from '.'
+import { WebGLColorTexture } from '.'
 import {
   mockWebGLRenderingContext,
   WebGLRenderingContextState,
@@ -8,10 +8,10 @@ import {
 describe('PixelTexture', () => {
   let state: WebGLRenderingContextState
   let gl: WebGLRenderingContextStub
-  let texture: WebGLPixelTexture
+  let texture: WebGLColorTexture
   beforeEach(() => {
     ({ gl, state } = mockWebGLRenderingContext())
-    texture = new WebGLPixelTexture({ gl, color: 0xFFFFFF })
+    texture = new WebGLColorTexture({ gl, color: 0xFFFFFF })
   })
 
   it('creates a texture', () => {

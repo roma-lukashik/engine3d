@@ -15,7 +15,6 @@ export type ExtendedAttribute = {
 export const createExtendedAttribute = (
   gl: WebGLRenderingContext,
   value: BufferAttribute,
-  target: number,
 ): ExtendedAttribute => ({
   size: value.itemSize,
   data: value.array,
@@ -27,7 +26,7 @@ export const createExtendedAttribute = (
   normalized: value.normalized,
   stride: value.stride,
   offset: value.offset,
-  target: target,
+  target: value.target,
   count: value.count,
   buffer: gl.createBuffer(),
 })

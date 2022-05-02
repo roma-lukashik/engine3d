@@ -1,4 +1,4 @@
-import { AccessorType, ComponentType, Gltf, MeshPrimitive, MeshPrimitiveMode } from '../types'
+import { AccessorType, BufferViewTarget, ComponentType, Gltf, MeshPrimitive, MeshPrimitiveMode } from '../types'
 import { Material } from './material'
 import { Mesh } from './mesh'
 import { BufferAttribute } from './bufferAttribute'
@@ -66,10 +66,10 @@ const parseMesh = (data: Gltf, meshIndex: number, binaryData: ArrayBuffer): Obje
 const parsePrimitive = (data: Gltf, primitive: MeshPrimitive, binaryData: ArrayBuffer): Mesh => {
   const geometry = new Geometry()
   forEachKey(primitive.attributes, (attribute, value) => {
-    geometry.setAttribute(attribute, parseAttributeAccessor(data, value, binaryData))
+    geometry.setAttribute(attribute, parseAttributeAccessor(data, value, BufferViewTarget.ArrayBuffer, binaryData))
   })
   if (primitive.indices) {
-    geometry.setIndices(parseAttributeAccessor(data, primitive.indices, binaryData))
+    geometry.setIndices(parseAttributeAccessor(data, primitive.indices, BufferViewTarget.ElementArrayBuffer, binaryData))
   }
   const gltfMaterial = primitive.material !== undefined ? data.materials?.[primitive.material] : undefined
   const material = new Material(gltfMaterial)
@@ -96,7 +96,12 @@ const createMesh = (geometry: Geometry, material: Material, mode?: MeshPrimitive
 }
 
 // Handling sparse has not been implemented yet.
-const parseAttributeAccessor = (data: Gltf, accessorIndex: number, binaryData: ArrayBuffer): BufferAttribute | undefined => {
+const parseAttributeAccessor = (
+  data: Gltf,
+  accessorIndex: number,
+  target: BufferViewTarget,
+  binaryData: ArrayBuffer,
+): BufferAttribute | undefined => {
   const accessor = data.accessors?.[accessorIndex]
   if (!accessor) {
     return
@@ -112,7 +117,7 @@ const parseAttributeAccessor = (data: Gltf, accessorIndex: number, binaryData: A
   const array = bufferView ?
     new TypedArray(bufferView, byteOffset, accessor.count * itemSize) :
     new TypedArray(accessor.count * itemSize)
-  return new BufferAttribute({ array, itemSize, normalized, stride })
+  return new BufferAttribute({ array, itemSize, normalized, stride, target })
 }
 
 const AccessorTypeSizes = {
@@ -149,7 +154,7 @@ const parseBuffer = (data: Gltf, bufferIndex: number, binaryData: ArrayBuffer): 
   if (!buffer?.uri) {
     return binaryData
   } else {
-    throw new Error('Support for buffer URI is not supported yet.')
+    throw new Error('Getting buffer from URI is not supported yet.')
   }
 }
 

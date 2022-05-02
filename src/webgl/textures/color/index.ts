@@ -7,7 +7,7 @@ type Props = {
   color: number
 }
 
-export class WebGLPixelTexture implements WebGLBaseTexture {
+export class WebGLColorTexture implements WebGLBaseTexture {
   public readonly texture: WebGLTexture
 
   constructor({
