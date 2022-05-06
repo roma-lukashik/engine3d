@@ -44,7 +44,7 @@ export class Attributes {
       if (location === null) {
         continue
       }
-      this.data.push({ location, name: info.name as keyof Model})
+      this.data.push({ location, name: info.name as keyof Model })
     }
   }
 

@@ -12,4 +12,4 @@ export const lt = (a: number, b: number): boolean => b - a > EPS
 
 export const lte = (a: number, b: number): boolean => lt(a, b) || eq(a, b)
 
-export const clamp = (x: number, min: number, max: number): number => Math.min(max, Math.max(min, x))
+export const clamp = (x: number, min: number, max: number): number => Math.max(min, Math.min(max, x))

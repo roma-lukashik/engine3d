@@ -1,5 +1,6 @@
 import * as m4 from '../../../math/matrix4'
 import * as v3 from '../../../math/vector3'
+import { clamp } from '../../../math/operators'
 import { Camera, OrthographicCamera } from '../../camera'
 import { LightType, LightWithShadow } from '../types'
 import { hexToNormRgb } from '../../../utils/color'
@@ -15,7 +16,7 @@ type Props = {
   // Takes values between 0 and 1. Default is 1.
   intensity?: number
   // The flag to enable or disable dynamic shadows.
-  // Default if true (shadow is enabled).
+  // Default if false (shadow is disabled).
   castShadow?: boolean
 }
 
@@ -33,14 +34,14 @@ export class DirectionalLight implements LightWithShadow {
   }
 
   constructor({
-    castShadow = true,
+    castShadow = false,
     intensity = 1,
     color = 0xFFFFFF,
   }: Props = {}) {
     this.type = LightType.Directional
     this.color = hexToNormRgb(color)
     this.castShadow = castShadow
-    this.intensity = intensity
+    this.intensity = clamp(intensity, 0, 1)
     this.camera = new OrthographicCamera({
       left: -50,
       right: 50,
@@ -54,12 +55,12 @@ export class DirectionalLight implements LightWithShadow {
 
   setPosition(position: Vector3): void {
     this.camera.setPosition(position)
-    this.updateDirection();
+    this.updateDirection()
   }
 
   setTarget(target: Vector3): void {
     this.camera.lookAt(target)
-    this.updateDirection();
+    this.updateDirection()
   }
 
   private updateDirection(): void {

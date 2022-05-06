@@ -1,14 +1,9 @@
 export type WebGLRenderingContextStub = jest.Mocked<WebGLRenderingContext>
 
 export type WebGLRenderingContextState = {
-  textureUnits: TextureUnit[];
-  activeTextureUnit: number;
-}
-
-export const mockWebGLRenderingContext = () => {
-  const state = createWebGLRenderingContextState()
-  const gl = createWebGLRenderingContextStub(state)
-  return { state, gl }
+  textureUnits: TextureUnit[]
+  textureParams: TextureParams[]
+  activeTextureUnit: number
 }
 
 export const mockCanvas = (gl: WebGLRenderingContext) => {
@@ -17,14 +12,7 @@ export const mockCanvas = (gl: WebGLRenderingContext) => {
   } as unknown as jest.Mocked<HTMLCanvasElement>
 }
 
-const createWebGLRenderingContextState = (): WebGLRenderingContextState => {
-  return {
-    activeTextureUnit: WebGLConstant.TEXTURE0,
-    textureUnits: Array.from({ length: 8 }, () => ({ TEXTURE_2D: null, TEXTURE_CUBE_MAP: null })),
-  }
-}
-
-const createWebGLRenderingContextStub = (state: WebGLRenderingContextState): WebGLRenderingContextStub => {
+export const createWebGLRenderingContextStub = (state: WebGLRenderingContextState): WebGLRenderingContextStub => {
   const gl = {
     ...WebGLConstant,
     ...Object.fromEntries(functions.map((func) => [func, jest.fn()])),
@@ -41,6 +29,12 @@ const createWebGLRenderingContextStub = (state: WebGLRenderingContextState): Web
   })
 
   gl.bindTexture.mockImplementation((target, texture) => {
+    if (!state.textureUnits[state.activeTextureUnit]) {
+      state.textureUnits[state.activeTextureUnit] = {
+        TEXTURE_2D: null,
+        TEXTURE_CUBE_MAP: null,
+      }
+    }
     const unit = state.textureUnits[state.activeTextureUnit]
     switch (target) {
       case gl.TEXTURE_2D:
@@ -51,6 +45,19 @@ const createWebGLRenderingContextStub = (state: WebGLRenderingContextState): Web
         break
       default:
         throw new Error(`Unprocessed target ${target}`)
+    }
+  })
+
+  gl.texImage2D.mockImplementation((...args:
+    [target: number, level: number, internalformat: number, width: number, height: number, border: number, format: number, type: number, pixels: ArrayBufferView | null] |
+    [target: number, level: number, internalformat: number, format: number, type: number, source: TexImageSource | null]
+  ) => {
+    if (args.length === 9) {
+      const [target, level, internalFormat, width, height, border, format, type, buffer] = args
+      state.textureParams[state.activeTextureUnit] = { target, level, internalFormat, width, height, border, format, type, buffer }
+    } else {
+      const [target, level, internalFormat, format, type, source] = args
+      state.textureParams[state.activeTextureUnit] = { target, level, internalFormat, format, type, source }
     }
   })
 
@@ -71,7 +78,20 @@ type TextureUnit = {
   TEXTURE_CUBE_MAP: WebGLTexture | null
 }
 
-const WebGLConstant = {
+type TextureParams = {
+  target: number
+  level: number
+  format: number
+  internalFormat: number
+  type: number
+  width?: number
+  height?: number
+  border?: number
+  buffer?: ArrayBufferView | null
+  source?: TexImageSource | null
+}
+
+export const WebGLConstant = {
   DEPTH_BUFFER_BIT: 256,
   STENCIL_BUFFER_BIT: 1024,
   COLOR_BUFFER_BIT: 16384,

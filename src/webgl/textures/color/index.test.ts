@@ -1,17 +1,18 @@
 import { WebGLColorTexture } from '.'
-import {
-  mockWebGLRenderingContext,
-  WebGLRenderingContextState,
-  WebGLRenderingContextStub,
-} from '../../../../tests/stubs/renderingContext'
+import { createWebGLRenderingContextStub, WebGLConstant } from '../../../../tests/stubs/renderingContext'
 
-describe('PixelTexture', () => {
-  let state: WebGLRenderingContextState
-  let gl: WebGLRenderingContextStub
+describe('ColorTexture', () => {
+  let state: Parameters<typeof createWebGLRenderingContextStub>[0]
+  let gl: ReturnType<typeof createWebGLRenderingContextStub>
   let texture: WebGLColorTexture
   beforeEach(() => {
-    ({ gl, state } = mockWebGLRenderingContext())
-    texture = new WebGLColorTexture({ gl, color: 0xFFFFFF })
+    state = {
+      activeTextureUnit: WebGLConstant.TEXTURE0,
+      textureUnits: [],
+      textureParams: [],
+    }
+    gl = createWebGLRenderingContextStub(state)
+    texture = new WebGLColorTexture({ gl, color: [1, 1, 1] })
   })
 
   it('creates a texture', () => {
@@ -23,19 +24,17 @@ describe('PixelTexture', () => {
   })
 
   it('assigns texture to the correct register', () => {
-    expect(state.textureUnits[1].TEXTURE_2D).toBe(texture.texture)
+    expect(state.textureUnits[0].TEXTURE_2D).toBe(texture.texture)
   })
 
   describe('specifies a proper texture image', () => {
     it('has image size 1x1', () => {
-      const args = gl.texImage2D.mock.calls[0]
-      expect(args[3]).toBe(1)
-      expect(args[4]).toBe(1)
+      expect(state.textureParams[0].width).toBe(1)
+      expect(state.textureParams[0].height).toBe(1)
     })
 
     it('uses correct pixel color', () => {
-      const args = gl.texImage2D.mock.calls[0] as any[]
-      expect(args[8]).toEqual(new Uint8Array([255, 255, 255, 255]))
+      expect(state.textureParams[0].buffer).toEqual(new Uint8Array([255, 255, 255, 255]))
     })
   })
 })

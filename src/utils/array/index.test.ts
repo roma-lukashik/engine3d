@@ -1,7 +1,7 @@
 import { range } from '.'
 
-describe("array utils", () => {
-  describe("#range", () => {
+describe('array utils', () => {
+  describe('#range', () => {
     it('works correctly #1', () => {
       expect(range(2, 4)).toEqual([2, 3, 4])
     })

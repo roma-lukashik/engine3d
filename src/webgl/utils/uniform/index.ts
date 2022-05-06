@@ -17,7 +17,7 @@ export class Uniform<T = any> {
   public readonly name: string
   public value: T
 
-  constructor({ gl, activeInfo, location,  value }: Props<T>) {
+  constructor({ gl, activeInfo, location, value }: Props<T>) {
     const split = activeInfo.name.match(/(\w+)/g)
     if (!split) {
       throw new Error(`Uniform ${activeInfo.name} contains an error.`)
