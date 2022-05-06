@@ -1,5 +1,5 @@
 import { UniformValues, Uniforms } from '../utils/uniforms'
-import { Attributes } from '../utils/attribute'
+import { Attributes } from '../utils/attributes'
 
 type Props = {
   gl: WebGLRenderingContext;

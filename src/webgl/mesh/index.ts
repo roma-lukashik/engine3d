@@ -2,7 +2,7 @@ import { Program } from '../program'
 import { createWebGLTexture } from '../textures'
 import { Mesh } from '../../core/mesh'
 import { WebGLBaseTexture } from '../textures/types'
-import { createExtendedAttribute, ExtendedAttribute } from '../utils/gl'
+import { WebglVertexAttribute } from '../utils/attribute'
 import { Model } from '../../core/types'
 import { Matrix4 } from '../../math/matrix4'
 import { forEachKey } from '../../utils/object'
@@ -14,7 +14,7 @@ type Props = {
 
 export class WebGLMesh {
   private readonly gl: WebGLRenderingContext
-  private readonly attributes: Record<keyof Model, ExtendedAttribute> = {} as Record<keyof Model, ExtendedAttribute>
+  private readonly attributes: Record<keyof Model, WebglVertexAttribute> = {} as Record<keyof Model, WebglVertexAttribute>
   private readonly modelMatrix: Matrix4
   private readonly modelTexture: WebGLBaseTexture
 
@@ -41,10 +41,7 @@ export class WebGLMesh {
 
   private setAttributes(attributes: Model): void {
     forEachKey(attributes, (key, value) => {
-      const attribute = createExtendedAttribute(this.gl, value)
-      this.gl.bindBuffer(attribute.target, attribute.buffer)
-      this.gl.bufferData(attribute.target, attribute.data, this.gl.STATIC_DRAW)
-      this.attributes[key] = attribute
+      this.attributes[key] = new WebglVertexAttribute(this.gl, value)
     })
   }
 

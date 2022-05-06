@@ -1,56 +1,36 @@
-import { ExtendedAttribute } from '../gl'
-import { Model } from '../../../core/types'
+import { BufferAttribute } from '../../../core/loaders/gltf/bufferAttribute'
 
-type Attribute = {
-  location: number;
-  name: keyof Model;
-}
-
-type Props = {
-  gl: WebGLRenderingContext;
-  program: WebGLProgram;
-}
-
-export class Attributes {
+export class WebglVertexAttribute {
   private readonly gl: WebGLRenderingContext
-  private readonly program: WebGLProgram
-  private readonly data: Attribute[] = []
+  private readonly array: BufferAttribute['array']
+  private readonly buffer: WebGLBuffer | null
 
-  constructor({ gl, program }: Props) {
-    this.gl = gl
-    this.program = program
-    this.extractAttributes()
+  public readonly itemSize: number
+  public readonly type: number
+  public readonly normalized: boolean
+  public readonly stride: number
+  public readonly offset: number
+  public readonly target: number
+  public readonly count: number
+
+  constructor(gl: WebGLRenderingContext, attribute: BufferAttribute) {
+    Object.assign(this, attribute)
+
+    this.gl = gl;
+    this.type = this.getType()
+    this.buffer = gl.createBuffer()
+
+    this.bindBuffer()
+    this.assignBufferData()
   }
 
-  public update(attributes: Record<keyof Model, ExtendedAttribute>): void {
-    this.data.forEach(({ location, name }) => {
-      const attribute = attributes[name]
-      this.gl.bindBuffer(attribute.target, attribute.buffer)
-      this.bindBufferToVertexAttribute(attribute, location)
-    })
-    if (attributes.index) {
-      this.gl.bindBuffer(attributes.index.target, attributes.index.buffer)
-    }
+  public bindBuffer(): void {
+    this.gl.bindBuffer(this.target, this.buffer)
   }
 
-  private extractAttributes(): void {
-    const activeAttributes = this.gl.getProgramParameter(this.program, this.gl.ACTIVE_ATTRIBUTES) as number
-    for (let i = 0; i < activeAttributes; i++) {
-      const info = this.gl.getActiveAttrib(this.program, i)
-      if (info === null) {
-        continue
-      }
-      const location = this.gl.getAttribLocation(this.program, info.name)
-      if (location === null) {
-        continue
-      }
-      this.data.push({ location, name: info.name as keyof Model })
-    }
-  }
-
-  private bindBufferToVertexAttribute(attribute: ExtendedAttribute, location: number): void {
-    const numLoc = this.bufferSize(attribute.type)
-    const size = attribute.size / numLoc
+  public bindBufferToVertexAttribute(location: number): void {
+    const numLoc = this.bufferSize
+    const size = this.itemSize / numLoc
     const stride = numLoc === 1 ? 0 : numLoc ** 3
     const offset = numLoc === 1 ? 0 : numLoc ** 2
 
@@ -58,21 +38,35 @@ export class Attributes {
       this.gl.vertexAttribPointer(
         location + i,
         size,
-        attribute.type,
-        attribute.normalized,
-        attribute.stride + stride,
-        attribute.offset + i * offset,
+        this.type,
+        this.normalized,
+        this.stride + stride,
+        this.offset + i * offset,
       )
       this.gl.enableVertexAttribArray(location + i)
     }
   }
 
-  private bufferSize(type: number): number {
-    switch (type) {
+  private get bufferSize(): number {
+    switch (this.type) {
       case this.gl.FLOAT_MAT2: return 2
       case this.gl.FLOAT_MAT3: return 3
       case this.gl.FLOAT_MAT4: return 4
       default: return 1
     }
+  }
+
+  private getType(): number {
+    if (this.array.constructor === Float32Array) {
+      return this.gl.FLOAT
+    }
+    if (this.array.constructor === Uint16Array) {
+      return this.gl.UNSIGNED_SHORT
+    }
+    return this.gl.UNSIGNED_INT
+  }
+
+  private assignBufferData(): void {
+    this.gl.bufferData(this.target, this.array, this.gl.STATIC_DRAW)
   }
 }
