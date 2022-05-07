@@ -2,7 +2,7 @@ import * as m4 from '../../math/matrix4'
 import * as v3 from '../../math/vector3'
 import { Scene } from '../scene'
 import { Camera } from '../../core/camera'
-import { createMainProgram, MainProgram } from '../program/main'
+import { MainProgram } from '../program/main'
 
 type Props = {
   canvas?: HTMLCanvasElement
@@ -25,14 +25,14 @@ export class Renderer {
       throw new Error('Unable to create WebGL context')
     }
     this.gl = gl
-    this.program = createMainProgram({ gl })
+    this.program = new MainProgram({ gl })
     this.resize(width, height)
     this.gl.clearColor(0, 0, 0, 1)
   }
 
   public render(scene: Scene, camera: Camera): void {
     if (scene.dirty) {
-      this.program = createMainProgram({
+      this.program = new MainProgram({
         gl: this.gl,
         ambientLightsAmount: scene.ambientLights.length,
         pointLightsAmount: scene.pointLights.length,
@@ -74,6 +74,7 @@ export class Renderer {
       spotLights: scene.spotLights.map(({ color, intensity, position, target, distance, angle, penumbra }) => ({ color: v3.multiply(color, intensity), position, distance, target, coneCos: Math.cos(angle), penumbraCos: Math.cos(angle * (1 - penumbra)) })),
       directionalLights: scene.directionalLights.map(({ color, intensity, direction }) => ({ color: v3.multiply(color, intensity), direction })),
       shadowTextures: scene.shadows.map(({ depthTexture }) => depthTexture),
+      cameraPosition: camera.position,
     })
   }
 }

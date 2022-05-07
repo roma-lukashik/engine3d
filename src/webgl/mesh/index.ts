@@ -1,11 +1,10 @@
 import { Program } from '../program'
-import { createWebGLTexture } from '../textures'
 import { Mesh } from '../../core/mesh'
-import { WebGLBaseTexture } from '../textures/types'
 import { WebglVertexAttribute } from '../utils/attribute'
 import { Model } from '../../core/types'
 import { Matrix4 } from '../../math/matrix4'
 import { forEachKey } from '../../utils/object'
+import { Material } from '../../core/loaders/gltf/material'
 
 type Props = {
   gl: WebGLRenderingContext
@@ -16,7 +15,7 @@ export class WebGLMesh {
   private readonly gl: WebGLRenderingContext
   private readonly attributes: Record<keyof Model, WebglVertexAttribute> = {} as Record<keyof Model, WebglVertexAttribute>
   private readonly modelMatrix: Matrix4
-  private readonly modelTexture: WebGLBaseTexture
+  private readonly material: Material
 
   constructor({
     gl,
@@ -24,7 +23,7 @@ export class WebGLMesh {
   }: Props) {
     this.gl = gl
     this.modelMatrix = mesh.modelMatrix
-    this.modelTexture = createWebGLTexture(gl, mesh.texture)
+    this.material = mesh.material
     this.setAttributes(mesh.data)
   }
 
@@ -32,7 +31,11 @@ export class WebGLMesh {
     program.use()
     program.uniforms.setValues({
       modelMatrix: this.modelMatrix,
-      modelTexture: this.modelTexture,
+      material: {
+        metalness: this.material.metalness,
+        roughness: this.material.roughness,
+        color: this.material.color,
+      },
     })
     program.uniforms.update()
     program.attributes.update(this.attributes)

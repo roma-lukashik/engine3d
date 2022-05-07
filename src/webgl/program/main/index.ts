@@ -29,13 +29,14 @@ type Props = {
 
 type MainUniformValues = {
   modelMatrix?: Matrix4
+  cameraPosition?: Vector3
   textureMatrices?: Matrix4[]
   projectionMatrix?: Matrix4
   ambientLights?: AmbientLight[]
   pointLights?: PointLight[]
   spotLights?: SpotLight[]
   directionalLights?: DirectionalLight[]
-  modelTexture?: WebGLBaseTexture
+  material?: Material
   shadowTextures?: WebGLBaseTexture[]
 }
 
@@ -62,35 +63,42 @@ type DirectionalLight = {
   direction: Vector3
 }
 
-export type MainProgram = Program<MainUniformValues>
+type Material = {
+  metalness: number
+  roughness: number
+  color: Vector3
+}
 
-export const createMainProgram = ({
-  gl,
-  ambientLightsAmount = 0,
-  pointLightsAmount = 0,
-  spotLightsAmount = 0,
-  directionalLightsAmount = 0,
-  shadowsAmount = 0,
-}: Props): MainProgram => {
-  const defs = [
-    ambientLightsAmount > 0 ? define(USE_AMBIENT_LIGHT) : '',
-    pointLightsAmount > 0 ? define(USE_POINT_LIGHT) : '',
-    spotLightsAmount > 0 ? define(USE_SPOT_LIGHT) : '',
-    directionalLightsAmount > 0 ? define(USE_DIRECTIONAL_LIGHT) : '',
-    shadowsAmount > 0 ? define(USE_SHADOW) : '',
-  ]
-  const transform = (shader: string) => {
-    shader = addDefs(shader, defs)
-    shader = replaceValue(shader, AMBIENT_LIGHTS_AMOUNT, ambientLightsAmount)
-    shader = replaceValue(shader, POINT_LIGHTS_AMOUNT, pointLightsAmount)
-    shader = replaceValue(shader, SPOT_LIGHTS_AMOUNT, spotLightsAmount)
-    shader = replaceValue(shader, DIRECTIONAL_LIGHTS_AMOUNT, directionalLightsAmount)
-    shader = replaceValue(shader, SHADOWS_AMOUNT, shadowsAmount)
-    return shader
+export class MainProgram extends Program<MainUniformValues> {
+  constructor({
+    gl,
+    ambientLightsAmount = 0,
+    pointLightsAmount = 0,
+    spotLightsAmount = 0,
+    directionalLightsAmount = 0,
+    shadowsAmount = 0,
+  }: Props) {
+    const defs = [
+      ambientLightsAmount > 0 ? define(USE_AMBIENT_LIGHT) : '',
+      pointLightsAmount > 0 ? define(USE_POINT_LIGHT) : '',
+      spotLightsAmount > 0 ? define(USE_SPOT_LIGHT) : '',
+      directionalLightsAmount > 0 ? define(USE_DIRECTIONAL_LIGHT) : '',
+      shadowsAmount > 0 ? define(USE_SHADOW) : '',
+    ]
+    const transform = (shader: string) => {
+      shader = addDefs(shader, defs)
+      shader = replaceValue(shader, AMBIENT_LIGHTS_AMOUNT, ambientLightsAmount)
+      shader = replaceValue(shader, POINT_LIGHTS_AMOUNT, pointLightsAmount)
+      shader = replaceValue(shader, SPOT_LIGHTS_AMOUNT, spotLightsAmount)
+      shader = replaceValue(shader, DIRECTIONAL_LIGHTS_AMOUNT, directionalLightsAmount)
+      shader = replaceValue(shader, SHADOWS_AMOUNT, shadowsAmount)
+      return shader
+    }
+    const vertex = transform(defaultVertex)
+    const fragment = transform(defaultFragment)
+
+    super({ gl, fragment, vertex });
   }
-  const vertex = transform(defaultVertex)
-  const fragment = transform(defaultFragment)
-  return new Program({ gl, vertex, fragment })
 }
 
 const addDefs = (shader: string, defs: string[]): string =>
@@ -137,11 +145,62 @@ const defaultVertex = `
 const defaultFragment = `
   precision highp float;
 
-  uniform sampler2D modelTexture;
+  struct Material {
+    float metalness;
+    float roughness;
+    vec3 color;
+  };
+
+  uniform vec3 cameraPosition;
+  uniform Material material;
 
   varying vec3 vPosition;
   varying vec3 vNormal;
   varying vec2 vUv;
+
+  const float PI = 3.14159265359;
+
+  float geometryGGX(float cosTheta, float alpha2) {
+    return 2.0 * cosTheta / (cosTheta + sqrt(alpha2 + (1.0 - alpha2) * (cosTheta * cosTheta)));
+  }
+
+  float distributionGGX(float NdH, float alpha2) {
+    float f = NdH * NdH * (alpha2 - 1.0) + 1.0;
+    return alpha2 / (PI * f * f);
+  }
+
+  vec3 fresnelSchlick(vec3 r0, vec3 r90, float VdH) {
+    return r0 + (r90 - r0) * pow(1.0 - VdH, 5.0);
+  }
+
+  // https://learnopengl.com/PBR/Theory
+  // https://en.wikipedia.org/wiki/Bidirectional_reflectance_distribution_function
+  vec3 BRDF(vec3 baseColor, vec3 lightDirection) {
+    float roughness2 = material.roughness * material.roughness;
+    float metalness = material.metalness;
+
+    vec3 f0 = vec3(0.04);
+    vec3 specularColor = mix(f0, baseColor, metalness);
+    vec3 r0 = specularColor;
+    vec3 r90 = vec3(clamp(max(max(specularColor.r, specularColor.g), specularColor.b) * 25.0, 0.0, 1.0));
+
+    vec3 N = vNormal;
+    vec3 V = normalize(cameraPosition - vPosition);
+    vec3 L = lightDirection;
+    vec3 H = normalize(L + V);
+
+    float NdL = clamp(dot(N, L), 0.001, 1.0);
+    float NdV = clamp(abs(dot(N, V)), 0.001, 1.0);
+    float NdH = clamp(dot(N, H), 0.0, 1.0);
+    float LdH = clamp(dot(L, H), 0.0, 1.0);
+    float VdH = clamp(dot(V, H), 0.0, 1.0);
+
+    vec3 F = fresnelSchlick(r0, r90, VdH);
+    float G = geometryGGX(NdV, roughness2) * geometryGGX(NdL, roughness2);
+    float D = distributionGGX(NdH, roughness2);
+
+    return F * G * D / (4.0 * NdV * NdL);
+  }
 
   ${ifdef(USE_AMBIENT_LIGHT, `
     varying vec3 ambientColor;
@@ -199,10 +258,11 @@ const defaultFragment = `
     vec3 calcDirectionalLight(vec3 normal, vec3 tex) {
       vec3 diffuseColor = vec3(0.0);
       for(int i = 0; i < ${DIRECTIONAL_LIGHTS_AMOUNT}; i++) {
-        float diffuse = max(dot(normal, directionalLights[i].direction), 0.0);
-        diffuseColor += directionalLights[i].color * diffuse;
+        vec3 diffuse = BRDF(tex, directionalLights[i].direction);
+        float NdL = max(dot(normal, directionalLights[i].direction), 0.0);
+        diffuseColor += NdL * directionalLights[i].color * diffuse;
       }
-      return tex * diffuseColor;
+      return pow(diffuseColor, vec3(1.0 / 2.2));
     }
   `)}
 
@@ -229,7 +289,7 @@ const defaultFragment = `
   `)}
 
   void main() {
-    vec3 tex = texture2D(modelTexture, vUv).rgb;
+    vec3 tex = material.color;
 
     vec3 ambientLight = vec3(0.0);
     vec3 spotLight = vec3(0.0);

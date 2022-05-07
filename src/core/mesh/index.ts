@@ -1,25 +1,25 @@
 import * as m4 from '../../math/matrix4'
-import { ColorTexture, Texture } from '../textures'
 import { Model } from '../types'
+import { Material } from '../loaders/gltf/material'
 
 type Props = {
   data: Model;
   modelMatrix?: m4.Matrix4;
-  texture?: Texture;
+  material: Material;
 }
 
 export class Mesh {
   public readonly data: Model
-  public texture: Texture
+  public readonly material: Material
   public modelMatrix: m4.Matrix4
 
   constructor({
     data,
-    texture = new ColorTexture(),
+    material,
     modelMatrix = m4.identity(),
   }: Props) {
     this.data = data
     this.modelMatrix = modelMatrix
-    this.texture = texture
+    this.material = material
   }
 }
