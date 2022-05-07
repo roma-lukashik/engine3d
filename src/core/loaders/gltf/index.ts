@@ -36,7 +36,7 @@ const parseNode = (data: Gltf, nodeId: number, binaryData: ArrayBuffer): Object3
     return
   }
   const node = new Object3d(gltfNode)
-  if (gltfNode.mesh) {
+  if (gltfNode.mesh !== undefined) {
     const mesh = parseMesh(data, gltfNode.mesh, binaryData)
     if (mesh) {
       node.add(mesh)
@@ -68,7 +68,7 @@ const parsePrimitive = (data: Gltf, primitive: MeshPrimitive, binaryData: ArrayB
   forEachKey(primitive.attributes, (attribute, value) => {
     geometry.setAttribute(attribute, parseAttributeAccessor(data, value, BufferViewTarget.ArrayBuffer, binaryData))
   })
-  if (primitive.indices) {
+  if (primitive.indices !== undefined) {
     geometry.setIndices(parseAttributeAccessor(data, primitive.indices, BufferViewTarget.ElementArrayBuffer, binaryData))
   }
   const gltfMaterial = primitive.material !== undefined ? data.materials?.[primitive.material] : undefined
