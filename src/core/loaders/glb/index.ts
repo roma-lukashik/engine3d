@@ -36,6 +36,10 @@ export const parseGlb = (buffer: ArrayBufferLike): Glb => {
   const jsonBuffer = buffer.slice(jsonOffset, jsonOffset + jsonLength)
   const json = JSON.parse(decodeText(jsonBuffer))
 
+  if (jsonLength + jsonOffset === buffer.byteLength) {
+    return { json }
+  }
+
   const [binaryLength, binaryFormat] = getHeader(buffer, jsonOffset + jsonLength)
   if (binaryFormat !== BINARY_CHUNK_BIN_TYPES) {
     throw new Error('Unexpected GLB layout.')
