@@ -160,13 +160,20 @@ const defaultFragment = `
 
   const float PI = 3.14159265359;
 
-  float geometryGGX(float cosTheta, float alpha2) {
-    return 2.0 * cosTheta / (cosTheta + sqrt(alpha2 + (1.0 - alpha2) * (cosTheta * cosTheta)));
+  float pow2(float x) { return x * x; }
+  float saturate(float x) { return clamp(x, 0.0, 1.0); }
+
+  float geometryGGX(float NdV, float NdL, float alpha) {
+    float a2 = pow2(alpha);
+    float gv = 2.0 * NdL / (NdL + sqrt(a2 + (1.0 - a2) * pow2(NdV)));
+    float gl = 2.0 * NdV / (NdV + sqrt(a2 + (1.0 - a2) * pow2(NdV)));
+    return gv * gl;
   }
 
-  float distributionGGX(float NdH, float alpha2) {
-    float f = NdH * NdH * (alpha2 - 1.0) + 1.0;
-    return alpha2 / (PI * f * f);
+  float distributionGGX(float NdH, float alpha) {
+    float a2 = pow2(alpha);
+    float f = pow2(NdH) * (a2 - 1.0) + 1.0;
+    return a2 / (PI * pow2(f));
   }
 
   vec3 fresnelSchlick(vec3 r0, vec3 r90, float VdH) {
@@ -176,11 +183,12 @@ const defaultFragment = `
   // https://learnopengl.com/PBR/Theory
   // https://en.wikipedia.org/wiki/Bidirectional_reflectance_distribution_function
   vec3 BRDF(vec3 baseColor, vec3 lightDirection) {
-    float roughness2 = material.roughness * material.roughness;
+    float alpha = pow2(material.roughness);
     float metalness = material.metalness;
 
     vec3 f0 = vec3(0.04);
     vec3 specularColor = mix(f0, baseColor, metalness);
+    vec3 diffuseColor = baseColor * (1.0 - f0) * (1.0 - metalness);
     vec3 r0 = specularColor;
     vec3 r90 = vec3(clamp(max(max(specularColor.r, specularColor.g), specularColor.b) * 25.0, 0.0, 1.0));
 
@@ -189,17 +197,21 @@ const defaultFragment = `
     vec3 L = lightDirection;
     vec3 H = normalize(L + V);
 
-    float NdL = clamp(dot(N, L), 0.001, 1.0);
-    float NdV = clamp(abs(dot(N, V)), 0.001, 1.0);
-    float NdH = clamp(dot(N, H), 0.0, 1.0);
-    float LdH = clamp(dot(L, H), 0.0, 1.0);
-    float VdH = clamp(dot(V, H), 0.0, 1.0);
+    float NdL = saturate(dot(N, L));
+    float NdV = saturate(dot(N, V));
+    float NdH = saturate(dot(N, H));
+    float LdH = saturate(dot(L, H));
+    float VdH = saturate(dot(V, H));
 
     vec3 F = fresnelSchlick(r0, r90, VdH);
-    float G = geometryGGX(NdV, roughness2) * geometryGGX(NdL, roughness2);
-    float D = distributionGGX(NdH, roughness2);
+    float G = geometryGGX(NdV, NdL, alpha);
+    float D = distributionGGX(NdH, alpha);
 
-    return F * G * D / (4.0 * NdV * NdL);
+    vec3 diffuse = (1.0 - F) * (diffuseColor / PI);
+    vec3 specular = F * G * D / (4.0 * NdV * NdL);
+
+    // TODO fix ten times multiplier.
+    return 10.0 * (diffuse + specular);
   }
 
   ${ifdef(USE_AMBIENT_LIGHT, `
@@ -259,10 +271,10 @@ const defaultFragment = `
       vec3 diffuseColor = vec3(0.0);
       for(int i = 0; i < ${DIRECTIONAL_LIGHTS_AMOUNT}; i++) {
         vec3 diffuse = BRDF(tex, directionalLights[i].direction);
-        float NdL = max(dot(normal, directionalLights[i].direction), 0.0);
+        float NdL = saturate(dot(normal, directionalLights[i].direction));
         diffuseColor += NdL * directionalLights[i].color * diffuse;
       }
-      return pow(diffuseColor, vec3(1.0 / 2.2));
+      return diffuseColor;
     }
   `)}
 
