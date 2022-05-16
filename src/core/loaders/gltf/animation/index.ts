@@ -21,9 +21,8 @@ export class Animation {
   constructor(name: string, data: AnimationData[]) {
     this.name = name
     this.data = data
-
-    this.startTime = data.reduce((a, { times }) => Math.min(a, times[0]), Infinity)
-    this.endTime = data.reduce((a, { times }) => Math.max(a, times[times.length - 1]), 0)
+    this.startTime = Math.min(...data.map(({ times }) => times[0]))
+    this.endTime = Math.max(...data.map(({ times }) => times[times.length - 1]))
     this.duration = this.endTime - this.startTime
   }
 

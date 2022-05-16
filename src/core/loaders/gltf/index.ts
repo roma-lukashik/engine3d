@@ -13,7 +13,7 @@ import { Material } from './material'
 import { Mesh } from './mesh'
 import { BufferAttribute } from './bufferAttribute'
 import { Geometry } from './geometry'
-import { forEachKey } from '../../../utils/object'
+import { transform } from '../../../utils/object'
 import { Object3d } from './object3d'
 import { nthOption, mapOption, Option } from '../../../utils/optionable'
 
@@ -22,7 +22,6 @@ export const parseGltf = (data: Gltf, binaryData: ArrayBuffer) => {
   if (version < 2) {
     throw new Error('Unsupported *.gltf file. Version should be >= 2.0.')
   }
-
   const nodes = parseNodes(data, binaryData)
   const animations = parseAnimations(data, binaryData)
   return { nodes, animations }
@@ -51,17 +50,15 @@ const parseNode = (data: Gltf, nodeId: number, binaryData: ArrayBuffer): Option<
 
 const parseMesh = (data: Gltf, meshIndex: Option<number>, binaryData: ArrayBuffer): Option<Object3d[]> => {
   const gltfMesh = nthOption(data.meshes, meshIndex)
-  return gltfMesh?.primitives.map((primitive) => {
-    return parsePrimitive(data, primitive, binaryData)
-  })
+  return gltfMesh?.primitives.map((primitive) => parsePrimitive(data, primitive, binaryData))
 }
 
 const parsePrimitive = (data: Gltf, primitive: MeshPrimitive, binaryData: ArrayBuffer): Mesh => {
-  const geometry = new Geometry()
-  forEachKey(primitive.attributes, (attribute, value) => {
-    geometry.setAttribute(attribute, parseAttributeAccessor(data, value, binaryData))
+  const geometryData = transform(primitive.attributes, (_, accessorIndex) => {
+    return parseAttributeAccessor(data, accessorIndex, binaryData)
   })
-  geometry.setIndices(parseAttributeAccessor(data, primitive.indices, binaryData, BufferViewTarget.ElementArrayBuffer))
+  const geometry = new Geometry(geometryData)
+  geometry.index = parseAttributeAccessor(data, primitive.indices, binaryData, BufferViewTarget.ElementArrayBuffer)
   const gltfMaterial = nthOption(data.materials, primitive.material)
   const material = new Material(gltfMaterial)
   return createMesh(geometry, material, primitive.mode)
@@ -97,7 +94,6 @@ const parseAttributeAccessor = (
   if (!accessor) {
     return
   }
-  const bufferView = parseBufferView(data, accessor.bufferView, binaryData)
   const itemSize = AccessorTypeSizes[accessor.type]
   const TypedArray = TypedArrayByComponentType[accessor.componentType]
   const byteOffset = accessor.byteOffset ?? 0
@@ -105,9 +101,9 @@ const parseAttributeAccessor = (
   // const elementBytes = TypedArray.BYTES_PER_ELEMENT
   // const itemBytes = elementBytes * itemSize
   const stride = nthOption(data.bufferViews, accessor.bufferView)?.byteStride
-  const array = bufferView ?
-    new TypedArray(bufferView, byteOffset, accessor.count * itemSize) :
-    new TypedArray(accessor.count * itemSize)
+  const arraySize = accessor.count * itemSize
+  const bufferView = parseBufferView(data, accessor.bufferView, binaryData)
+  const array = bufferView ? new TypedArray(bufferView, byteOffset, arraySize) : new TypedArray(arraySize)
   return new BufferAttribute({ array, itemSize, normalized, stride, target })
 }
 

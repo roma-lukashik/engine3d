@@ -1,5 +1,5 @@
 import { WebGLMesh } from '../mesh'
-import { Mesh } from '../../core/mesh'
+import { Mesh } from '../../core/loaders/gltf/mesh'
 import {
   AmbientLight,
   DirectionalLight,

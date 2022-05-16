@@ -1,9 +1,9 @@
 import { WebglVertexAttribute } from '../attribute'
-import { Model } from '../../../core/types'
+import { Geometry } from '../../../core/loaders/gltf/geometry'
 
 type Attribute = {
   location: number;
-  name: keyof Model;
+  name: keyof Geometry;
 }
 
 type Props = {
@@ -22,11 +22,11 @@ export class Attributes {
     this.extractAttributes()
   }
 
-  public update(attributes: Record<keyof Model, WebglVertexAttribute>): void {
+  public update(attributes: Partial<Record<keyof Geometry, WebglVertexAttribute>>): void {
     this.data.forEach(({ location, name }) => {
       const attribute = attributes[name]
-      attribute.bindBuffer()
-      attribute.bindBufferToVertexAttribute(location)
+      attribute?.bindBuffer()
+      attribute?.bindBufferToVertexAttribute(location)
     })
     attributes.index?.bindBuffer()
   }
@@ -42,7 +42,7 @@ export class Attributes {
       if (location === null) {
         continue
       }
-      this.data.push({ location, name: info.name as keyof Model })
+      this.data.push({ location, name: info.name as keyof Geometry })
     }
   }
 }

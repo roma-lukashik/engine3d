@@ -1,5 +1,6 @@
 import { MeshPrimitiveAttributes } from '../../types'
 import { BufferAttribute } from '../bufferAttribute'
+import { forEachKey } from '../../../../utils/object'
 
 export class Geometry {
   public position?: BufferAttribute
@@ -12,19 +13,12 @@ export class Geometry {
   public skinIndex?: BufferAttribute
   public index?: BufferAttribute
 
-  public setAttribute(key: keyof MeshPrimitiveAttributes, value?: BufferAttribute): void {
-    this[ATTRIBUTES[key]] = value
-  }
-
-  public setIndices(indices?: BufferAttribute): void {
-    this.index = indices
+  constructor(data: Partial<Record<keyof MeshPrimitiveAttributes, BufferAttribute>>) {
+    forEachKey(data, (key, bufferAttribute) => this[attributesMapping[key]] = bufferAttribute)
   }
 }
 
-const ATTRIBUTES: Record<
-  keyof MeshPrimitiveAttributes,
-  keyof Pick<Geometry, 'position' | 'normal' | 'tangent' | 'uv' | 'uv2' | 'color' | 'skinWeight' | 'skinIndex'>
-> = {
+const attributesMapping: Record<keyof MeshPrimitiveAttributes, keyof Geometry> = {
   POSITION: 'position',
   NORMAL: 'normal',
   TANGENT: 'tangent',

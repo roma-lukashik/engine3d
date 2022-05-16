@@ -1,7 +1,7 @@
 import { WebGLMesh } from '../mesh'
 import { WebGLDepthTexture } from '../textures/depth'
 import { LightWithShadow } from '../../core/lights'
-import { Mesh } from '../../core/mesh'
+import { Mesh } from '../../core/loaders/gltf/mesh'
 import { ShadowProgram } from '../program/shadow'
 
 type Props = {
