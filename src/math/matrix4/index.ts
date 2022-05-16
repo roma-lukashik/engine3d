@@ -1,6 +1,6 @@
 import * as v3 from '../vector3'
-import { Vector4 } from '../vector4'
 import { Vector3 } from '../vector3'
+import { Quaternion } from '../quaternion'
 
 export type Matrix4 = [
   number, number, number, number,
@@ -170,7 +170,7 @@ export const scaling = (x: number, y: number, z: number): Matrix4 => [
   0, 0, 0, 1,
 ]
 
-export const compose = (quat: Vector4, translation: Vector3, scale: Vector3): Matrix4 => {
+export const compose = (quat: Quaternion, translation: Vector3, scale: Vector3): Matrix4 => {
   const [x, y, z, w] = quat
   const x2 = x + x
   const y2 = y + y

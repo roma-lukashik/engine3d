@@ -1,6 +1,7 @@
 import { Vector3 } from '../../math/vector3'
 import { Vector4 } from '../../math/vector4'
 import { Matrix4 } from '../../math/matrix4'
+import { Quaternion } from '../../math/quaternion'
 
 export type Gltf = {
   asset?: GltfAsset
@@ -79,7 +80,7 @@ export enum BufferViewTarget {
   ElementArrayBuffer = 34963,
 }
 
-type GltfScene = {
+export type GltfScene = {
   name?: string
   extensions?: any[] // not used yet
   nodes?: ResourceId[] // node ids
@@ -127,7 +128,7 @@ export type MeshPrimitiveAttributes = {
 export type GltfNode = {
   name?: string
   translation?: Vector3
-  rotation?: Vector4 // quaternion
+  rotation?: Quaternion
   scale?: Vector3
   matrix?: Matrix4
   children?: ResourceId[]
@@ -192,7 +193,7 @@ type GltfSkin = {
   extras?: any
 }
 
-type GltfAnimation = {
+export type GltfAnimation = {
   name?: string
   channels: AnimationChannel[]
   samplers: AnimationSampler[]
@@ -217,10 +218,16 @@ type AnimationChannelTarget = {
 
 type AnimationSampler = {
   input: ResourceId
-  interpolation?: 'LINEAR' | 'STEP' | 'CUBICSPLINE' | string
+  interpolation?: AnimationInterpolationType
   output: ResourceId
   extensions?: any
   extras?: any
+}
+
+export enum AnimationInterpolationType {
+  Linear = 'LINEAR',
+  Step = 'STEP',
+  CubicSpline = 'CUBICSPLINE',
 }
 
 type GltfTexture = {

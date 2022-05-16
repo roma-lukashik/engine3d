@@ -1,11 +1,21 @@
-import { AccessorType, BufferViewTarget, ComponentType, Gltf, MeshPrimitive, MeshPrimitiveMode } from '../types'
+import {
+  AccessorType,
+  AnimationInterpolationType,
+  BufferViewTarget,
+  ComponentType,
+  Gltf,
+  GltfAnimation,
+  MeshPrimitive,
+  MeshPrimitiveMode,
+} from '../types'
+import { Animation } from './animation'
 import { Material } from './material'
 import { Mesh } from './mesh'
 import { BufferAttribute } from './bufferAttribute'
 import { Geometry } from './geometry'
 import { forEachKey } from '../../../utils/object'
 import { Object3d } from './object3d'
-import { mapOption } from '../../../utils/array'
+import { nthOption, mapOption, Option } from '../../../utils/optionable'
 
 export const parseGltf = (data: Gltf, binaryData: ArrayBuffer) => {
   const version = Number(data.asset?.version ?? 0)
@@ -14,34 +24,23 @@ export const parseGltf = (data: Gltf, binaryData: ArrayBuffer) => {
   }
 
   const nodes = parseNodes(data, binaryData)
-  return nodes
+  const animations = parseAnimations(data, binaryData)
+  return { nodes, animations }
 }
 
 const parseNodes = (data: Gltf, binaryData: ArrayBuffer): Object3d[] => {
-  const scenes = getScenes(data) ?? []
-  return scenes?.flatMap((scene) => {
-    const nodes = scene.nodes ?? []
-    return nodes.flatMap((nodeId) => parseNode(data, nodeId, binaryData) ?? [])
-  })
+  const scene = nthOption(data.scenes, data.scene ?? 0)
+  return mapOption(scene?.nodes, (nodeId) => parseNode(data, nodeId, binaryData))
 }
 
-const getScenes = (data: Gltf): Gltf['scenes'] => {
-  const defaultScene = data.scene !== undefined ? data.scenes?.[data.scene] : undefined
-  return defaultScene ? [defaultScene] : data.scenes
-}
-
-const parseNode = (data: Gltf, nodeId: number, binaryData: ArrayBuffer): Object3d | undefined => {
+const parseNode = (data: Gltf, nodeId: number, binaryData: ArrayBuffer): Option<Object3d> => {
   const gltfNode = data.nodes?.[nodeId]
   if (!gltfNode) {
     return
   }
   const node = new Object3d(gltfNode)
-  if (gltfNode.mesh !== undefined) {
-    const mesh = parseMesh(data, gltfNode.mesh, binaryData)
-    if (mesh) {
-      node.add(mesh)
-    }
-  }
+  const meshes = parseMesh(data, gltfNode.mesh, binaryData) ?? []
+  node.add(...meshes)
   // if (gltfNode.skin) {
   //   const skin = parseSkin(data, node, gltfNode.skin, binaryData)
   // }
@@ -50,28 +49,20 @@ const parseNode = (data: Gltf, nodeId: number, binaryData: ArrayBuffer): Object3
   return node
 }
 
-const parseMesh = (data: Gltf, meshIndex: number, binaryData: ArrayBuffer): Object3d | undefined => {
-  const gltfMesh = data.meshes?.[meshIndex]
-  if (!gltfMesh) {
-    return
-  }
-  const meshes = gltfMesh.primitives.map((primitive) => {
+const parseMesh = (data: Gltf, meshIndex: Option<number>, binaryData: ArrayBuffer): Option<Object3d[]> => {
+  const gltfMesh = nthOption(data.meshes, meshIndex)
+  return gltfMesh?.primitives.map((primitive) => {
     return parsePrimitive(data, primitive, binaryData)
   })
-  const object3d = new Object3d()
-  object3d.add(...meshes)
-  return object3d
 }
 
 const parsePrimitive = (data: Gltf, primitive: MeshPrimitive, binaryData: ArrayBuffer): Mesh => {
   const geometry = new Geometry()
   forEachKey(primitive.attributes, (attribute, value) => {
-    geometry.setAttribute(attribute, parseAttributeAccessor(data, value, BufferViewTarget.ArrayBuffer, binaryData))
+    geometry.setAttribute(attribute, parseAttributeAccessor(data, value, binaryData))
   })
-  if (primitive.indices !== undefined) {
-    geometry.setIndices(parseAttributeAccessor(data, primitive.indices, BufferViewTarget.ElementArrayBuffer, binaryData))
-  }
-  const gltfMaterial = primitive.material !== undefined ? data.materials?.[primitive.material] : undefined
+  geometry.setIndices(parseAttributeAccessor(data, primitive.indices, binaryData, BufferViewTarget.ElementArrayBuffer))
+  const gltfMaterial = nthOption(data.materials, primitive.material)
   const material = new Material(gltfMaterial)
   return createMesh(geometry, material, primitive.mode)
 }
@@ -98,22 +89,22 @@ const createMesh = (geometry: Geometry, material: Material, mode?: MeshPrimitive
 // Handling sparse has not been implemented yet.
 const parseAttributeAccessor = (
   data: Gltf,
-  accessorIndex: number,
-  target: BufferViewTarget,
+  accessorIndex: Option<number>,
   binaryData: ArrayBuffer,
-): BufferAttribute | undefined => {
-  const accessor = data.accessors?.[accessorIndex]
+  target: BufferViewTarget = BufferViewTarget.ArrayBuffer,
+): Option<BufferAttribute> => {
+  const accessor = nthOption(data.accessors, accessorIndex)
   if (!accessor) {
     return
   }
-  const bufferView = accessor.bufferView !== undefined ? parseBufferView(data, accessor.bufferView, binaryData) : undefined
+  const bufferView = parseBufferView(data, accessor.bufferView, binaryData)
   const itemSize = AccessorTypeSizes[accessor.type]
   const TypedArray = TypedArrayByComponentType[accessor.componentType]
   const byteOffset = accessor.byteOffset ?? 0
   const normalized = accessor.normalized === true
   // const elementBytes = TypedArray.BYTES_PER_ELEMENT
   // const itemBytes = elementBytes * itemSize
-  const stride = accessor.bufferView !== undefined ? data.bufferViews?.[accessor.bufferView].byteStride : undefined
+  const stride = nthOption(data.bufferViews, accessor.bufferView)?.byteStride
   const array = bufferView ?
     new TypedArray(bufferView, byteOffset, accessor.count * itemSize) :
     new TypedArray(accessor.count * itemSize)
@@ -139,8 +130,8 @@ const TypedArrayByComponentType = {
   [ComponentType.Float32]: Float32Array,
 }
 
-const parseBufferView = (data: Gltf, bufferViewIndex: number, binaryData: ArrayBuffer): ArrayBuffer | undefined => {
-  const bufferView = data.bufferViews?.[bufferViewIndex]
+const parseBufferView = (data: Gltf, bufferViewIndex: Option<number>, binaryData: ArrayBuffer): Option<ArrayBuffer> => {
+  const bufferView = nthOption(data.bufferViews, bufferViewIndex)
   if (!bufferView) {
     return
   }
@@ -166,18 +157,33 @@ const parseBuffer = (data: Gltf, bufferIndex: number, binaryData: ArrayBuffer): 
 //   const s: any = {
 //     joints: skin.joints,
 //   }
-//   if (skin.inverseBindMatrices) {
-//     s.inverseBindMatrices = parseAttributeAccessor(data, skin.inverseBindMatrices, binaryData)
+//   if (skin.inverseBindMatrices !== undefined) {
+//     s.inverseBindMatrices = parseAttributeAccessor(data, skin.inverseBindMatrices, BufferViewTarget.ArrayBuffer, binaryData)
 //   }
 //   const jointNodes = skin.joints.map((joint) => parseNode(data, joint, binaryData))
 // }
 
-// const parseAnimations = (data: Gltf) => {
-//   data.animations?.forEach((animation) => {
-//     animation.channels.forEach((channel) => {
-//       const sampler = animation.samplers[channel.sampler]
-//       const target = channel.target
-//       const name = target.node ?? target.id
-//     })
-//   })
-// }
+const parseAnimations = (data: Gltf, binaryData: ArrayBuffer): Animation[] => {
+  return mapOption(data.animations, (animation, index) => {
+    return new Animation(animation.name ?? `animation_${index}`, parseAnimation(data, animation, binaryData))
+  })
+}
+
+const parseAnimation = (data: Gltf, animation: GltfAnimation, binaryData: ArrayBuffer) => {
+  return mapOption(animation.channels, (channel) => {
+    const sampler = animation.samplers[channel.sampler]
+    const target = channel.target
+    const node = nthOption(data.nodes, target.node)
+    if (!node) {
+      return
+    }
+    const times = parseAttributeAccessor(data, sampler.input, binaryData)?.array
+    const values = parseAttributeAccessor(data, sampler.output, binaryData)?.array
+    if (!times || !values) {
+      return
+    }
+    const interpolation = sampler.interpolation ?? AnimationInterpolationType.Linear
+    const transform = target.path
+    return { node, times, values, interpolation, transform }
+  })
+}

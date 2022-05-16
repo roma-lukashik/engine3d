@@ -45,3 +45,9 @@ export const cross = (a: Vector3, b: Vector3) => vector3(
 )
 
 export const equal = (a: Vector3, b: Vector3) => eq(x(a), x(b)) && eq(y(a), y(b)) && eq(z(a), z(b))
+
+export const lerp = (a: Vector3, b: Vector3, t: number) => vector3(
+  a[0] + t * (b[0] - a[0]),
+  a[1] + t * (b[1] - a[1]),
+  a[2] + t * (b[2] - a[2]),
+)
