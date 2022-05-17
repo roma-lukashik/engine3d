@@ -1,9 +1,7 @@
 import { Program } from '../program'
 import { Mesh } from '../../core/loaders/gltf/mesh'
 import { WebglVertexAttribute } from '../utils/attribute'
-import { Matrix4 } from '../../math/matrix4'
 import { forEachKey } from '../../utils/object'
-import { Material } from '../../core/loaders/gltf/material'
 import { Geometry } from '../../core/loaders/gltf/geometry'
 
 type Props = {
@@ -14,27 +12,25 @@ type Props = {
 export class WebGLMesh {
   private readonly gl: WebGLRenderingContext
   private readonly attributes: Partial<Record<keyof Geometry, WebglVertexAttribute>> = {}
-  private readonly modelMatrix: Matrix4
-  private readonly material: Material
+  private readonly mesh: Mesh
 
   constructor({
     gl,
     mesh,
   }: Props) {
     this.gl = gl
-    this.modelMatrix = mesh.matrix
-    this.material = mesh.material
+    this.mesh = mesh
     this.setAttributes(mesh.geometry)
   }
 
   public render(program: Program): void {
     program.use()
     program.uniforms.setValues({
-      modelMatrix: this.modelMatrix,
+      modelMatrix: this.mesh.matrix,
       material: {
-        metalness: this.material.metalness,
-        roughness: this.material.roughness,
-        color: this.material.color,
+        metalness: this.mesh.material.metalness,
+        roughness: this.mesh.material.roughness,
+        color: this.mesh.material.color,
       },
     })
     program.uniforms.update()

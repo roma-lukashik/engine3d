@@ -1,10 +1,11 @@
 import {
   AccessorType,
+  AnimationChannelPath,
   AnimationInterpolationType,
-  BufferViewTarget,
   ComponentType,
   Gltf,
   GltfAnimation,
+  GltfBufferView,
   MeshPrimitive,
   MeshPrimitiveMode,
 } from '../types'
@@ -22,29 +23,33 @@ export const parseGltf = (data: Gltf, binaryData: ArrayBuffer) => {
   if (version < 2) {
     throw new Error('Unsupported *.gltf file. Version should be >= 2.0.')
   }
-  const nodes = parseNodes(data, binaryData)
-  const animations = parseAnimations(data, binaryData)
-  return { nodes, animations }
+  const nodes = parseNodes(data)
+  const sceneNodes = parseScene(data, nodes, binaryData)
+  const animations = parseAnimations(data, nodes, binaryData)
+  return { nodes: sceneNodes, animations }
 }
 
-const parseNodes = (data: Gltf, binaryData: ArrayBuffer): Object3d[] => {
+const parseNodes = (data: Gltf): Object3d[] => {
+  return mapOption(data.nodes, ({ translation: position, rotation, scale, matrix }) => {
+    return new Object3d({ position, rotation, scale, matrix })
+  })
+}
+
+const parseScene = (data: Gltf, nodes: Object3d[], binaryData: ArrayBuffer): Object3d[] => {
   const scene = nthOption(data.scenes, data.scene ?? 0)
-  return mapOption(scene?.nodes, (nodeId) => parseNode(data, nodeId, binaryData))
+  return mapOption(scene?.nodes, (nodeId) => parseNode(data, nodes, nodeId, binaryData))
 }
 
-const parseNode = (data: Gltf, nodeId: number, binaryData: ArrayBuffer): Option<Object3d> => {
-  const gltfNode = data.nodes?.[nodeId]
-  if (!gltfNode) {
+const parseNode = (data: Gltf, nodes: Object3d[], nodeId: number, binaryData: ArrayBuffer): Option<Object3d> => {
+  const gltfNode = nthOption(data.nodes, nodeId)
+  const node = nthOption(nodes, nodeId)
+  if (!gltfNode || !node) {
     return
   }
-  const node = new Object3d(gltfNode)
   const meshes = parseMesh(data, gltfNode.mesh, binaryData) ?? []
   node.add(...meshes)
-  // if (gltfNode.skin) {
-  //   const skin = parseSkin(data, node, gltfNode.skin, binaryData)
-  // }
-  const children = mapOption(gltfNode.children, (child) => parseNode(data, child, binaryData))
-  node.add(...children)
+  const meshChildren = mapOption(gltfNode.children, (childNodeId) => parseNode(data, nodes, childNodeId, binaryData))
+  node.add(...meshChildren)
   return node
 }
 
@@ -58,7 +63,7 @@ const parsePrimitive = (data: Gltf, primitive: MeshPrimitive, binaryData: ArrayB
     return parseAttributeAccessor(data, accessorIndex, binaryData)
   })
   const geometry = new Geometry(geometryData)
-  geometry.index = parseAttributeAccessor(data, primitive.indices, binaryData, BufferViewTarget.ElementArrayBuffer)
+  geometry.index = parseAttributeAccessor(data, primitive.indices, binaryData)
   const gltfMaterial = nthOption(data.materials, primitive.material)
   const material = new Material(gltfMaterial)
   return createMesh(geometry, material, primitive.mode)
@@ -88,7 +93,6 @@ const parseAttributeAccessor = (
   data: Gltf,
   accessorIndex: Option<number>,
   binaryData: ArrayBuffer,
-  target: BufferViewTarget = BufferViewTarget.ArrayBuffer,
 ): Option<BufferAttribute> => {
   const accessor = nthOption(data.accessors, accessorIndex)
   if (!accessor) {
@@ -100,10 +104,12 @@ const parseAttributeAccessor = (
   const normalized = accessor.normalized === true
   // const elementBytes = TypedArray.BYTES_PER_ELEMENT
   // const itemBytes = elementBytes * itemSize
-  const stride = nthOption(data.bufferViews, accessor.bufferView)?.byteStride
+  const bufferView = nthOption(data.bufferViews, accessor.bufferView)
+  const stride = bufferView?.byteStride
+  const target = bufferView?.target
   const arraySize = accessor.count * itemSize
-  const bufferView = parseBufferView(data, accessor.bufferView, binaryData)
-  const array = bufferView ? new TypedArray(bufferView, byteOffset, arraySize) : new TypedArray(arraySize)
+  const arrayBuffer = parseBufferView(data, bufferView, binaryData)
+  const array = arrayBuffer ? new TypedArray(arrayBuffer, byteOffset, arraySize) : new TypedArray(arraySize)
   return new BufferAttribute({ array, itemSize, normalized, stride, target })
 }
 
@@ -126,14 +132,13 @@ const TypedArrayByComponentType = {
   [ComponentType.Float32]: Float32Array,
 }
 
-const parseBufferView = (data: Gltf, bufferViewIndex: Option<number>, binaryData: ArrayBuffer): Option<ArrayBuffer> => {
-  const bufferView = nthOption(data.bufferViews, bufferViewIndex)
+const parseBufferView = (data: Gltf, bufferView: Option<GltfBufferView>, binaryData: ArrayBuffer): Option<ArrayBuffer> => {
   if (!bufferView) {
     return
   }
   const { buffer, byteOffset = 0, byteLength = 0 } = bufferView
   const arrayBuffer = parseBuffer(data, buffer, binaryData)
-  return arrayBuffer.slice(byteOffset, byteOffset + byteLength)
+  return new Uint8Array(arrayBuffer.slice(byteOffset, byteOffset + byteLength)).buffer
 }
 
 const parseBuffer = (data: Gltf, bufferIndex: number, binaryData: ArrayBuffer): ArrayBuffer => {
@@ -159,17 +164,17 @@ const parseBuffer = (data: Gltf, bufferIndex: number, binaryData: ArrayBuffer): 
 //   const jointNodes = skin.joints.map((joint) => parseNode(data, joint, binaryData))
 // }
 
-const parseAnimations = (data: Gltf, binaryData: ArrayBuffer): Animation[] => {
+const parseAnimations = (data: Gltf, nodes: Object3d[], binaryData: ArrayBuffer): Animation[] => {
   return mapOption(data.animations, (animation, index) => {
-    return new Animation(animation.name ?? `animation_${index}`, parseAnimation(data, animation, binaryData))
+    return new Animation(animation.name ?? `animation_${index}`, parseAnimation(data, nodes, animation, binaryData))
   })
 }
 
-const parseAnimation = (data: Gltf, animation: GltfAnimation, binaryData: ArrayBuffer) => {
+const parseAnimation = (data: Gltf, nodes: Object3d[], animation: GltfAnimation, binaryData: ArrayBuffer) => {
   return mapOption(animation.channels, (channel) => {
     const sampler = animation.samplers[channel.sampler]
     const target = channel.target
-    const node = nthOption(data.nodes, target.node)
+    const node = nthOption(nodes, target.node)
     if (!node) {
       return
     }
@@ -179,7 +184,16 @@ const parseAnimation = (data: Gltf, animation: GltfAnimation, binaryData: ArrayB
       return
     }
     const interpolation = sampler.interpolation ?? AnimationInterpolationType.Linear
-    const transform = target.path
+    if (target.path === 'weights') {
+      return
+    }
+    const transform = TransformType[target.path]
     return { node, times, values, interpolation, transform }
   })
 }
+
+const TransformType = {
+  [AnimationChannelPath.Position]: 'position',
+  [AnimationChannelPath.Scale]: 'scale',
+  [AnimationChannelPath.Rotation]: 'rotation',
+} as const

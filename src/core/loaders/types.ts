@@ -7,7 +7,7 @@ export type Gltf = {
   asset?: GltfAsset
   accessors?: Accessor[]
   buffers?: GltfBuffer[]
-  bufferViews?: GltfBufferViews[]
+  bufferViews?: GltfBufferView[]
   scene?: ResourceId
   scenes?: GltfScene[]
   meshes?: GltfMesh[]
@@ -16,7 +16,7 @@ export type Gltf = {
   skins?: GltfSkin[]
   animations?: GltfAnimation[]
   textures?: GltfTexture[]
-  images: GltfImage[]
+  images?: GltfImage[]
 }
 
 type GltfAsset = {
@@ -67,7 +67,7 @@ type GltfBuffer = {
   byteLength: number
 }
 
-type GltfBufferViews = {
+export type GltfBufferView = {
   buffer: ResourceId
   byteLength: number
   byteOffset: number
@@ -211,7 +211,7 @@ type AnimationChannel = {
 type AnimationChannelTarget = {
   node?: ResourceId
   id?: ResourceId // deprecated
-  path: 'translation' | 'rotation' | 'scale' | 'weights' | string
+  path: AnimationChannelPath
   extensions?: any
   extras?: any
 }
@@ -228,6 +228,13 @@ export enum AnimationInterpolationType {
   Linear = 'LINEAR',
   Step = 'STEP',
   CubicSpline = 'CUBICSPLINE',
+}
+
+export enum AnimationChannelPath {
+  Position = 'translation',
+  Rotation = 'rotation',
+  Scale = 'scale',
+  Weight = 'weights',
 }
 
 type GltfTexture = {

@@ -1,6 +1,7 @@
 import * as v3 from '../vector3'
 import { Vector3 } from '../vector3'
 import { Quaternion } from '../quaternion'
+import { PI } from '../constants'
 
 export type Matrix4 = [
   number, number, number, number,
@@ -172,6 +173,8 @@ export const scaling = (x: number, y: number, z: number): Matrix4 => [
 
 export const compose = (quat: Quaternion, translation: Vector3, scale: Vector3): Matrix4 => {
   const [x, y, z, w] = quat
+  const [sx, sy, sz] = scale
+  const [tx, ty, tz] = translation
   const x2 = x + x
   const y2 = y + y
   const z2 = z + z
@@ -184,18 +187,85 @@ export const compose = (quat: Quaternion, translation: Vector3, scale: Vector3):
   const wx = w * x2
   const wy = w * y2
   const wz = w * z2
-  const [sx, sy, sz] = scale
 
   return [
     (1 - (yy + zz)) * sx, (xy + wz) * sx, (xz - wy) * sx, 0,
     (xy - wz) * sy, (1 - (xx + zz)) * sy, (yz + wx) * sy, 0,
     (xz + wy) * sz, (yz - wx) * sz, (1 - (xx + yy)) * sz, 0,
-    translation[0], translation[1], translation[2], 1,
+    tx, ty, tz, 1,
   ]
 }
 
+export const translationVector = (m: Matrix4): Vector3 => v3.vector3(m[12], m[13], m[14])
+
+export const scalingVector = (m: Matrix4): Vector3 => {
+  const [
+    m11, m12, m13, ,
+    m21, m22, m23, ,
+    m31, m32, m33, ,
+  ] = m
+  return [
+    Math.hypot(m11, m12, m13),
+    Math.hypot(m21, m22, m23),
+    Math.hypot(m31, m32, m33),
+  ]
+}
+
+export const rotationVector = (m: Matrix4): Quaternion => {
+  const scaling = scalingVector(m)
+  const is1 = 1 / scaling[0]
+  const is2 = 1 / scaling[1]
+  const is3 = 1 / scaling[2]
+
+  const sm11 = m[0] * is1
+  const sm12 = m[1] * is2
+  const sm13 = m[2] * is3
+  const sm21 = m[4] * is1
+  const sm22 = m[5] * is2
+  const sm23 = m[6] * is3
+  const sm31 = m[8] * is1
+  const sm32 = m[9] * is2
+  const sm33 = m[10] * is3
+
+  const trace = sm11 + sm22 + sm33
+
+  if (trace > 0) {
+    const s = Math.sqrt(trace + 1.0) * 2
+    return [
+      (sm23 - sm32) / s,
+      (sm31 - sm13) / s,
+      (sm12 - sm21) / s,
+      0.25 * s,
+    ]
+  } else if (sm11 > sm22 && sm11 > sm33) {
+    const s = Math.sqrt(1.0 + sm11 - sm22 - sm33) * 2
+    return [
+      0.25 * s,
+      (sm12 + sm21) / s,
+      (sm31 + sm13) / s,
+      (sm23 - sm32) / s,
+    ]
+  } else if (sm22 > sm33) {
+    const s = Math.sqrt(1.0 + sm22 - sm11 - sm33) * 2
+    return [
+      (sm12 + sm21) / s,
+      0.25 * s,
+      (sm23 + sm32) / s,
+      (sm31 - sm13) / s,
+    ]
+  } else {
+    const s = Math.sqrt(1.0 + sm33 - sm11 - sm22) * 2
+    return [
+      (sm31 + sm13) / s,
+      (sm23 + sm32) / s,
+      0.25 * s,
+      (sm12 - sm21) / s,
+    ]
+  }
+}
+
 export const perspective = (fovy: number, aspect: number, near: number, far: number): Matrix4 => {
-  const scaleY = Math.tan((Math.PI - fovy) / 2)
+  const scaleY = Math.tan((PI - fovy) / 2)
   const scaleX = scaleY / aspect
   const rangeInv = 1.0 / (near - far)
 

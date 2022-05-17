@@ -7,7 +7,7 @@ type Vector3 = v3.Vector3
 type Quaternion = q.Quaternion
 
 type ObjectProps = {
-  translation?: Vector3
+  position?: Vector3
   rotation?: Quaternion
   scale?: Vector3
   matrix?: Matrix4
@@ -15,15 +15,25 @@ type ObjectProps = {
 
 export class Object3d {
   public matrix: Matrix4
+  public position: Vector3
+  public scale: Vector3
+  public rotation: Quaternion
   public children: Object3d[] = []
 
   constructor({
-    translation = v3.zero(),
+    position = v3.zero(),
     scale = v3.one(),
     rotation = q.identity(),
     matrix,
-  }: ObjectProps = {}) {
-    this.matrix = matrix ?? m4.compose(rotation, translation, scale)
+  }: ObjectProps) {
+    if (matrix) {
+      this.updateMatrix(matrix)
+    } else {
+      this.position = position
+      this.scale = scale
+      this.rotation = rotation
+      this.matrix = m4.compose(rotation, position, scale)
+    }
   }
 
   public add(...objects: Object3d[]): void {
@@ -33,5 +43,12 @@ export class Object3d {
   public traverse(fn: (object: Object3d) => void): void {
     fn(this)
     this.children.forEach((child) => child.traverse(fn))
+  }
+
+  public updateMatrix(matrix: Matrix4): void {
+    this.matrix = matrix
+    this.position = m4.translationVector(matrix)
+    this.scale = m4.scalingVector(matrix)
+    this.rotation = m4.rotationVector(matrix)
   }
 }

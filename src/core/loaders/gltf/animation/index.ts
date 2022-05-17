@@ -1,14 +1,15 @@
-import { AnimationInterpolationType, GltfNode } from '../../types'
+import { AnimationInterpolationType } from '../../types'
 import { BufferAttribute } from '../bufferAttribute'
+import { Object3d } from '../object3d'
 import * as v3 from '../../../../math/vector3'
 import * as q from '../../../../math/quaternion'
 
 type AnimationData = {
-  node: GltfNode
+  node: Object3d
   times: BufferAttribute['array'] // TODO
   values: BufferAttribute['array'] // TODO
   interpolation: AnimationInterpolationType
-  transform: string
+  transform: keyof Pick<Object3d, 'position' | 'rotation' | 'scale'>
 }
 
 export class Animation {
@@ -33,18 +34,18 @@ export class Animation {
       const prevIndex = Math.max(1, times.findIndex((t) => t > elapsed)) - 1
       const nextIndex = prevIndex + 1
       const alpha = (elapsed - times[prevIndex]) / (times[nextIndex] - times[prevIndex])
-      const size = transform === 'rotation' ? 4 : 3
+      const size = values.length / times.length
       const prevVal = fromArray(values, prevIndex * size, size)
       const nextVal = fromArray(values, nextIndex * size, size)
-      const lerp = transform === 'rotation' ?
-        q.slerp(prevVal as q.Quaternion, nextVal as q.Quaternion, alpha) :
-        v3.lerp(prevVal as v3.Vector3, nextVal as v3.Vector3, alpha)
 
-      // @ts-ignore
-      node[transform] = lerp
+      if (transform === 'rotation') {
+        node.rotation = q.slerp(prevVal as q.Quaternion, nextVal as q.Quaternion, alpha)
+      } else {
+        node[transform] = v3.lerp(prevVal as v3.Vector3, nextVal as v3.Vector3, alpha)
+      }
     })
   }
 }
 
 const fromArray = (array: ArrayLike<number>, startIndex: number, count: number): v3.Vector3 | q.Quaternion =>
-  Array.from({ length: count }, (_: number, k: number) => array[startIndex + k]) as v3.Vector3 | q.Quaternion
+  Array.from({ length: count }, (_: number, i: number) => array[startIndex + i]) as v3.Vector3 | q.Quaternion
