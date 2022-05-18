@@ -1,16 +1,17 @@
 import { GltfMaterial } from '../../types'
 import * as v4 from '../../../../math/vector4'
 import * as v3 from '../../../../math/vector3'
+import { Vector3 } from '../../../../math/types'
 
 export class Material {
-  public color: v3.Vector3
+  public color: Vector3
   public opacity: number
   public metalness: number
   public roughness: number
   public transparent: boolean
   public depthWrite: boolean
   public alphaTest: number
-  public emissive: v3.Vector3
+  public emissive: Vector3
 
   constructor({
     alphaMode = 'OPAQUE',

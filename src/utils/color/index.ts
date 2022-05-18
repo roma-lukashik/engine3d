@@ -1,4 +1,5 @@
-import { divide, Vector3 } from '../../math/vector3'
+import { Vector3 } from '../../math/types'
+import { divide } from '../../math/vector3'
 
 const MAX_BYTE = 255
 

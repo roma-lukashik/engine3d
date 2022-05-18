@@ -1,7 +1,6 @@
 import * as v3 from '../../vector3'
 import { clamp } from '../../operators'
-
-type Vector3 = v3.Vector3
+import { Vector3 } from '../../types'
 
 export type SphericalCoordinate = {
   radius: number;

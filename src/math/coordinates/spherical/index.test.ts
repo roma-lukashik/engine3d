@@ -6,9 +6,9 @@ describe('sphericalCoordinateSystem', () => {
     it('works correctly', () => {
       const v = vector3(2, 4 * Math.sqrt(3), 2 * Math.sqrt(3))
       const { radius, theta, phi } = toSpherical(v, zero())
-      expect(radius).toPrettyEqual(8)
-      expect(theta).toPrettyEqual(Math.PI / 6)
-      expect(phi).toPrettyEqual(Math.PI / 6)
+      expect(radius).toCloseEqual(8)
+      expect(theta).toCloseEqual(Math.PI / 6)
+      expect(phi).toCloseEqual(Math.PI / 6)
     })
   })
 
@@ -19,7 +19,7 @@ describe('sphericalCoordinateSystem', () => {
         theta: Math.PI / 6,
         phi: Math.PI / 6,
       }
-      expect(fromSpherical(s)).toPrettyEqual([
+      expect(fromSpherical(s)).toCloseEqual([
         2,
         4 * Math.sqrt(3),
         2 * Math.sqrt(3),

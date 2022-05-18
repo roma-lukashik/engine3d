@@ -1,1 +1,1 @@
-export * from './toPrettyEqual'
+export * from './toCloseEqual'

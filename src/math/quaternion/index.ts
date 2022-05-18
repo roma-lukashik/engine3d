@@ -1,10 +1,53 @@
 import { gt } from '../operators'
-
-export type Quaternion = [x: number, y: number, z: number, w: number]
+import { Matrix4, Quaternion } from '../types'
 
 export const quat = (x: number, y: number, z: number, w: number): Quaternion => [x, y, z, w]
 
 export const identity = () => quat(0, 0, 0, 1)
+
+export const fromRotationMatrix = (m: Matrix4): Quaternion => {
+  const [
+    a11, a12, a13, ,
+    a21, a22, a23, ,
+    a31, a32, a33, ,
+  ] = m
+
+  const trace = a11 + a22 + a33
+
+  if (trace > 0) {
+    const s = 2 * Math.sqrt(trace + 1.0)
+    return [
+      (a23 - a32) / s,
+      (a31 - a13) / s,
+      (a12 - a21) / s,
+      0.25 * s,
+    ]
+  } else if (a11 > a22 && a11 > a33) {
+    const s = 2 * Math.sqrt(1.0 + a11 - a22 - a33)
+    return [
+      0.25 * s,
+      (a12 + a21) / s,
+      (a31 + a13) / s,
+      (a23 - a32) / s,
+    ]
+  } else if (a22 > a33) {
+    const s = 2 * Math.sqrt(1.0 + a22 - a11 - a33)
+    return [
+      (a12 + a21) / s,
+      0.25 * s,
+      (a23 + a32) / s,
+      (a31 - a13) / s,
+    ]
+  } else {
+    const s = 2 * Math.sqrt(1.0 + a33 - a11 - a22)
+    return [
+      (a31 + a13) / s,
+      (a23 + a32) / s,
+      0.25 * s,
+      (a12 - a21) / s,
+    ]
+  }
+}
 
 export const slerp = (a: Quaternion, b: Quaternion, t: number) => {
   const [ax, ay, az, aw] = a

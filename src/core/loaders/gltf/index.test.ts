@@ -1,5 +1,5 @@
 import { parseGltf } from '.'
-import { simpleBuffer, simpleGltf } from './__test__/simple'
+import { simpleBuffer, simpleGltf } from './__test__/gltf'
 import { Mesh } from './mesh'
 import { BufferViewTarget } from '../types'
 

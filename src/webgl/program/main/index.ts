@@ -1,6 +1,4 @@
 import { Program } from '..'
-import { Matrix4 } from '../../../math/matrix4'
-import { Vector3 } from '../../../math/vector3'
 import {
   AMBIENT_LIGHTS_AMOUNT,
   define,
@@ -17,6 +15,7 @@ import {
   USE_SPOT_LIGHT,
 } from '../../utils/glsl'
 import { WebGLBaseTexture } from '../../textures/types'
+import { Matrix4, Vector3 } from '../../../math/types'
 
 type Props = {
   gl: WebGLRenderingContext

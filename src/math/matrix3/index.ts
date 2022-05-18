@@ -1,8 +1,4 @@
-export type Matrix3 = [
-  number, number, number,
-  number, number, number,
-  number, number, number,
-]
+import { Matrix3 } from '../types'
 
 export const identity = (): Matrix3 => [
   1, 0, 0,

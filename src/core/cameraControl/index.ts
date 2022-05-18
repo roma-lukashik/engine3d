@@ -7,6 +7,7 @@ import {
 import * as v2 from '../../math/vector2'
 import { clamp } from '../../math/operators'
 import { PI, PI2 } from '../../math/constants'
+import { Vector2 } from '../../math/types'
 
 type Props = {
   camera: Camera;
@@ -47,7 +48,7 @@ export class CameraControl {
     window.addEventListener('mouseup', mouseUp, false)
   }
 
-  private rotate({ theta, phi, radius }: SphericalCoordinate, offset: v2.Vector2, width: number, height: number) {
+  private rotate({ theta, phi, radius }: SphericalCoordinate, offset: Vector2, width: number, height: number) {
     const v = v2.multiply(offset, this.rotationSpeed)
     this.camera.setPosition(
       fromSpherical({

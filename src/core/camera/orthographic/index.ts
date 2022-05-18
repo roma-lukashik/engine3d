@@ -1,18 +1,16 @@
+import { Matrix4, Vector3 } from '../../../math/types'
 import * as m4 from '../../../math/matrix4'
 import * as v3 from '../../../math/vector3'
 import { Camera } from '../types'
 
-type Vector3 = v3.Vector3
-type Matrix4 = m4.Matrix4
-
 type Props = {
-  left: number;
-  right: number;
-  top: number;
-  bottom: number;
-  zoom?: number;
-  near?: number;
-  far?: number;
+  left: number
+  right: number
+  top: number
+  bottom: number
+  zoom?: number
+  near?: number
+  far?: number
 }
 
 export class OrthographicCamera implements Camera {

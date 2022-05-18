@@ -1,7 +1,4 @@
-import { Vector3 } from '../../math/vector3'
-import { Vector4 } from '../../math/vector4'
-import { Matrix4 } from '../../math/matrix4'
-import { Quaternion } from '../../math/quaternion'
+import { Vector3, Vector4, Matrix4, Quaternion } from '../../math/types'
 
 export type Gltf = {
   asset?: GltfAsset

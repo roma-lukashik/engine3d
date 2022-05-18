@@ -20,7 +20,7 @@ describe('camera', () => {
     it('calculates projection correctly #1', () => {
       const camera = new PerspectiveCamera()
       camera.setPosition(position)
-      expect(camera.projectionMatrix).toPrettyEqual([
+      expect(camera.projectionMatrix).toCloseEqual([
         0.3397, -0.7477, -0.88, -0.88,
         0, 1.555, -0.44, -0.44,
         -1.698, -0.149, -0.176, -0.176,
@@ -32,7 +32,7 @@ describe('camera', () => {
       const camera = new PerspectiveCamera()
       camera.setPosition(position)
       camera.lookAt(vector3(1, 1, 1))
-      expect(camera.projectionMatrix).toPrettyEqual([
+      expect(camera.projectionMatrix).toCloseEqual([
         0.191, -0.6956, -0.909, -0.909,
         0, 1.584, -0.404, -0.404,
         -1.721, -0.077, -0.101, -0.101,
@@ -49,7 +49,7 @@ describe('camera', () => {
       })
       camera.setPosition(position)
 
-      expect(camera.projectionMatrix).toPrettyEqual([
+      expect(camera.projectionMatrix).toCloseEqual([
         0.11, -0.432, -0.882, -0.88,
         0, 0.898, -0.441, -0.44,
         -0.552, -0.086, -0.176, -0.176,
@@ -67,7 +67,7 @@ describe('camera', () => {
         fovy: Math.PI / 2,
       })
 
-      expect(camera.projectionMatrix).toPrettyEqual([
+      expect(camera.projectionMatrix).toCloseEqual([
         0.11, -0.432, -0.882, -0.88,
         0, 0.898, -0.441, -0.44,
         -0.552, -0.086, -0.176, -0.176,

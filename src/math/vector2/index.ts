@@ -1,6 +1,5 @@
 import { eq } from '../operators'
-
-export type Vector2 = [number, number]
+import { Vector2 } from '../types'
 
 export const vector2 = (x: number, y: number): Vector2 => [x, y]
 

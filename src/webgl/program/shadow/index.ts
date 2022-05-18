@@ -1,5 +1,5 @@
 import { Program } from '..'
-import { Matrix4 } from '../../../math/matrix4'
+import { Matrix4 } from '../../../math/types'
 
 type ShadowUniforms = {
   projectionMatrix?: Matrix4

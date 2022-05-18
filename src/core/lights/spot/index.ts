@@ -1,11 +1,7 @@
-import * as m4 from '../../../math/matrix4'
-import * as v3 from '../../../math/vector3'
 import { Camera, PerspectiveCamera } from '../../camera'
 import { LightType, LightWithShadow } from '../types'
 import { hexToNormRgb } from '../../../utils/color'
-
-type Vector3 = v3.Vector3
-type Matrix4 = m4.Matrix4
+import { Matrix4, Vector3 } from '../../../math/types'
 
 type Props = {
   // Hexadecimal color of the light.

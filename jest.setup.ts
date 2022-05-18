@@ -1,5 +1,5 @@
-import { toPrettyEqual } from './tests/matchers'
+import { toCloseEqual } from './tests/matchers'
 
 expect.extend({
-  toPrettyEqual,
+  toCloseEqual,
 })

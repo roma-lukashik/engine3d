@@ -1,17 +1,15 @@
 import { toRadian } from '../../../math/angle'
 import * as m4 from '../../../math/matrix4'
 import * as v3 from '../../../math/vector3'
+import { Matrix4, Vector3 } from '../../../math/types'
 import { Camera } from '../types'
 
-type Vector3 = v3.Vector3
-type Matrix4 = m4.Matrix4
-
 type Props = {
-  up?: Vector3;
-  near?: number;
-  far?: number;
-  aspect?: number;
-  fovy?: number;
+  up?: Vector3
+  near?: number
+  far?: number
+  aspect?: number
+  fovy?: number
 }
 
 export class PerspectiveCamera implements Camera {

@@ -1,14 +1,7 @@
 import * as v3 from '../vector3'
-import { Vector3 } from '../vector3'
-import { Quaternion } from '../quaternion'
 import { PI } from '../constants'
-
-export type Matrix4 = [
-  number, number, number, number,
-  number, number, number, number,
-  number, number, number, number,
-  number, number, number, number,
-]
+import { Matrix4, Quaternion, Vector3 } from '../types'
+import * as q from '../quaternion'
 
 export const identity = (): Matrix4 => [
   1, 0, 0, 0,
@@ -212,56 +205,14 @@ export const scalingVector = (m: Matrix4): Vector3 => {
 }
 
 export const rotationVector = (m: Matrix4): Quaternion => {
-  const scaling = scalingVector(m)
-  const is1 = 1 / scaling[0]
-  const is2 = 1 / scaling[1]
-  const is3 = 1 / scaling[2]
+  const [sx, sy, sz] = scalingVector(m)
 
-  const sm11 = m[0] * is1
-  const sm12 = m[1] * is2
-  const sm13 = m[2] * is3
-  const sm21 = m[4] * is1
-  const sm22 = m[5] * is2
-  const sm23 = m[6] * is3
-  const sm31 = m[8] * is1
-  const sm32 = m[9] * is2
-  const sm33 = m[10] * is3
-
-  const trace = sm11 + sm22 + sm33
-
-  if (trace > 0) {
-    const s = Math.sqrt(trace + 1.0) * 2
-    return [
-      (sm23 - sm32) / s,
-      (sm31 - sm13) / s,
-      (sm12 - sm21) / s,
-      0.25 * s,
-    ]
-  } else if (sm11 > sm22 && sm11 > sm33) {
-    const s = Math.sqrt(1.0 + sm11 - sm22 - sm33) * 2
-    return [
-      0.25 * s,
-      (sm12 + sm21) / s,
-      (sm31 + sm13) / s,
-      (sm23 - sm32) / s,
-    ]
-  } else if (sm22 > sm33) {
-    const s = Math.sqrt(1.0 + sm22 - sm11 - sm33) * 2
-    return [
-      (sm12 + sm21) / s,
-      0.25 * s,
-      (sm23 + sm32) / s,
-      (sm31 - sm13) / s,
-    ]
-  } else {
-    const s = Math.sqrt(1.0 + sm33 - sm11 - sm22) * 2
-    return [
-      (sm31 + sm13) / s,
-      (sm23 + sm32) / s,
-      0.25 * s,
-      (sm12 - sm21) / s,
-    ]
-  }
+  return q.fromRotationMatrix([
+    m[0] / sx, m[1] / sx, m[2] / sx, m[3],
+    m[4] / sy, m[5] / sy, m[6] / sy, m[7],
+    m[8] / sz, m[9] / sz, m[10] / sz, m[11],
+    m[12], m[13], m[14], m[15],
+  ])
 }
 
 export const perspective = (fovy: number, aspect: number, near: number, far: number): Matrix4 => {
@@ -289,7 +240,7 @@ export const orthographic = (left: number, right: number, top: number, bottom: n
   ]
 }
 
-export const lookAt = (eye: v3.Vector3, target: v3.Vector3, up: v3.Vector3): Matrix4 => {
+export const lookAt = (eye: Vector3, target: Vector3, up: Vector3): Matrix4 => {
   const z = v3.normalize(v3.subtract(eye, target))
   const x = v3.normalize(v3.cross(up, z))
   const y = v3.normalize(v3.cross(z, x))

@@ -1,23 +1,10 @@
-import {
-  add,
-  det,
-  identity,
-  invert,
-  Matrix3,
-  multiply,
-  rotateX,
-  rotateY,
-  rotateZ,
-  scalar,
-  subtract,
-  translate,
-  transpose,
-} from '.'
+import * as m3 from '.'
+import { Matrix3 } from '../types'
 
 describe('matrix3', () => {
   describe('#identity', () => {
     it('works correctly', () => {
-      expect(identity()).toEqual([
+      expect(m3.identity()).toEqual([
         1, 0, 0,
         0, 1, 0,
         0, 0, 1,
@@ -32,7 +19,7 @@ describe('matrix3', () => {
         0, 1, 4,
         5, 6, 0,
       ]
-      expect(det(m)).toBe(1)
+      expect(m3.det(m)).toBe(1)
     })
   })
 
@@ -43,7 +30,7 @@ describe('matrix3', () => {
         0, 1, 4,
         5, 6, 0,
       ]
-      expect(invert(m)).toEqual([
+      expect(m3.invert(m)).toEqual([
         -24, 18, 5,
         20, -15, -4,
         -5, 4, 1,
@@ -56,7 +43,7 @@ describe('matrix3', () => {
         4, 5, 6,
         7, 8, 9,
       ]
-      expect(invert(m)).toEqual([
+      expect(m3.invert(m)).toEqual([
         0, 0, 0,
         0, 0, 0,
         0, 0, 0,
@@ -71,7 +58,7 @@ describe('matrix3', () => {
         4, 5, 6,
         7, 8, 9,
       ]
-      expect(transpose(m)).toEqual([
+      expect(m3.transpose(m)).toEqual([
         1, 4, 7,
         2, 5, 8,
         3, 6, 9,
@@ -91,7 +78,7 @@ describe('matrix3', () => {
         2, 5, 8,
         3, 6, 9,
       ]
-      expect(add(a, b)).toEqual([
+      expect(m3.add(a, b)).toEqual([
         2, 6, 10,
         6, 10, 14,
         10, 14, 18,
@@ -111,7 +98,7 @@ describe('matrix3', () => {
         2, 5, 8,
         3, 6, 9,
       ]
-      expect(subtract(a, b)).toEqual([
+      expect(m3.subtract(a, b)).toEqual([
         0, -2, -4,
         2, 0, -2,
         4, 2, 0,
@@ -126,7 +113,7 @@ describe('matrix3', () => {
         4, 5, 6,
         7, 8, 9,
       ]
-      expect(scalar(a, 2)).toEqual([
+      expect(m3.scalar(a, 2)).toEqual([
         2, 4, 6,
         8, 10, 12,
         14, 16, 18,
@@ -146,7 +133,7 @@ describe('matrix3', () => {
         6, 5, 4,
         4, 6, 5,
       ]
-      expect(multiply(a, b)).toEqual([
+      expect(m3.multiply(a, b)).toEqual([
         28, 33, 29,
         28, 31, 31,
         28, 33, 29,
@@ -161,7 +148,7 @@ describe('matrix3', () => {
         3, 2, 1,
         1, 2, 3,
       ]
-      expect(translate(m, 2, 4)).toEqual([
+      expect(m3.translate(m, 2, 4)).toEqual([
         7, 14, 3,
         5, 6, 1,
         7, 14, 3,
@@ -176,7 +163,7 @@ describe('matrix3', () => {
         3, 2, 1,
         1, 2, 3,
       ]
-      expect(rotateX(m, Math.PI / 4)).toPrettyEqual([
+      expect(m3.rotateX(m, Math.PI / 4)).toCloseEqual([
         1, 3.536, 0.707,
         3, 2.121, -0.707,
         1, 3.536, 0.707,
@@ -191,7 +178,7 @@ describe('matrix3', () => {
         3, 2, 1,
         1, 2, 3,
       ]
-      expect(rotateY(m, Math.PI / 4)).toPrettyEqual([
+      expect(m3.rotateY(m, Math.PI / 4)).toCloseEqual([
         -1.414, 2, 2.828,
         1.414, 2, 2.828,
         -1.414, 2, 2.828,
@@ -206,7 +193,7 @@ describe('matrix3', () => {
         3, 2, 1,
         1, 2, 3,
       ]
-      expect(rotateZ(m, Math.PI / 4)).toPrettyEqual([
+      expect(m3.rotateZ(m, Math.PI / 4)).toCloseEqual([
         2.121, 0.707, 3,
         3.536, -0.707, 1,
         2.121, 0.707, 3,

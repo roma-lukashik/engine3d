@@ -3,6 +3,7 @@ import { BufferAttribute } from '../bufferAttribute'
 import { Object3d } from '../object3d'
 import * as v3 from '../../../../math/vector3'
 import * as q from '../../../../math/quaternion'
+import { Quaternion, Vector3 } from '../../../../math/types'
 
 type AnimationData = {
   node: Object3d
@@ -39,13 +40,13 @@ export class Animation {
       const nextVal = fromArray(values, nextIndex * size, size)
 
       if (transform === 'rotation') {
-        node.rotation = q.slerp(prevVal as q.Quaternion, nextVal as q.Quaternion, alpha)
+        node.rotation = q.slerp(prevVal as Quaternion, nextVal as Quaternion, alpha)
       } else {
-        node[transform] = v3.lerp(prevVal as v3.Vector3, nextVal as v3.Vector3, alpha)
+        node[transform] = v3.lerp(prevVal as Vector3, nextVal as Vector3, alpha)
       }
     })
   }
 }
 
-const fromArray = (array: ArrayLike<number>, startIndex: number, count: number): v3.Vector3 | q.Quaternion =>
-  Array.from({ length: count }, (_: number, i: number) => array[startIndex + i]) as v3.Vector3 | q.Quaternion
+const fromArray = (array: ArrayLike<number>, startIndex: number, count: number): Vector3 | Quaternion =>
+  Array.from({ length: count }, (_: number, i: number) => array[startIndex + i]) as Vector3 | Quaternion

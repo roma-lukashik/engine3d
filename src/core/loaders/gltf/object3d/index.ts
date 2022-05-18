@@ -1,10 +1,7 @@
 import * as m4 from '../../../../math/matrix4'
 import * as v3 from '../../../../math/vector3'
 import * as q from '../../../../math/quaternion'
-
-type Matrix4 = m4.Matrix4
-type Vector3 = v3.Vector3
-type Quaternion = q.Quaternion
+import { Matrix4, Quaternion, Vector3 } from '../../../../math/types'
 
 type ObjectProps = {
   position?: Vector3
@@ -25,7 +22,7 @@ export class Object3d {
     scale = v3.one(),
     rotation = q.identity(),
     matrix,
-  }: ObjectProps) {
+  }: ObjectProps = {}) {
     if (matrix) {
       this.updateMatrix(matrix)
     } else {
