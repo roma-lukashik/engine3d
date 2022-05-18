@@ -138,7 +138,7 @@ const parseBufferView = (data: Gltf, bufferView: Option<GltfBufferView>, binaryD
   }
   const { buffer, byteOffset = 0, byteLength = 0 } = bufferView
   const arrayBuffer = parseBuffer(data, buffer, binaryData)
-  return new Uint8Array(arrayBuffer.slice(byteOffset, byteOffset + byteLength)).buffer
+  return arrayBuffer.slice(byteOffset, byteOffset + byteLength)
 }
 
 const parseBuffer = (data: Gltf, bufferIndex: number, binaryData: ArrayBuffer): ArrayBuffer => {
