@@ -41,7 +41,7 @@ describe('parseGLB', () => {
   })
 
   it('throws an error if wrong binary format', () => {
-    const wrongBinaryFormatGlb = createGlb({ json: simpleJson, binaryFormat: 0x000 , binary: simpleBinary })
+    const wrongBinaryFormatGlb = createGlb({ json: simpleJson, binaryFormat: 0x000, binary: simpleBinary })
     expect(() => parseGlb(wrongBinaryFormatGlb)).toThrowError('Unexpected GLB layout.')
   })
 })

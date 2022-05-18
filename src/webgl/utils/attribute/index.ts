@@ -16,7 +16,7 @@ export class WebglVertexAttribute {
   constructor(gl: WebGLRenderingContext, attribute: BufferAttribute) {
     Object.assign(this, attribute)
 
-    this.gl = gl;
+    this.gl = gl
     this.type = this.getType()
     this.buffer = gl.createBuffer()
 

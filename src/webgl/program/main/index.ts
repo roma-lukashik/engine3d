@@ -96,7 +96,7 @@ export class MainProgram extends Program<MainUniformValues> {
     const vertex = transform(defaultVertex)
     const fragment = transform(defaultFragment)
 
-    super({ gl, fragment, vertex });
+    super({ gl, fragment, vertex })
   }
 }
 
