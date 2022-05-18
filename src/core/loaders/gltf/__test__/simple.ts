@@ -46,11 +46,21 @@ export const simpleGltf: Gltf = {
             POSITION: 1,
           },
           indices: 0,
+          material : 0,
         },
       ],
     },
     {
       primitives: [],
+    },
+  ],
+  materials : [
+    {
+      pbrMetallicRoughness: {
+        baseColorFactor: [1, 0.766, 0.336, 1],
+        metallicFactor: 0.5,
+        roughnessFactor: 0.1,
+      },
     },
   ],
   accessors : [

@@ -43,28 +43,38 @@ describe('parseGltf', () => {
         expect(child.children).toHaveLength(1)
       })
 
-      it('its child should be instance of Mesh class', () => {
-        expect(child.children[0]).toBeInstanceOf(Mesh)
-      })
-
-      it('its child should have correct index geometry', () => {
+      describe('its child #1', () => {
         const mesh = child.children[0] as Mesh
-        const index = mesh.geometry.index
-        expect(index?.count).toBe(3)
-        expect(index?.target).toBe(BufferViewTarget.ElementArrayBuffer)
-        expect(index?.array).toEqual(new Uint16Array([0, 1, 2]))
-      })
 
-      it('its child should have correct position geometry', () => {
-        const mesh = child.children[0] as Mesh
-        const position = mesh.geometry.position
-        expect(position?.count).toBe(3)
-        expect(position?.target).toBe(BufferViewTarget.ArrayBuffer)
-        expect(position?.array).toEqual(new Float32Array([
-          0, 0, 0,
-          1, 0, 0,
-          0, 1, 0,
-        ]))
+        it('should be instance of Mesh class', () => {
+          expect(mesh).toBeInstanceOf(Mesh)
+        })
+
+        it('has an index geometry', () => {
+          const index = mesh.geometry.index
+          expect(index?.count).toBe(3)
+          expect(index?.target).toBe(BufferViewTarget.ElementArrayBuffer)
+          expect(index?.array).toEqual(new Uint16Array([0, 1, 2]))
+        })
+
+        it('has a position geometry', () => {
+          const position = mesh.geometry.position
+          expect(position?.count).toBe(3)
+          expect(position?.target).toBe(BufferViewTarget.ArrayBuffer)
+          expect(position?.array).toEqual(new Float32Array([
+            0, 0, 0,
+            1, 0, 0,
+            0, 1, 0,
+          ]))
+        })
+
+        it('has a material', () => {
+          const material = mesh.material
+          expect(material.roughness).toBe(0.1)
+          expect(material.metalness).toBe(0.5)
+          expect(material.color).toEqual([1, 0.766, 0.336])
+          expect(material.opacity).toBe(1)
+        })
       })
     })
 
@@ -78,6 +88,10 @@ describe('parseGltf', () => {
           0, -0.25, 0.433, 0,
           10, 20, 30, 1,
         ])
+      })
+
+      it('has no child', () => {
+        expect(child.children).toHaveLength(0)
       })
     })
   })
