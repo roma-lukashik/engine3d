@@ -16,6 +16,6 @@ module.exports = {
       diagnostics: false,
     },
   },
-  setupFilesAfterEnv: [path.resolve(__dirname, "jest.setup.ts")],
+  setupFilesAfterEnv: [path.resolve(__dirname, "tests/jest.setup.ts")],
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions?.paths ?? [], { prefix: "<rootDir>/" }),
 }
