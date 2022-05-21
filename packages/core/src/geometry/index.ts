@@ -1,5 +1,5 @@
 import { MeshPrimitiveAttributes } from "@core/loaders/types"
-import { BufferAttribute } from "@core/loaders/gltf/bufferAttribute"
+import { BufferAttribute } from "@core/bufferAttribute"
 import { forEachKey } from "@utils/object"
 
 export class Geometry {

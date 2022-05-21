@@ -1,6 +1,6 @@
 import { AnimationInterpolationType } from "@core/loaders/types"
-import { BufferAttribute } from "@core/loaders/gltf/bufferAttribute"
-import { Object3d } from "@core/loaders/gltf/object3d"
+import { BufferAttribute } from "@core/bufferAttribute"
+import { Object3d } from "@core/object3d"
 import * as v3 from "@math/vector3"
 import * as q from "@math/quaternion"
 import { Quaternion, Vector3 } from "@math/types"

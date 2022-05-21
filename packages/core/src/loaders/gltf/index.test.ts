@@ -1,6 +1,6 @@
 import { parseGltf } from "@core/loaders/gltf"
 import { simpleBuffer, simpleGltf } from "@core/loaders/gltf/__test__/gltf"
-import { Mesh } from "@core/loaders/gltf/mesh"
+import { Mesh } from "@core/mesh"
 import { BufferViewTarget } from "@core/loaders/types"
 
 describe("parseGltf", () => {

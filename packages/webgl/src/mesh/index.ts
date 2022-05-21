@@ -1,7 +1,7 @@
 import { Program } from "@webgl/program"
 import { WebglVertexAttribute } from "@webgl/utils/attribute"
-import { Mesh } from "@core/loaders/gltf/mesh"
-import { Geometry } from "@core/loaders/gltf/geometry"
+import { Mesh } from "@core/mesh"
+import { Geometry } from "@core/geometry"
 import { forEachKey } from "@utils/object"
 
 type Props = {

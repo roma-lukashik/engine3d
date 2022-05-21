@@ -1,6 +1,6 @@
 import { WebGLMesh } from "@webgl/mesh"
 import { Shadow } from "@webgl/shadow"
-import { Mesh } from "@core/loaders/gltf/mesh"
+import { Mesh } from "@core/mesh"
 import {
   AmbientLight,
   DirectionalLight,

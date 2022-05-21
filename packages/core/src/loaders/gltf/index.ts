@@ -9,12 +9,12 @@ import {
   MeshPrimitive,
   MeshPrimitiveMode,
 } from "@core/loaders/types"
-import { Animation } from "@core/loaders/gltf/animation"
-import { Material } from "@core/loaders/gltf/material"
-import { Mesh } from "@core/loaders/gltf/mesh"
-import { BufferAttribute } from "@core/loaders/gltf/bufferAttribute"
-import { Geometry } from "@core/loaders/gltf/geometry"
-import { Object3d } from "@core/loaders/gltf/object3d"
+import { Animation } from "@core/animation"
+import { Material } from "@core/material"
+import { Mesh } from "@core/mesh"
+import { BufferAttribute } from "@core/bufferAttribute"
+import { Geometry } from "@core/geometry"
+import { Object3d } from "@core/object3d"
 import { transform } from "@utils/object"
 import { nthOption, mapOption, Option } from "@utils/optionable"
 

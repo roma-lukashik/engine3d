@@ -1,4 +1,4 @@
-import { Object3d } from "@core/loaders/gltf/object3d"
+import { Object3d } from "@core/object3d"
 
 describe("Object3d", () => {
   it("has a default properties", () => {

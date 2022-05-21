@@ -1,5 +1,5 @@
 import { WebglVertexAttribute } from "@webgl/utils/attribute"
-import { Geometry } from "@core/loaders/gltf/geometry"
+import { Geometry } from "@core/geometry"
 
 type Attribute = {
   location: number;

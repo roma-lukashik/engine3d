@@ -1,4 +1,4 @@
-import { BufferAttribute } from "@core/loaders/gltf/bufferAttribute"
+import { BufferAttribute } from "@core/bufferAttribute"
 
 export class WebglVertexAttribute {
   private readonly gl: WebGLRenderingContext

@@ -2,7 +2,7 @@ import { WebGLMesh } from "@webgl/mesh"
 import { WebGLDepthTexture } from "@webgl/textures/depth"
 import { ShadowProgram } from "@webgl/program/shadow"
 import { LightWithShadow } from "@core/lights"
-import { Mesh } from "@core/loaders/gltf/mesh"
+import { Mesh } from "@core/mesh"
 
 type Props = {
   gl: WebGLRenderingContext
