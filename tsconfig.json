@@ -1,5 +1,8 @@
 {
-  "include": ["src", "jest.d.ts"],
+  "include": [
+    "src/**/*.ts",
+    "tests/types"
+  ],
   "exclude": ["node_modules"],
   "compilerOptions": {
     "outDir": "dist",
@@ -21,7 +24,7 @@
     "importHelpers": false,
     "declaration": true,
     "typeRoots": [
-      "node_modules/@types"
+      "node_modules/@types",
     ],
     "target": "ES2017",
     "lib": [

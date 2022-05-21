@@ -1,23 +1,29 @@
-import { diff } from 'jest-diff'
-import { matcherHint } from 'jest-matcher-utils'
-import { eq } from '../../src/math/operators'
-import { EPS } from '../../src/math/constants'
+import { diff } from "jest-diff"
+import { matcherHint } from "jest-matcher-utils"
 
-export const toCloseEqual: jest.CustomMatcher = <T extends number | number[]>(received: T, expected: T) => {
+export const toCloseEqual: jest.CustomMatcher = <T extends number | number[]>(
+  received: T,
+  expected: T,
+  precision = 3,
+) => {
+  const eps = Math.pow(1, -precision)
   const pass = Array.isArray(received)
-    ? received.every((x, i) => eq(x, (expected as number[])[i]))
-    : eq(received, expected as number)
+    ? received.every((x, i) => eq(x, (expected as number[])[i], eps))
+    : eq(received, expected as number, eps)
 
   return {
     pass,
     message: () => {
-      const name = pass ? 'not.toCloseEqual' : 'toCloseEqual'
-      const diffString = diff(print(received), print(expected), { includeChangeCounts: true })
-      return matcherHint(`.${name}`) + '\n\n' + diffString
+      const name = pass ? "not.toCloseEqual" : "toCloseEqual"
+      const diffString = diff(print(received, precision), print(expected, precision), { includeChangeCounts: true })
+      return matcherHint(`.${name}`) + "\n\n" + diffString
     }
   }
 }
 
-const print = (value: number | number[]) => Array.isArray(value) ? value.map(precise) : precise(value)
+const eq = (a: number, b: number, eps: number): boolean => Math.abs(a - b) < eps
 
-const precise = (value: number) => Number(value.toFixed(-Math.log10(EPS)))
+const print = (value: number | number[], precision: number) =>
+  Array.isArray(value) ? value.map((x) => precise(x, precision)) : precise(value, precision)
+
+const precise = (value: number, precision: number) => Number(value.toFixed(-precision))

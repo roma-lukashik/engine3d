@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": [
+    "src/**/*.ts",
+    "../../tests/types"
+  ],
+  "compilerOptions": {
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@core/*": ["./src/*"],
+      "@math/*": ["../math/src/*"],
+      "@utils/*": ["../utils/src/*"]
+    }
+  }
+}

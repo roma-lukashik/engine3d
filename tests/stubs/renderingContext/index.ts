@@ -65,12 +65,12 @@ export const createWebGLRenderingContextStub = (state: WebGLRenderingContextStat
 }
 
 const functions: Partial<keyof WebGLRenderingContext>[] = [
-  'activeTexture',
-  'bindTexture',
-  'clearColor',
-  'createTexture',
-  'texImage2D',
-  'viewport',
+  "activeTexture",
+  "bindTexture",
+  "clearColor",
+  "createTexture",
+  "texImage2D",
+  "viewport",
 ]
 
 type TextureUnit = {

@@ -1,0 +1,6 @@
+export type { Light, LightWithShadow, LightType } from "@core/lights/types"
+export { AmbientLight } from "@core/lights/ambient"
+export { PointLight } from "@core/lights/point"
+export { SpotLight } from "@core/lights/spot"
+export { DirectionalLight } from "@core/lights/directional"
+export * from "@core/lights/utils"
