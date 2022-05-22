@@ -65,7 +65,19 @@ const parsePrimitive = (data: Gltf, primitive: MeshPrimitive, binaryData: ArrayB
   const geometry = new Geometry(geometryData)
   geometry.index = parseAttributeAccessor(data, primitive.indices, binaryData)
   const gltfMaterial = nthOption(data.materials, primitive.material)
-  const material = new Material(gltfMaterial)
+  const material = new Material({
+    alphaMode: gltfMaterial?.alphaMode,
+    alphaCutoff: gltfMaterial?.alphaCutoff,
+    color: gltfMaterial?.pbrMetallicRoughness?.baseColorFactor,
+    metallic: gltfMaterial?.pbrMetallicRoughness?.metallicFactor,
+    roughness: gltfMaterial?.pbrMetallicRoughness?.roughnessFactor,
+    emissive: gltfMaterial?.emissiveFactor,
+    colorTexture: gltfMaterial?.pbrMetallicRoughness?.baseColorTexture,
+    metallicRoughnessTexture: gltfMaterial?.pbrMetallicRoughness?.metallicRoughnessTexture,
+    normalTexture: gltfMaterial?.normalTexture,
+    occlusionTexture: gltfMaterial?.occlusionTexture,
+    emissiveTexture: gltfMaterial?.emissiveTexture,
+  })
   return createMesh(geometry, material, primitive.mode)
 }
 

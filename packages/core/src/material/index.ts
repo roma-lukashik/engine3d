@@ -1,7 +1,22 @@
-import { GltfMaterial } from "@core/loaders/types"
+import { AlphaMode } from "@core/loaders/types"
 import * as v4 from "@math/vector4"
 import * as v3 from "@math/vector3"
-import { Vector3 } from "@math/types"
+import { Vector3, Vector4 } from "@math/types"
+
+type Props = {
+  alphaMode?: AlphaMode
+  alphaCutoff?: number
+  color?: Vector4
+  metallic?: number
+  roughness?: number
+  emissive?: Vector3
+  // TODO: specify types
+  colorTexture?: any
+  metallicRoughnessTexture?: any
+  normalTexture?: any
+  occlusionTexture?: any
+  emissiveTexture?: any
+}
 
 export class Material {
   public color: Vector3
@@ -14,39 +29,37 @@ export class Material {
   public emissive: Vector3
 
   constructor({
-    alphaMode = "OPAQUE",
+    alphaMode = AlphaMode.Opaque,
     alphaCutoff = 0.5,
-    pbrMetallicRoughness: {
-      baseColorFactor = v4.one(),
-      metallicFactor = 1.0,
-      roughnessFactor = 1.0,
-      baseColorTexture,
-      metallicRoughnessTexture,
-    } = {},
+    color = v4.one(),
+    metallic = 1.0,
+    roughness = 1.0,
+    emissive = v3.zero(),
+    colorTexture,
+    metallicRoughnessTexture,
     normalTexture,
     occlusionTexture,
     emissiveTexture,
-    emissiveFactor = v3.zero(),
-  }: GltfMaterial = {}) {
-    const [r, g, b, a] = baseColorFactor
+  }: Props = {}) {
+    const [r, g, b, a] = color
     this.color = [r, g, b]
     this.opacity = a
-    this.metalness = metallicFactor
-    this.roughness = roughnessFactor
+    this.metalness = metallic
+    this.roughness = roughness
     // check material type
-    this.emissive = emissiveFactor
+    this.emissive = emissive
 
-    if (alphaMode === "BLEND") {
+    if (alphaMode === AlphaMode.Blend) {
       this.transparent = true
       this.depthWrite = false
     } else {
       this.transparent = false
-      if (alphaMode === "MASK") {
+      if (alphaMode === AlphaMode.Mask) {
         this.alphaTest = alphaCutoff
       }
     }
 
-    if (baseColorTexture) {
+    if (colorTexture) {
       // attach texture
     }
 

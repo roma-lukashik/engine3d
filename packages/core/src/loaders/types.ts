@@ -143,9 +143,15 @@ export type GltfMaterial = {
   occlusionTexture?: MaterialOcclusionTextureInfo
   emissiveTexture?: TextureInfo
   emissiveFactor?: Vector3
-  alphaMode?: "OPAQUE" | "MASK" | "BLEND" | string
+  alphaMode?: AlphaMode
   alphaCutoff?: number
   doubleSided?: boolean
+}
+
+export enum AlphaMode {
+  Opaque = "OPAQUE",
+  Mask = "MASK",
+  Blend = "BLEND",
 }
 
 type MaterialPbrMetallicRoughness = {
