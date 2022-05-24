@@ -10,9 +10,9 @@ import { Vector2 } from "@math/types"
 import { Camera } from "@core/camera/types"
 
 type Props = {
-  camera: Camera;
-  element?: HTMLElement | Document;
-  rotationSpeed?: number;
+  camera: Camera
+  element?: HTMLElement | Document
+  rotationSpeed?: number
 }
 
 export class CameraControl {

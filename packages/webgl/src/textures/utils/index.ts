@@ -13,8 +13,8 @@ export const bindTexture = (gl: WebGLRenderingContext, texture: WebGLTexture, re
 }
 
 type ImageLike = {
-  width: number;
-  height: number;
+  width: number
+  height: number
 }
 
 export const supportMipmap = <T extends ImageLike>(image: T): boolean => {

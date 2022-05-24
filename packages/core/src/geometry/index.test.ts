@@ -1,4 +1,4 @@
-import { BufferAttribute } from '@core/bufferAttribute'
+import { BufferAttribute } from "@core/bufferAttribute"
 import { Geometry } from "@core/geometry"
 
 describe("Geometry", () => {

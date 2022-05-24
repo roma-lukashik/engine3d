@@ -1,5 +1,5 @@
 import { Material } from "@core/material"
-import { AlphaMode } from '@core/loaders/types'
+import { AlphaMode } from "@core/loaders/types"
 
 describe("Material", () => {
   it("uses default props", () => {

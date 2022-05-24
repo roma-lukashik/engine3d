@@ -2,9 +2,9 @@ import { UniformValues, Uniforms } from "@webgl/utils/uniforms"
 import { Attributes } from "@webgl/utils/attributes"
 
 type Props = {
-  gl: WebGLRenderingContext;
-  vertex: string;
-  fragment: string;
+  gl: WebGLRenderingContext
+  vertex: string
+  fragment: string
 }
 
 export class Program<U extends UniformValues = UniformValues> {

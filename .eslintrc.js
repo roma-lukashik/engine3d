@@ -31,5 +31,14 @@ module.exports = {
     "padded-blocks": ["error", "never"],
     "no-multi-spaces": ["error"],
     "space-infix-ops": ["error"],
+    "@typescript-eslint/member-delimiter-style": ["error", {
+      multiline: {
+        delimiter: "none",
+      },
+      singleline: {
+        requireLast: true,
+        delimiter: "semi",
+      },
+    }],
   },
 }

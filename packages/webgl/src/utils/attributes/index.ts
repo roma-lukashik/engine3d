@@ -2,13 +2,13 @@ import { WebglVertexAttribute } from "@webgl/utils/attribute"
 import { Geometry } from "@core/geometry"
 
 type Attribute = {
-  location: number;
-  name: keyof Geometry;
+  location: number
+  name: keyof Geometry
 }
 
 type Props = {
-  gl: WebGLRenderingContext;
-  program: WebGLProgram;
+  gl: WebGLRenderingContext
+  program: WebGLProgram
 }
 
 export class Attributes {

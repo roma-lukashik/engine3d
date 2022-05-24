@@ -10,12 +10,12 @@ export const createGlb = ({
   binary,
   binaryFormat = 0x004E4942,
 }: {
-  magic?: number,
-  version?: number,
-  json?: object,
-  jsonFormat?: number,
-  binary?: Uint8Array,
-  binaryFormat?: number,
+  magic?: number
+  version?: number
+  json?: object
+  jsonFormat?: number
+  binary?: Uint8Array
+  binaryFormat?: number
 } = {}): ArrayBuffer => {
   const jsonBuffer = new TextEncoder().encode(JSON.stringify(json)).buffer
   const jsonBufferLength = BYTES_PER_UINT32 * Math.ceil(jsonBuffer.byteLength / BYTES_PER_UINT32)

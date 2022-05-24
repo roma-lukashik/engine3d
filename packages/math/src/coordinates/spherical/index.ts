@@ -3,9 +3,9 @@ import { clamp } from "@math/operators"
 import { Vector3 } from "@math/types"
 
 export type SphericalCoordinate = {
-  radius: number;
-  theta: number;
-  phi: number;
+  radius: number
+  theta: number
+  phi: number
 }
 
 export const toSpherical = (point: Vector3, origin: Vector3): SphericalCoordinate => {

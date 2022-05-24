@@ -1,3 +1,3 @@
 export type WebGLBaseTexture = {
-  readonly texture: WebGLTexture;
+  readonly texture: WebGLTexture
 }
