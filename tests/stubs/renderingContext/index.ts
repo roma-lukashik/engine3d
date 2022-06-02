@@ -12,7 +12,13 @@ export const mockCanvas = (gl: WebGLRenderingContext) => {
   } as unknown as jest.Mocked<HTMLCanvasElement>
 }
 
-export const createWebGLRenderingContextStub = (state: WebGLRenderingContextState): WebGLRenderingContextStub => {
+export const createWebGLRenderingContextStub = (): WebGLRenderingContextStub => {
+  const state: WebGLRenderingContextState = {
+    activeTextureUnit: WebGLConstant.TEXTURE0,
+    textureUnits: [],
+    textureParams: [],
+  }
+
   const gl = {
     ...WebGLConstant,
     ...Object.fromEntries(functions.map((func) => [func, jest.fn()])),
@@ -48,16 +54,16 @@ export const createWebGLRenderingContextStub = (state: WebGLRenderingContextStat
     }
   })
 
-  gl.texImage2D.mockImplementation((...args:
-    [target: number, level: number, internalformat: number, width: number, height: number, border: number, format: number, type: number, pixels: ArrayBufferView | null] |
-    [target: number, level: number, internalformat: number, format: number, type: number, source: TexImageSource | null]
-  ) => {
-    if (args.length === 9) {
-      const [target, level, internalFormat, width, height, border, format, type, buffer] = args
-      state.textureParams[state.activeTextureUnit] = { target, level, internalFormat, width, height, border, format, type, buffer }
-    } else {
-      const [target, level, internalFormat, format, type, source] = args
-      state.textureParams[state.activeTextureUnit] = { target, level, internalFormat, format, type, source }
+  gl.getParameter.mockImplementation((pname) => {
+    switch (pname) {
+      case gl.ACTIVE_TEXTURE:
+        return state.activeTextureUnit
+      case gl.TEXTURE_BINDING_2D:
+        return state.textureUnits[state.activeTextureUnit]?.TEXTURE_2D ?? null
+      case gl.TEXTURE_BINDING_CUBE_MAP:
+        return state.textureUnits[state.activeTextureUnit]?.TEXTURE_CUBE_MAP ?? null
+      default:
+        throw new Error(`Getting ${pname} parameter is not supported`)
     }
   })
 
@@ -69,6 +75,7 @@ const functions: Partial<keyof WebGLRenderingContext>[] = [
   "bindTexture",
   "clearColor",
   "createTexture",
+  "getParameter",
   "texImage2D",
   "viewport",
 ]

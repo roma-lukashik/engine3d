@@ -1,19 +1,13 @@
 import { createTexture2D, supportMipmap } from "@webgl/textures/utils"
 import {
   createWebGLRenderingContextStub,
-  WebGLConstant,
+  WebGLRenderingContextStub,
 } from "../../../../../tests/stubs/renderingContext"
 
 describe("Texture Utils", () => {
-  let state: Parameters<typeof createWebGLRenderingContextStub>[0]
-  let gl: ReturnType<typeof createWebGLRenderingContextStub>
+  let gl: WebGLRenderingContextStub
   beforeEach(() => {
-    state = {
-      activeTextureUnit: WebGLConstant.TEXTURE0,
-      textureUnits: [],
-      textureParams: [],
-    }
-    gl = createWebGLRenderingContextStub(state)
+    gl = createWebGLRenderingContextStub()
   })
 
   describe("#createTexture2D", () => {
@@ -24,7 +18,7 @@ describe("Texture Utils", () => {
 
     it("binds texture to the 0 register", () => {
       const texture = createTexture2D(gl)
-      expect(state.textureUnits[0]).toEqual({ TEXTURE_2D: texture, TEXTURE_CUBE_MAP: null })
+      expect(gl.getParameter(gl.TEXTURE_BINDING_2D)).toEqual(texture)
     })
   })
 
