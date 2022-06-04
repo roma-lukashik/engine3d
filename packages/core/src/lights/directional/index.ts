@@ -3,7 +3,7 @@ import { clamp } from "@math/operators"
 import { Matrix4, Vector3 } from "@math/types"
 import { Camera, OrthographicCamera } from "@core/camera"
 import { LightType, LightWithShadow } from "@core/lights/types"
-import { hexToNormRgb } from "@utils/color"
+import { hexToRgb } from "@utils/color"
 
 type Props = {
   // Hexadecimal color of the light.
@@ -36,7 +36,7 @@ export class DirectionalLight implements LightWithShadow {
     color = 0xFFFFFF,
   }: Props = {}) {
     this.type = LightType.Directional
-    this.color = hexToNormRgb(color)
+    this.color = hexToRgb(color)
     this.castShadow = castShadow
     this.intensity = clamp(intensity, 0, 1)
     this.camera = new OrthographicCamera({

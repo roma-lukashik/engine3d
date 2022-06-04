@@ -31,7 +31,7 @@ export class Uniforms<U extends UniformValues> {
           bindTexture(this.gl, texture.texture, textureSlot.current)
           textureSlot.next()
         })
-        uniform.specifyValue(range(firstSlot, textureSlot.current - 1))
+        uniform.specifyValue(range(firstSlot, textureSlot.current))
         return
       }
 

@@ -1,8 +1,11 @@
 import { Program } from "@webgl/program"
 import { WebglVertexAttribute } from "@webgl/utils/attribute"
+import { DataTexture } from "@webgl/textures/data"
 import { Mesh } from "@core/mesh"
 import { Geometry } from "@core/geometry"
-import { forEachKey } from "@utils/object"
+import { ceilPowerOfTwo } from "@math/operators"
+import { transform } from "@utils/object"
+import { Skeleton } from "@core/skeleton"
 
 type Props = {
   gl: WebGLRenderingContext
@@ -11,8 +14,10 @@ type Props = {
 
 export class WebGLMesh {
   private readonly gl: WebGLRenderingContext
-  private readonly attributes: Partial<Record<keyof Geometry, WebglVertexAttribute>> = {}
   private readonly mesh: Mesh
+  private readonly attributes: Partial<Record<keyof Geometry, WebglVertexAttribute>>
+  private boneTexture: DataTexture<Float32Array>
+  private boneTextureSize: number
 
   constructor({
     gl,
@@ -20,13 +25,18 @@ export class WebGLMesh {
   }: Props) {
     this.gl = gl
     this.mesh = mesh
-    this.setAttributes(mesh.geometry)
+    this.attributes = this.computeAttributes()
+    if (this.mesh.skeleton) {
+      this.computeBoneTexture(this.mesh.skeleton)
+    }
   }
 
   public render(program: Program): void {
     program.use()
     program.uniforms.setValues({
-      modelMatrix: this.mesh.matrix,
+      modelMatrix: this.mesh.worldMatrix,
+      boneTexture: this.boneTexture,
+      boneTextureSize: this.boneTextureSize,
       material: {
         metalness: this.mesh.material.metalness,
         roughness: this.mesh.material.roughness,
@@ -38,9 +48,18 @@ export class WebGLMesh {
     this.drawBuffer()
   }
 
-  private setAttributes(attributes: Geometry): void {
-    forEachKey(attributes, (key, value) => {
-      this.attributes[key] = new WebglVertexAttribute(this.gl, value)
+  private computeAttributes() {
+    return transform(this.mesh.geometry, (value) => {
+      return new WebglVertexAttribute(this.gl, value)
+    })
+  }
+
+  private computeBoneTexture(skeleton: Skeleton): void {
+    this.boneTextureSize = Math.max(4, ceilPowerOfTwo(Math.sqrt(skeleton.bones.length * 4)))
+    this.boneTexture = new DataTexture({
+      gl: this.gl,
+      size: this.boneTextureSize,
+      data: skeleton.boneMatrices,
     })
   }
 

@@ -17,6 +17,10 @@ import { Geometry } from "@core/geometry"
 import { Object3d } from "@core/object3d"
 import { transform } from "@utils/object"
 import { nthOption, mapOption, Option } from "@utils/optionable"
+import { Matrix4 } from "@math/types"
+import * as m4 from "@math/matrix4"
+import { Skeleton } from "@core/skeleton"
+import { timesMap } from "@utils/array"
 
 export const parseGltf = (data: Gltf, binaryData: ArrayBuffer) => {
   const version = Number(data.asset?.version ?? 0)
@@ -24,42 +28,47 @@ export const parseGltf = (data: Gltf, binaryData: ArrayBuffer) => {
     throw new Error("Unsupported *.gltf file. Version should be >= 2.0.")
   }
   const nodes = parseNodes(data)
-  const sceneNodes = parseScene(data, nodes, binaryData)
+  const scene = parseScene(data, nodes, binaryData)
+  scene.updateWorldMatrix(scene.worldMatrix)
   const animations = parseAnimations(data, nodes, binaryData)
-  return { nodes: sceneNodes, animations }
+  return { scene, animations }
 }
 
 const parseNodes = (data: Gltf): Object3d[] => {
-  return mapOption(data.nodes, ({ translation: position, rotation, scale, matrix }) => {
-    return new Object3d({ position, rotation, scale, matrix })
+  return mapOption(data.nodes, ({ translation: position, rotation, scale, matrix, name }) => {
+    return new Object3d({ position, rotation, scale, matrix, name })
   })
 }
 
-const parseScene = (data: Gltf, nodes: Object3d[], binaryData: ArrayBuffer): Object3d[] => {
-  const scene = nthOption(data.scenes, data.scene ?? 0)
-  return mapOption(scene?.nodes, (nodeId) => parseNode(data, nodes, nodeId, binaryData))
+const parseScene = (data: Gltf, nodes: Object3d[], binaryData: ArrayBuffer): Object3d => {
+  const gltfScene = nthOption(data.scenes, data.scene ?? 0)
+  const children = mapOption(gltfScene?.nodes, (nodeId) => parseNode(data, nodes, nodeId, binaryData))
+  const scene = new Object3d({ name: "Scene" })
+  scene.add(children)
+  return scene
 }
 
 const parseNode = (data: Gltf, nodes: Object3d[], nodeId: number, binaryData: ArrayBuffer): Option<Object3d> => {
   const gltfNode = nthOption(data.nodes, nodeId)
   const node = nthOption(nodes, nodeId)
-  if (!gltfNode || !node) {
-    return
+  const meshes = parseMesh(data, gltfNode?.mesh, binaryData) ?? []
+  node?.add(meshes)
+  const skeleton = parseSkin(data, nodes, gltfNode?.skin, binaryData)
+  if (skeleton) {
+    meshes.forEach((mesh) => mesh.bindSkeleton(skeleton))
   }
-  const meshes = parseMesh(data, gltfNode.mesh, binaryData) ?? []
-  node.add(...meshes)
-  const meshChildren = mapOption(gltfNode.children, (childNodeId) => parseNode(data, nodes, childNodeId, binaryData))
-  node.add(...meshChildren)
+  const nodeChildren = mapOption(gltfNode?.children, (childNodeId) => parseNode(data, nodes, childNodeId, binaryData))
+  node?.add(nodeChildren)
   return node
 }
 
-const parseMesh = (data: Gltf, meshIndex: Option<number>, binaryData: ArrayBuffer): Option<Object3d[]> => {
+const parseMesh = (data: Gltf, meshIndex: Option<number>, binaryData: ArrayBuffer): Option<Mesh[]> => {
   const gltfMesh = nthOption(data.meshes, meshIndex)
   return gltfMesh?.primitives.map((primitive) => parsePrimitive(data, primitive, binaryData))
 }
 
 const parsePrimitive = (data: Gltf, primitive: MeshPrimitive, binaryData: ArrayBuffer): Mesh => {
-  const geometryData = transform(primitive.attributes, (_, accessorIndex) => {
+  const geometryData = transform(primitive.attributes, (accessorIndex) => {
     return parseAttributeAccessor(data, accessorIndex, binaryData)
   })
   const geometry = new Geometry(geometryData)
@@ -166,19 +175,19 @@ const parseBuffer = (data: Gltf, bufferIndex: number, binaryData: ArrayBuffer): 
   }
 }
 
-// const parseSkin = (data: Gltf, node: Object3d, skinIndex: number, binaryData: ArrayBuffer) => {
-//   const skin = data.skins?.[skinIndex]
-//   if (!skin) {
-//     return
-//   }
-//   const s: any = {
-//     joints: skin.joints,
-//   }
-//   if (skin.inverseBindMatrices !== undefined) {
-//     s.inverseBindMatrices = parseAttributeAccessor(data, skin.inverseBindMatrices, BufferViewTarget.ArrayBuffer, binaryData)
-//   }
-//   const jointNodes = skin.joints.map((joint) => parseNode(data, joint, binaryData))
-// }
+const parseSkin = (data: Gltf, nodes: Object3d[], skinIndex: Option<number>, binaryData: ArrayBuffer) => {
+  const skin = nthOption(data.skins, skinIndex)
+  const inverseMatrices = parseAttributeAccessor(data, skin?.inverseBindMatrices, binaryData)
+  if (!skin || !inverseMatrices) {
+    return
+  }
+  const bones = skin.joints.map((joint) => nodes[joint])
+  const boneInverses = timesMap(skin.joints.length, (i) => {
+    const start = m4.size * i
+    return Array.from(inverseMatrices.array.slice(start, start + m4.size)) as Matrix4
+  })
+  return new Skeleton({ bones, boneInverses })
+}
 
 const parseAnimations = (data: Gltf, nodes: Object3d[], binaryData: ArrayBuffer): Animation[] => {
   return mapOption(data.animations, (animation, index) => {
@@ -191,15 +200,13 @@ const parseAnimation = (data: Gltf, nodes: Object3d[], animation: GltfAnimation,
     const sampler = animation.samplers[channel.sampler]
     const target = channel.target
     const node = nthOption(nodes, target.node)
-    if (!node) {
-      return
-    }
     const times = parseAttributeAccessor(data, sampler.input, binaryData)?.array
     const values = parseAttributeAccessor(data, sampler.output, binaryData)?.array
-    if (!times || !values) {
+    if (!times || !values || !node) {
       return
     }
     const interpolation = sampler.interpolation ?? AnimationInterpolationType.Linear
+    // TODO Handle weights is not implemented yet.
     if (target.path === "weights") {
       return
     }

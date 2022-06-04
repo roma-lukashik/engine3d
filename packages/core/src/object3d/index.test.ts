@@ -64,7 +64,7 @@ describe("Object3d", () => {
     const parent = new Object3d()
     const child1 = new Object3d()
     const child2 = new Object3d()
-    parent.add(child1, child2)
+    parent.add([child1, child2])
     expect(parent.children).toEqual([child1, child2])
   })
 })

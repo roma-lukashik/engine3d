@@ -1,4 +1,4 @@
-import { MainProgram } from "@webgl/program/main"
+import { MeshProgram } from "@webgl/program/mesh"
 import { Scene } from "@webgl/scene"
 import { Camera } from "@core/camera"
 import * as m4 from "@math/matrix4"
@@ -11,7 +11,7 @@ type Props = {
 }
 
 export class Renderer {
-  private program: MainProgram
+  private program: MeshProgram
 
   public readonly gl: WebGLRenderingContext
 
@@ -24,15 +24,19 @@ export class Renderer {
     if (!gl) {
       throw new Error("Unable to create WebGL context")
     }
+    const ext = gl.getExtension("OES_texture_float")
+    if (!ext) {
+      throw new Error("Your browser cannot support floating-point pixel types for textures")
+    }
     this.gl = gl
-    this.program = new MainProgram({ gl })
+    this.program = new MeshProgram({ gl })
     this.resize(width, height)
     this.gl.clearColor(0, 0, 0, 1)
   }
 
   public render(scene: Scene, camera: Camera): void {
     if (scene.dirty) {
-      this.program = new MainProgram({
+      this.program = new MeshProgram({
         gl: this.gl,
         ambientLightsAmount: scene.ambientLights.length,
         pointLightsAmount: scene.pointLights.length,
@@ -71,7 +75,7 @@ export class Renderer {
       textureMatrices: scene.shadowLights.map((light) => m4.multiply(bias, light.projectionMatrix)),
       ambientLights: scene.ambientLights.map(({ color, intensity }) => ({ color: v3.multiply(color, intensity) })),
       pointLights: scene.pointLights.map(({ color, position }) => ({ color, position })),
-      spotLights: scene.spotLights.map(({ color, intensity, position, target, distance, angle, penumbra }) => ({ color: v3.multiply(color, intensity), position, distance, target, coneCos: Math.cos(angle), penumbraCos: Math.cos(angle * (1 - penumbra)) })),
+      spotLights: scene.spotLights.map(({ color, intensity, position, target, distance, coneCos, penumbraCos }) => ({ color: v3.multiply(color, intensity), position, distance, target, coneCos, penumbraCos })),
       directionalLights: scene.directionalLights.map(({ color, intensity, direction }) => ({ color: v3.multiply(color, intensity), direction })),
       shadowTextures: scene.shadows.map(({ depthTexture }) => depthTexture),
       cameraPosition: camera.position,

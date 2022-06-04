@@ -13,3 +13,5 @@ export const lt = (a: number, b: number): boolean => b - a > EPS
 export const lte = (a: number, b: number): boolean => lt(a, b) || eq(a, b)
 
 export const clamp = (x: number, min: number, max: number): number => Math.max(min, Math.min(max, x))
+
+export const ceilPowerOfTwo = (x: number): number => Math.pow(2, Math.ceil(Math.log(x) / Math.LN2))

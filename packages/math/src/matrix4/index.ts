@@ -3,6 +3,8 @@ import { PI } from "@math/constants"
 import { Matrix4, Quaternion, Vector3 } from "@math/types"
 import * as q from "@math/quaternion"
 
+export const size = 16
+
 export const identity = (): Matrix4 => [
   1, 0, 0, 0,
   0, 1, 0, 0,

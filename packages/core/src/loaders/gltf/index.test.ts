@@ -1,12 +1,31 @@
 import { parseGltf } from "@core/loaders/gltf"
 import { simpleBuffer, simpleGltf } from "@core/loaders/gltf/__test__/gltf"
 import { Mesh } from "@core/mesh"
-import { BufferViewTarget } from "@core/loaders/types"
+import { BufferViewTarget, Gltf } from "@core/loaders/types"
 
 describe("parseGltf", () => {
   describe("simple GLTF", () => {
-    const { nodes } = parseGltf(simpleGltf, simpleBuffer)
-    const root = nodes[0]
+    const { scene } = parseGltf(simpleGltf, simpleBuffer)
+    const root = scene.children[0]
+
+    describe("scene", () => {
+      it("should be defined", () => {
+        expect(scene).toBeDefined()
+      })
+
+      it("has correct matrix", () => {
+        expect(scene.matrix).toEqual([
+          1, 0, 0, 0,
+          0, 1, 0, 0,
+          0, 0, 1, 0,
+          0, 0, 0, 1,
+        ])
+      })
+
+      it("has 1 child node", () => {
+        expect(scene.children).toHaveLength(1)
+      })
+    })
 
     describe("root node", () => {
       it("should be defined", () => {
@@ -93,6 +112,18 @@ describe("parseGltf", () => {
       it("has no child", () => {
         expect(child.children).toHaveLength(0)
       })
+    })
+  })
+
+  describe("errors handling", () => {
+    it("throws an error if version is lower than 2", () => {
+      const gltf: Gltf = {
+        ...simpleGltf,
+        asset: {
+          version: "1",
+        },
+      }
+      expect(() => parseGltf(gltf, simpleBuffer)).toThrowError("Unsupported *.gltf file. Version should be >= 2.0.")
     })
   })
 })

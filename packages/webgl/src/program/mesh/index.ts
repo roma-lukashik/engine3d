@@ -26,7 +26,7 @@ type Props = {
   shadowsAmount?: number
 }
 
-type MainUniformValues = {
+type MeshUniformValues = {
   modelMatrix?: Matrix4
   cameraPosition?: Vector3
   textureMatrices?: Matrix4[]
@@ -37,6 +37,8 @@ type MainUniformValues = {
   directionalLights?: DirectionalLight[]
   material?: Material
   shadowTextures?: WebGLBaseTexture[]
+  boneTexture?: WebGLBaseTexture
+  boneTextureSize?: number
 }
 
 type PointLight = {
@@ -68,7 +70,7 @@ type Material = {
   color: Vector3
 }
 
-export class MainProgram extends Program<MainUniformValues> {
+export class MeshProgram extends Program<MeshUniformValues> {
   constructor({
     gl,
     ambientLightsAmount = 0,
@@ -106,14 +108,32 @@ const addDefs = (shader: string, defs: string[]): string =>
 const defaultVertex = `
   attribute vec3 position;
   attribute vec3 normal;
+  attribute vec4 skinIndex;
+  attribute vec4 skinWeight;
   attribute vec2 uv;
 
   uniform mat4 projectionMatrix;
   uniform mat4 modelMatrix;
+  uniform float boneTextureSize;
+  uniform sampler2D boneTexture;
 
   varying vec3 vPosition;
   varying vec3 vNormal;
   varying vec2 vUv;
+
+  mat4 getBoneMatrix(float i) {
+    float j = i * 4.0;
+    float dx = 1.0 / boneTextureSize;
+    float x = mod(j, boneTextureSize);
+    float y = dx * (floor(j / boneTextureSize) + 0.5);
+
+    return mat4(
+      texture2D(boneTexture, vec2(dx * (x + 0.5), y)),
+      texture2D(boneTexture, vec2(dx * (x + 1.5), y)),
+      texture2D(boneTexture, vec2(dx * (x + 2.5), y)),
+      texture2D(boneTexture, vec2(dx * (x + 3.5), y))
+    );
+  }
 
   ${ifdef(USE_AMBIENT_LIGHT, `
     struct AmbientLight {
@@ -125,10 +145,18 @@ const defaultVertex = `
   `)}
 
   void main() {
-    vUv = uv;
-    vec4 modelPosition = modelMatrix * vec4(position, 1.0);
+    mat4 skinMatrix =
+      getBoneMatrix(skinIndex.x) * skinWeight.x +
+      getBoneMatrix(skinIndex.y) * skinWeight.y +
+      getBoneMatrix(skinIndex.z) * skinWeight.z +
+      getBoneMatrix(skinIndex.w) * skinWeight.w;
+
+    mat4 m = modelMatrix * skinMatrix;
+    vec4 modelPosition = m * vec4(position, 1.0);
+
     vPosition = modelPosition.xyz;
-    vNormal = normalize(mat3(modelMatrix) * normal);
+    vNormal = normalize(mat3(m) * normal);
+    vUv = uv;
 
     ${ifdef(USE_AMBIENT_LIGHT, `
       ambientColor = vec3(0.0);
