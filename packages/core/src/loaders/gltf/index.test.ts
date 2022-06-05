@@ -14,7 +14,7 @@ describe("parseGltf", () => {
       })
 
       it("has correct matrix", () => {
-        expect(scene.matrix).toEqual([
+        expect(scene.localMatrix).toEqual([
           1, 0, 0, 0,
           0, 1, 0, 0,
           0, 0, 1, 0,
@@ -33,7 +33,7 @@ describe("parseGltf", () => {
       })
 
       it("has correct matrix", () => {
-        expect(root.matrix).toEqual([
+        expect(root.localMatrix).toEqual([
           1, 0, 0, 0,
           0, 1, 0, 0,
           0, 0, 1, 0,
@@ -50,7 +50,7 @@ describe("parseGltf", () => {
       const child = root.children[0]
 
       it("has a correct matrix", () => {
-        expect(child.matrix).toEqual([
+        expect(child.localMatrix).toEqual([
           2, 0, 0, 0,
           0, 0.865838, 0.500388, 0,
           0, -0.250194, 0.432919, 0,
@@ -101,7 +101,7 @@ describe("parseGltf", () => {
       const child = root.children[1]
 
       it("has a correct matrix", () => {
-        expect(child.matrix).toEqual([
+        expect(child.localMatrix).toEqual([
           2, 0, 0, 0,
           0, 0.866, 0.5, 0,
           0, -0.25, 0.433, 0,

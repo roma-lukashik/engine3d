@@ -34,7 +34,7 @@ export class WebGLMesh {
   public render(program: Program): void {
     program.use()
     program.uniforms.setValues({
-      modelMatrix: this.mesh.worldMatrix,
+      worldMatrix: this.mesh.worldMatrix,
       boneTexture: this.boneTexture,
       boneTextureSize: this.boneTextureSize,
       material: {

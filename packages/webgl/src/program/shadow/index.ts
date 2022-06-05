@@ -3,7 +3,7 @@ import { Matrix4 } from "@math/types"
 
 type ShadowUniforms = {
   projectionMatrix?: Matrix4
-  modelMatrix?: Matrix4
+  worldMatrix?: Matrix4
 }
 
 type Props = {
@@ -20,10 +20,10 @@ const vertex = `
   attribute vec3 position;
 
   uniform mat4 projectionMatrix;
-  uniform mat4 modelMatrix;
+  uniform mat4 worldMatrix;
 
   void main() {
-    gl_Position = projectionMatrix * modelMatrix * vec4(position, 1.0);
+    gl_Position = projectionMatrix * worldMatrix * vec4(position, 1.0);
   }
 `
 

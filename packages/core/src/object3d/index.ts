@@ -13,7 +13,7 @@ type ObjectProps = {
 
 export class Object3d {
   public name?: string
-  public matrix: Matrix4
+  public localMatrix: Matrix4
   public worldMatrix: Matrix4 = m4.identity()
   public position: Vector3
   public scale: Vector3
@@ -33,7 +33,7 @@ export class Object3d {
       this.position = position
       this.scale = scale
       this.rotation = rotation
-      this.matrix = m4.compose(rotation, position, scale)
+      this.localMatrix = m4.compose(rotation, position, scale)
     }
 
     this.name = name
@@ -49,14 +49,14 @@ export class Object3d {
   }
 
   public updateMatrix(matrix: Matrix4): void {
-    this.matrix = matrix
+    this.localMatrix = matrix
     this.position = m4.translationVector(matrix)
     this.scale = m4.scalingVector(matrix)
     this.rotation = m4.rotationVector(matrix)
   }
 
   public updateWorldMatrix(matrix: Matrix4): void {
-    this.worldMatrix = m4.multiply(matrix, this.matrix)
+    this.worldMatrix = m4.multiply(matrix, this.localMatrix)
     this.children.forEach((child) => child.updateWorldMatrix(this.worldMatrix))
   }
 }

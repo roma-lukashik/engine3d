@@ -27,7 +27,7 @@ type Props = {
 }
 
 type MeshUniformValues = {
-  modelMatrix?: Matrix4
+  worldMatrix?: Matrix4
   cameraPosition?: Vector3
   textureMatrices?: Matrix4[]
   projectionMatrix?: Matrix4
@@ -113,7 +113,7 @@ const defaultVertex = `
   attribute vec2 uv;
 
   uniform mat4 projectionMatrix;
-  uniform mat4 modelMatrix;
+  uniform mat4 worldMatrix;
   uniform float boneTextureSize;
   uniform sampler2D boneTexture;
 
@@ -151,11 +151,11 @@ const defaultVertex = `
       getBoneMatrix(skinIndex.z) * skinWeight.z +
       getBoneMatrix(skinIndex.w) * skinWeight.w;
 
-    mat4 m = modelMatrix * skinMatrix;
-    vec4 modelPosition = m * vec4(position, 1.0);
+    mat4 worldSkinMatrix = worldMatrix * skinMatrix;
+    vec4 modelPosition = worldSkinMatrix * vec4(position, 1.0);
 
     vPosition = modelPosition.xyz;
-    vNormal = normalize(mat3(m) * normal);
+    vNormal = normalize(mat3(worldSkinMatrix) * normal);
     vUv = uv;
 
     ${ifdef(USE_AMBIENT_LIGHT, `

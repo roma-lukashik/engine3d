@@ -8,7 +8,7 @@ describe("Object3d", () => {
       position: [0, 0, 0],
       scale: [1, 1, 1],
       rotation: [0, 0, 0, 1],
-      matrix: [
+      localMatrix: [
         1, 0, 0, 0,
         0, 1, 0, 0,
         0, 0, 1, 0,
@@ -23,7 +23,7 @@ describe("Object3d", () => {
       rotation: [0, 0.9238795292366128, 0, 0.38268342717215614],
       scale: [2, 3, 2],
     })
-    expect(object.matrix).toCloseEqual([
+    expect(object.localMatrix).toCloseEqual([
       -1.414, 0, -1.414, 0,
       0, 3, 0, 0,
       1.414, 0, -1.414, 0,
@@ -54,7 +54,7 @@ describe("Object3d", () => {
       2, 3, 4, 1,
     ]
     object.updateMatrix(matrix)
-    expect(object.matrix).toEqual(matrix)
+    expect(object.localMatrix).toEqual(matrix)
     expect(object.position).toCloseEqual([2, 3, 4])
     expect(object.scale).toCloseEqual([2, 3, 2])
     expect(object.rotation).toCloseEqual([0, 0.924, 0, 0.3827])
