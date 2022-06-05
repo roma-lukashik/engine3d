@@ -1,12 +1,5 @@
 import { BufferViewTarget } from "@core/loaders/types"
-
-type TypedArray =
-  | Int8Array
-  | Uint8Array
-  | Int16Array
-  | Uint16Array
-  | Uint32Array
-  | Float32Array
+import { TypedArray } from "@core/types"
 
 type Props = {
   array: TypedArray

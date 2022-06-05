@@ -1,3 +1,4 @@
+import { TypedArray } from "@core/types"
 import { WebGLBaseTexture } from "@webgl/textures/types"
 import { createTexture2D } from "@webgl/textures/utils"
 
@@ -6,14 +7,6 @@ type Props<T extends TypedArray> = {
   size: number
   data: T
 }
-
-type TypedArray =
-  | Int8Array
-  | Uint8Array
-  | Int16Array
-  | Uint16Array
-  | Uint32Array
-  | Float32Array
 
 export class DataTexture<T extends TypedArray> implements WebGLBaseTexture {
   public texture: WebGLTexture

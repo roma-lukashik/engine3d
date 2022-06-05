@@ -1,8 +1,9 @@
 import { BufferAttribute } from "@core/bufferAttribute"
+import { TypedArray } from "@core/types"
 
 export class WebglVertexAttribute {
   private readonly gl: WebGLRenderingContext
-  private readonly array: BufferAttribute["array"]
+  private readonly array: TypedArray
   private readonly buffer: WebGLBuffer | null
 
   public readonly itemSize: number

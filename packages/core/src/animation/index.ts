@@ -1,14 +1,14 @@
 import { AnimationInterpolationType } from "@core/loaders/types"
-import { BufferAttribute } from "@core/bufferAttribute"
 import { Object3d } from "@core/object3d"
+import { TypedArray } from "@core/types"
 import * as v3 from "@math/vector3"
 import * as q from "@math/quaternion"
 import { Quaternion, Vector3 } from "@math/types"
 
 type AnimationData = {
   node: Object3d
-  times: BufferAttribute["array"] // TODO
-  values: BufferAttribute["array"] // TODO
+  times: TypedArray
+  values: TypedArray
   interpolation: AnimationInterpolationType
   transform: keyof Pick<Object3d, "position" | "rotation" | "scale">
 }

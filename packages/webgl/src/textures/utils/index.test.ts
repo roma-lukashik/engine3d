@@ -20,9 +20,14 @@ describe("Texture Utils", () => {
       const texture = createTexture2D(gl)
       expect(gl.getParameter(gl.TEXTURE_BINDING_2D)).toEqual(texture)
     })
+
+    it("throws an error if texture cannot be created", () => {
+      gl.createTexture.mockReturnValue(null)
+      expect(() => createTexture2D(gl)).toThrowError("Cannot create a texture")
+    })
   })
 
-  describe("#isPowerOf2", () => {
+  describe("#supportMipmap", () => {
     it.each([0, 1, 2, 32, 128, 1024])("returns true for %s", (value) => {
       expect(supportMipmap({ width: value, height: value })).toBe(true)
     })
