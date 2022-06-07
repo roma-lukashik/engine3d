@@ -1,5 +1,4 @@
 import { WebGLMesh } from "@webgl/mesh"
-import { Shadow } from "@webgl/shadow"
 import { Mesh } from "@core/mesh"
 import {
   AmbientLight,
@@ -24,8 +23,6 @@ export class Scene {
 
   public meshes: Map<Mesh, WebGLMesh> = new Map()
   public lights: Light[] = []
-  public shadows: Shadow[] = []
-  public dirty: boolean = false
 
   public get pointLights(): PointLight[] {
     return this.lights.filter(isPointLight)
@@ -58,8 +55,6 @@ export class Scene {
   }
 
   public addLight(...lights: Light[]): void {
-    this.dirty = true
     this.lights.push(...lights)
-    this.shadows.push(...lights.filter(isShadowLight).map((light) => new Shadow({ gl: this.gl, light })))
   }
 }

@@ -1,33 +1,86 @@
 import { Program } from "@webgl/program"
+import { WebGLBaseTexture } from "@webgl/textures/types"
 import { Matrix4 } from "@math/types"
+import { define, ifdef, USE_SKINNING } from "@webgl/utils/glsl"
 
 type ShadowUniforms = {
   projectionMatrix?: Matrix4
   worldMatrix?: Matrix4
+  boneTexture?: WebGLBaseTexture
+  boneTextureSize?: number
 }
 
 type Props = {
   gl: WebGLRenderingContext
+  useSkinning?: boolean
 }
 
 export class ShadowProgram extends Program<ShadowUniforms> {
-  constructor({ gl }: Props) {
+  constructor({
+    gl,
+    useSkinning = false,
+  }: Props) {
+    const defs = [
+      useSkinning ? define(USE_SKINNING) : "",
+    ]
+    const transform = (shader: string) => {
+      shader = addDefs(shader, defs)
+      return shader
+    }
+    const vertex = transform(shadowVertex)
+    const fragment = transform(shadowFragment)
+
     super({ gl, vertex, fragment })
   }
 }
 
-const vertex = `
+const addDefs = (shader: string, defs: string[]): string =>
+  defs.filter(Boolean).join("\n") + shader
+
+const shadowVertex = `
   attribute vec3 position;
+  attribute vec4 skinIndex;
+  attribute vec4 skinWeight;
 
   uniform mat4 projectionMatrix;
   uniform mat4 worldMatrix;
+  uniform float boneTextureSize;
+  uniform sampler2D boneTexture;
+
+  mat4 getBoneMatrix(float i) {
+    float j = i * 4.0;
+    float dx = 1.0 / boneTextureSize;
+    float x = mod(j, boneTextureSize);
+    float y = dx * (floor(j / boneTextureSize) + 0.5);
+
+    return mat4(
+      texture2D(boneTexture, vec2(dx * (x + 0.5), y)),
+      texture2D(boneTexture, vec2(dx * (x + 1.5), y)),
+      texture2D(boneTexture, vec2(dx * (x + 2.5), y)),
+      texture2D(boneTexture, vec2(dx * (x + 3.5), y))
+    );
+  }
 
   void main() {
-    gl_Position = projectionMatrix * worldMatrix * vec4(position, 1.0);
+    mat4 worldSkinMatrix = worldMatrix;
+
+    ${ifdef(USE_SKINNING, `
+      mat4 skinMatrix =
+        getBoneMatrix(skinIndex.x) * skinWeight.x +
+        getBoneMatrix(skinIndex.y) * skinWeight.y +
+        getBoneMatrix(skinIndex.z) * skinWeight.z +
+        getBoneMatrix(skinIndex.w) * skinWeight.w;
+
+      worldSkinMatrix = worldMatrix * skinMatrix;
+    `)}
+
+    vec4 modelPosition = worldSkinMatrix * vec4(position, 1.0);
+
+    gl_Position = projectionMatrix * modelPosition;
   }
 `
 
-const fragment = `
+const shadowFragment = `
   precision highp float;
 
   vec4 packRGBA (float v) {

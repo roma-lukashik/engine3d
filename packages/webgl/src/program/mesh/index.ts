@@ -12,6 +12,7 @@ import {
   USE_DIRECTIONAL_LIGHT,
   USE_POINT_LIGHT,
   USE_SHADOW,
+  USE_SKINNING,
   USE_SPOT_LIGHT,
 } from "@webgl/utils/glsl"
 import { WebGLBaseTexture } from "@webgl/textures/types"
@@ -24,6 +25,7 @@ type Props = {
   spotLightsAmount?: number
   directionalLightsAmount?: number
   shadowsAmount?: number
+  useSkinning?: boolean
 }
 
 type MeshUniformValues = {
@@ -78,6 +80,7 @@ export class MeshProgram extends Program<MeshUniformValues> {
     spotLightsAmount = 0,
     directionalLightsAmount = 0,
     shadowsAmount = 0,
+    useSkinning = false,
   }: Props) {
     const defs = [
       ambientLightsAmount > 0 ? define(USE_AMBIENT_LIGHT) : "",
@@ -85,6 +88,7 @@ export class MeshProgram extends Program<MeshUniformValues> {
       spotLightsAmount > 0 ? define(USE_SPOT_LIGHT) : "",
       directionalLightsAmount > 0 ? define(USE_DIRECTIONAL_LIGHT) : "",
       shadowsAmount > 0 ? define(USE_SHADOW) : "",
+      useSkinning ? define(USE_SKINNING) : "",
     ]
     const transform = (shader: string) => {
       shader = addDefs(shader, defs)
@@ -145,13 +149,18 @@ const defaultVertex = `
   `)}
 
   void main() {
-    mat4 skinMatrix =
-      getBoneMatrix(skinIndex.x) * skinWeight.x +
-      getBoneMatrix(skinIndex.y) * skinWeight.y +
-      getBoneMatrix(skinIndex.z) * skinWeight.z +
-      getBoneMatrix(skinIndex.w) * skinWeight.w;
+    mat4 worldSkinMatrix = worldMatrix;
 
-    mat4 worldSkinMatrix = worldMatrix * skinMatrix;
+    ${ifdef(USE_SKINNING, `
+      mat4 skinMatrix =
+        getBoneMatrix(skinIndex.x) * skinWeight.x +
+        getBoneMatrix(skinIndex.y) * skinWeight.y +
+        getBoneMatrix(skinIndex.z) * skinWeight.z +
+        getBoneMatrix(skinIndex.w) * skinWeight.w;
+
+      worldSkinMatrix = worldMatrix * skinMatrix;
+    `)}
+
     vec4 modelPosition = worldSkinMatrix * vec4(position, 1.0);
 
     vPosition = modelPosition.xyz;
@@ -279,7 +288,9 @@ const defaultFragment = `
         float attenuation = smoothstep(spotLights[i].coneCos, spotLights[i].penumbraCos, angleCos);
 
         if (attenuation > 0.0) {
-          color += spotLights[i].color * attenuation * getDistanceAttenuation(length(surfaceToSpotLightDirection), spotLights[i].distance);
+          float lightDistance = length(surfaceToSpotLightDirection);
+          float distanceAttenuation = getDistanceAttenuation(lightDistance, spotLights[i].distance);
+          color += spotLights[i].color * attenuation * distanceAttenuation;
         }
       }
       return tex * color;

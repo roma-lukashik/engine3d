@@ -6,30 +6,42 @@ import { Mesh } from "@core/mesh"
 
 type Props = {
   gl: WebGLRenderingContext
-  light: LightWithShadow
 }
 
-export class Shadow {
+export class ShadowRenderer {
   private readonly gl: WebGLRenderingContext
-  private readonly program: ShadowProgram
-  private readonly light: LightWithShadow
+  private readonly programs: WeakMap<WebGLMesh, ShadowProgram> = new WeakMap()
 
-  public depthTexture: WebGLDepthTexture
+  public readonly depthTextures: WeakMap<LightWithShadow, WebGLDepthTexture> = new WeakMap()
 
-  constructor({ gl, light }: Props) {
+  constructor({ gl }: Props) {
     this.gl = gl
-    this.light = light
-    this.program = new ShadowProgram({ gl })
-    this.depthTexture = new WebGLDepthTexture({ gl })
   }
 
-  public render(meshes: Map<Mesh, WebGLMesh>): void {
+  public render(lights: LightWithShadow[], meshes: Map<Mesh, WebGLMesh>): void {
     this.gl.disable(this.gl.CULL_FACE)
     this.gl.cullFace(this.gl.FRONT)
-    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.depthTexture.frameBuffer)
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
-    this.gl.viewport(0, 0, this.depthTexture.width, this.depthTexture.height)
-    this.program.uniforms.setValues({ projectionMatrix: this.light.projectionMatrix })
-    meshes.forEach((mesh) => mesh.render(this.program))
+
+    lights.forEach((light) => {
+      if (!this.depthTextures.has(light)) {
+        this.depthTextures.set(light, new WebGLDepthTexture({ gl: this.gl }))
+      }
+      const texture = this.depthTextures.get(light)!
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, texture.frameBuffer)
+      this.gl.viewport(0, 0, texture.width, texture.height)
+      this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
+
+      meshes.forEach((mesh, key) => {
+        if (!this.programs.has(mesh)) {
+          this.programs.set(mesh, new ShadowProgram({
+            gl: this.gl,
+            useSkinning: !!key.skeleton,
+          }))
+        }
+        const program = this.programs.get(mesh)!
+        program.uniforms.setValues({ projectionMatrix: light.projectionMatrix })
+        mesh.render(program)
+      })
+    })
   }
 }

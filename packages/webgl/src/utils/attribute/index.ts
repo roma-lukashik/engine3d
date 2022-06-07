@@ -1,4 +1,5 @@
 import { BufferAttribute } from "@core/bufferAttribute"
+import { BufferViewTarget } from "@core/loaders/types"
 import { TypedArray } from "@core/types"
 
 export class WebglVertexAttribute {
@@ -11,8 +12,8 @@ export class WebglVertexAttribute {
   public readonly normalized: boolean
   public readonly stride: number
   public readonly offset: number
-  public readonly target: number
   public readonly count: number
+  public readonly target: BufferViewTarget
 
   constructor(gl: WebGLRenderingContext, attribute: BufferAttribute) {
     Object.assign(this, attribute)

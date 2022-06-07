@@ -26,6 +26,7 @@ export class DataTexture<T extends TypedArray> implements WebGLBaseTexture {
     const internalFormat = gl.RGBA
     const type = this.getTextureDataType(data)
     const border = 0
+    // TODO change the array
     const dataArray = new Float32Array(size * size * 4)
     dataArray.set(data)
     gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, gl.NEAREST)

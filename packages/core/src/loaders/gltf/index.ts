@@ -2,6 +2,7 @@ import {
   AccessorType,
   AnimationChannelPath,
   AnimationInterpolationType,
+  BufferViewTarget,
   ComponentType,
   Gltf,
   GltfAnimation,
@@ -72,7 +73,7 @@ const parsePrimitive = (data: Gltf, primitive: MeshPrimitive, binaryData: ArrayB
     return parseAttributeAccessor(data, accessorIndex, binaryData)
   })
   const geometry = new Geometry(geometryData)
-  geometry.index = parseAttributeAccessor(data, primitive.indices, binaryData)
+  geometry.index = parseAttributeAccessor(data, primitive.indices, binaryData, BufferViewTarget.ElementArrayBuffer)
   const gltfMaterial = nthOption(data.materials, primitive.material)
   const material = new Material({
     alphaMode: gltfMaterial?.alphaMode,
@@ -114,6 +115,7 @@ const parseAttributeAccessor = (
   data: Gltf,
   accessorIndex: Option<number>,
   binaryData: ArrayBuffer,
+  customTarget?: BufferViewTarget,
 ): Option<BufferAttribute> => {
   const accessor = nthOption(data.accessors, accessorIndex)
   if (!accessor) {
@@ -127,7 +129,7 @@ const parseAttributeAccessor = (
   // const itemBytes = elementBytes * itemSize
   const bufferView = nthOption(data.bufferViews, accessor.bufferView)
   const stride = bufferView?.byteStride
-  const target = bufferView?.target
+  const target = customTarget ?? bufferView?.target
   const arraySize = accessor.count * itemSize
   const arrayBuffer = parseBufferView(data, bufferView, binaryData)
   const array = arrayBuffer ? new TypedArray(arrayBuffer, byteOffset, arraySize) : new TypedArray(arraySize)
