@@ -86,7 +86,7 @@ export class Renderer {
       pointLights: scene.pointLights.map(({ color, position }) => ({ color, position })),
       spotLights: scene.spotLights.map(({ color, intensity, position, target, distance, coneCos, penumbraCos }) => ({ color: v3.multiply(color, intensity), position, distance, target, coneCos, penumbraCos })),
       directionalLights: scene.directionalLights.map(({ color, intensity, direction }) => ({ color: v3.multiply(color, intensity), direction })),
-      shadowTextures: scene.shadowLights.map((light) => this.shadowRenderer.depthTextures.get(light)!),
+      shadowTextures: scene.shadowLights.map((light) => this.shadowRenderer.texturesStore.getOrCreate(light)),
       cameraPosition: camera.position,
     })
   }

@@ -32,6 +32,9 @@ export class WebGLMesh {
   }
 
   public render(program: Program): void {
+    if (this.mesh.skeleton) {
+      this.computeBoneTexture(this.mesh.skeleton)
+    }
     program.use()
     program.uniforms.setValues({
       worldMatrix: this.mesh.worldMatrix,

@@ -2,6 +2,7 @@ import { AnimationInterpolationType } from "@core/loaders/types"
 import { Object3d } from "@core/object3d"
 import { TypedArray } from "@core/types"
 import * as v3 from "@math/vector3"
+import * as m4 from "@math/matrix4"
 import * as q from "@math/quaternion"
 import { Quaternion, Vector3 } from "@math/types"
 
@@ -29,6 +30,7 @@ export class Animation {
   }
 
   public update(elapsed: number): void {
+    elapsed = elapsed % this.duration
     elapsed = Math.min(elapsed, this.duration - 0.001) + this.startTime
 
     this.data.forEach(({ node, transform, times, values }) => {
@@ -41,9 +43,12 @@ export class Animation {
 
       if (transform === "rotation") {
         node.rotation = q.slerp(prevVal as Quaternion, nextVal as Quaternion, alpha)
-      } else {
-        node[transform] = v3.lerp(prevVal as Vector3, nextVal as Vector3, alpha)
+      } else if (transform === "position") {
+        node.position = v3.lerp(prevVal as Vector3, nextVal as Vector3, alpha)
+      } else if (transform === "scale") {
+        node.scale = v3.lerp(prevVal as Vector3, nextVal as Vector3, alpha)
       }
+      node.localMatrix = m4.compose(node.rotation, node.position, node.scale)
     })
   }
 }

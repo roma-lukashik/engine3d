@@ -28,7 +28,7 @@ describe("Skeleton", () => {
     expect(skeleton.boneMatrices).toHaveLength(32)
   })
 
-  it("creates fill a boneMatrices array", () => {
+  it("fills a boneMatrices array", () => {
     const skeleton = new Skeleton({ bones, boneInverses })
     skeleton.update(new Object3d())
 
