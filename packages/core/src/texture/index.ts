@@ -1,17 +1,11 @@
 type Props = {
-  buffer: ArrayBuffer
-  mimeType?: string
+  source: TexImageSource
 }
 
 export class Texture {
-  public imageSource: TexImageSource
+  public source: TexImageSource
 
-  constructor({ buffer, mimeType }: Props) {
-    const blob = new Blob([buffer], { type: mimeType })
-    const link = URL.createObjectURL(blob)
-    const img = new Image()
-    img.onload = () => URL.revokeObjectURL(link)
-    img.src = link
-    this.imageSource = img
+  constructor({ source }: Props) {
+    this.source = source
   }
 }

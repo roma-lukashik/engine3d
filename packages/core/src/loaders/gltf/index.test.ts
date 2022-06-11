@@ -3,12 +3,16 @@ import { simpleBuffer, simpleGltf } from "@core/loaders/gltf/__test__/gltf"
 import { createGlb } from "@core/loaders/__test__/testUtils"
 import { Mesh } from "@core/mesh"
 import { BufferViewTarget, Gltf } from "@core/loaders/types"
+import { Object3d } from "@core/object3d"
 
 describe("parseGltf", () => {
   describe("simple GLTF", () => {
-    const gltfBinary = createGlb({ json: simpleGltf, binary: simpleBuffer })
-    const { scene } = parseGltf(gltfBinary)
-    const root = scene.children[0]
+    let scene: Object3d
+    beforeAll(async () => {
+      const gltfBinary = createGlb({ json: simpleGltf, binary: simpleBuffer })
+      const gltf = await parseGltf(gltfBinary)
+      scene = gltf.scene
+    })
 
     describe("scene", () => {
       it("should be defined", () => {
@@ -30,6 +34,9 @@ describe("parseGltf", () => {
     })
 
     describe("root node", () => {
+      let root: Object3d
+      beforeAll(() => root = scene.children[0])
+
       it("should be defined", () => {
         expect(root).toBeDefined()
       })
@@ -49,7 +56,12 @@ describe("parseGltf", () => {
     })
 
     describe("root node child #1", () => {
-      const child = root.children[0]
+      let root: Object3d
+      let child: Object3d
+      beforeAll(() => {
+        root = scene.children[0]
+        child = root.children[0]
+      })
 
       it("has a correct matrix", () => {
         expect(child.localMatrix).toEqual([
@@ -65,7 +77,10 @@ describe("parseGltf", () => {
       })
 
       describe("its child #1", () => {
-        const mesh = child.children[0] as Mesh
+        let mesh: Mesh
+        beforeAll(() => {
+          mesh = child.children[0] as Mesh
+        })
 
         it("should be instance of Mesh class", () => {
           expect(mesh).toBeInstanceOf(Mesh)
@@ -100,7 +115,12 @@ describe("parseGltf", () => {
     })
 
     describe("root node child #2", () => {
-      const child = root.children[1]
+      let root: Object3d
+      let child: Object3d
+      beforeAll(() => {
+        root = scene.children[0]
+        child = root.children[1]
+      })
 
       it("has a correct matrix", () => {
         expect(child.localMatrix).toEqual([
@@ -126,7 +146,7 @@ describe("parseGltf", () => {
         },
       }
       const gltfBinary = createGlb({ json: gltf, binary: simpleBuffer })
-      expect(() => parseGltf(gltfBinary)).toThrowError("Unsupported *.gltf file. Version should be >= 2.0.")
+      expect(() => parseGltf(gltfBinary)).rejects.toThrowError("Unsupported *.gltf file. Version should be >= 2.0.")
     })
   })
 })

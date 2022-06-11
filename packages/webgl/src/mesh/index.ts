@@ -33,7 +33,7 @@ export class WebGLMesh {
       this.computeBoneTexture(this.mesh.skeleton)
     }
     if (this.mesh.material.colorTexture) {
-      this.colorTexture = new WebGLImageTexture({ gl, image: this.mesh.material.colorTexture.imageSource })
+      this.colorTexture = new WebGLImageTexture({ gl, image: this.mesh.material.colorTexture.source })
     }
   }
 

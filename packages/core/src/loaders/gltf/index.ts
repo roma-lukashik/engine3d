@@ -19,20 +19,21 @@ import { Geometry } from "@core/geometry"
 import { Object3d } from "@core/object3d"
 import { Skeleton } from "@core/skeleton"
 import { Texture } from "@core/texture"
+import { loadImage } from "@core/loaders/image"
 import { transform } from "@utils/object"
-import { nthOption, mapOption, Option } from "@utils/optionable"
+import { nthOption, mapOption, mapOptionAsync, Option } from "@utils/optionable"
 import { timesMap } from "@utils/array"
 import { Matrix4 } from "@math/types"
 import * as m4 from "@math/matrix4"
 
-export const parseGltf = (raw: ArrayBufferLike | string) => {
+export const parseGltf = async (raw: ArrayBufferLike | string) => {
   const data = typeof raw === "string" ? JSON.parse(raw) as Gltf : parseGlb(raw)
   const version = Number(data.asset?.version ?? 0)
   if (version < 2) {
     throw new Error("Unsupported *.gltf file. Version should be >= 2.0.")
   }
   const nodes = parseNodes(data)
-  const scene = parseScene(data, nodes)
+  const scene = await parseScene(data, nodes)
   scene.updateWorldMatrix(scene.worldMatrix)
   const animations = parseAnimations(data, nodes)
   return { scene, animations }
@@ -44,40 +45,55 @@ const parseNodes = (data: Gltf): Object3d[] => {
   })
 }
 
-const parseScene = (data: Gltf, nodes: Object3d[]): Object3d => {
+const parseScene = async (data: Gltf, nodes: Object3d[]): Promise<Object3d>=> {
   const gltfScene = nthOption(data.scenes, data.scene ?? 0)
-  const children = mapOption(gltfScene?.nodes, (nodeId) => parseNode(data, nodes, nodeId))
+  const children = await mapOptionAsync(gltfScene?.nodes, (nodeId) => parseNode(data, nodes, nodeId))
   const scene = new Object3d({ name: "Scene" })
-  scene.add(children)
+  scene.add(children.filter((x): x is Object3d => !!x))
   return scene
 }
 
-const parseNode = (data: Gltf, nodes: Object3d[], nodeId: number): Option<Object3d> => {
+const parseNode = async (data: Gltf, nodes: Object3d[], nodeId: number): Promise<Option<Object3d>> => {
   const gltfNode = nthOption(data.nodes, nodeId)
   const node = nthOption(nodes, nodeId)
-  const meshes = parseMesh(data, gltfNode?.mesh) ?? []
+  const meshes = await parseMesh(data, gltfNode?.mesh) ?? []
   node?.add(meshes)
   const skeleton = parseSkin(data, nodes, gltfNode?.skin)
   if (skeleton) {
     meshes.forEach((mesh) => mesh.bindSkeleton(skeleton))
   }
-  const nodeChildren = mapOption(gltfNode?.children, (childNodeId) => parseNode(data, nodes, childNodeId))
+  const nodeChildren = await mapOptionAsync(gltfNode?.children, (childNodeId) => parseNode(data, nodes, childNodeId))
   node?.add(nodeChildren)
   return node
 }
 
-const parseMesh = (data: Gltf, meshIndex: Option<number>): Option<Mesh[]> => {
+const parseMesh = async (data: Gltf, meshIndex: Option<number>): Promise<Option<Mesh[]>> => {
   const gltfMesh = nthOption(data.meshes, meshIndex)
-  return gltfMesh?.primitives.map((primitive) => parsePrimitive(data, primitive))
+  return mapOptionAsync(gltfMesh?.primitives, (primitive) => parsePrimitive(data, primitive))
 }
 
-const parsePrimitive = (data: Gltf, primitive: MeshPrimitive): Mesh => {
+const parsePrimitive = async (data: Gltf, primitive: MeshPrimitive): Promise<Mesh> => {
   const geometryData = transform(primitive.attributes, (accessorIndex) => {
     return parseAttributeAccessor(data, accessorIndex)
   })
   const geometry = new Geometry(geometryData)
   geometry.index = parseAttributeAccessor(data, primitive.indices, BufferViewTarget.ElementArrayBuffer)
   const gltfMaterial = nthOption(data.materials, primitive.material)
+
+  const [
+    colorTexture,
+    metallicRoughnessTexture,
+    normalTexture,
+    occlusionTexture,
+    emissiveTexture,
+  ] = await Promise.all([
+    parseTexture(data, gltfMaterial?.pbrMetallicRoughness?.baseColorTexture?.index),
+    parseTexture(data, gltfMaterial?.pbrMetallicRoughness?.metallicRoughnessTexture?.index),
+    parseTexture(data, gltfMaterial?.normalTexture?.index),
+    parseTexture(data, gltfMaterial?.occlusionTexture?.index),
+    parseTexture(data, gltfMaterial?.emissiveTexture?.index),
+  ])
+
   const material = new Material({
     alphaMode: gltfMaterial?.alphaMode,
     alphaCutoff: gltfMaterial?.alphaCutoff,
@@ -85,12 +101,13 @@ const parsePrimitive = (data: Gltf, primitive: MeshPrimitive): Mesh => {
     metallic: gltfMaterial?.pbrMetallicRoughness?.metallicFactor,
     roughness: gltfMaterial?.pbrMetallicRoughness?.roughnessFactor,
     emissive: gltfMaterial?.emissiveFactor,
-    colorTexture: parseTexture(data, gltfMaterial?.pbrMetallicRoughness?.baseColorTexture?.index),
-    metallicRoughnessTexture: parseTexture(data, gltfMaterial?.pbrMetallicRoughness?.metallicRoughnessTexture?.index),
-    normalTexture: parseTexture(data, gltfMaterial?.normalTexture?.index),
-    occlusionTexture: parseTexture(data, gltfMaterial?.occlusionTexture?.index),
-    emissiveTexture: parseTexture(data, gltfMaterial?.emissiveTexture?.index),
+    colorTexture,
+    metallicRoughnessTexture,
+    normalTexture,
+    occlusionTexture,
+    emissiveTexture,
   })
+
   return createMesh(geometry, material, primitive.mode)
 }
 
@@ -113,7 +130,7 @@ const createMesh = (geometry: Geometry, material: Material, mode?: MeshPrimitive
   }
 }
 
-const parseTexture = (data: Gltf, textureIndex: Option<number>): Option<Texture> => {
+const parseTexture = async (data: Gltf, textureIndex: Option<number>): Promise<Option<Texture>> => {
   const texture = nthOption(data.textures, textureIndex)
   const image = nthOption(data.images, texture?.source)
   if (image?.uri) {
@@ -124,7 +141,8 @@ const parseTexture = (data: Gltf, textureIndex: Option<number>): Option<Texture>
   if (!buffer) {
     return
   }
-  return new Texture({ buffer, mimeType: image?.mimeType })
+  const source = await loadImage(buffer, image?.mimeType)
+  return new Texture({ source })
 }
 
 // Handling sparse has not been implemented yet.
