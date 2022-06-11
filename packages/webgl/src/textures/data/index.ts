@@ -8,32 +8,38 @@ type Props<T extends TypedArray> = {
   data: T
 }
 
-export class DataTexture<T extends TypedArray> implements WebGLBaseTexture {
+export class WebGLDataTexture<T extends TypedArray> implements WebGLBaseTexture {
   public texture: WebGLTexture
 
-  private gl: WebGLRenderingContext
+  private readonly gl: WebGLRenderingContext
 
   constructor({ gl, size, data }: Props<T>) {
     this.gl = gl
-    this.texture = this.createTexture(gl, data, size)
+    this.texture = this.createTexture()
+    this.updateTexture(data, size)
   }
 
-  private createTexture(gl: WebGLRenderingContext, data: T, size: number): WebGLTexture {
-    const texture = createTexture2D(gl)
-    const target = gl.TEXTURE_2D
+  public updateTexture(data: T, size: number): void {
+    const target = this.gl.TEXTURE_2D
     const level = 0
-    const format = gl.RGBA
-    const internalFormat = gl.RGBA
+    const format = this.gl.RGBA
+    const internalFormat = this.gl.RGBA
     const type = this.getTextureDataType(data)
     const border = 0
     // TODO change the array
     const dataArray = new Float32Array(size * size * 4)
     dataArray.set(data)
-    gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-    gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-    gl.texParameteri(target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-    gl.texParameteri(target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-    gl.texImage2D(target, level, internalFormat, size, size, border, format, type, dataArray)
+    this.gl.bindTexture(target, this.texture)
+    this.gl.texImage2D(target, level, internalFormat, size, size, border, format, type, dataArray)
+  }
+
+  private createTexture(): WebGLTexture {
+    const texture = createTexture2D(this.gl)
+    const target = this.gl.TEXTURE_2D
+    this.gl.texParameteri(target, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST)
+    this.gl.texParameteri(target, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST)
+    this.gl.texParameteri(target, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE)
+    this.gl.texParameteri(target, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE)
     return texture
   }
 

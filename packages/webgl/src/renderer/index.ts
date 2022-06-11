@@ -62,6 +62,7 @@ export class Renderer {
           directionalLightsAmount: scene.directionalLights.length,
           shadowsAmount: scene.shadowLights.length,
           useSkinning: !!key.skeleton,
+          useColorTexture: !!mesh.colorTexture,
         }))
       }
       const meshProgram = this.meshPrograms.get(mesh)!

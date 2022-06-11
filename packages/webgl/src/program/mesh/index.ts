@@ -9,6 +9,7 @@ import {
   SHADOWS_AMOUNT,
   SPOT_LIGHTS_AMOUNT,
   USE_AMBIENT_LIGHT,
+  USE_COLOR_TEXTURE,
   USE_DIRECTIONAL_LIGHT,
   USE_POINT_LIGHT,
   USE_SHADOW,
@@ -26,6 +27,7 @@ type Props = {
   directionalLightsAmount?: number
   shadowsAmount?: number
   useSkinning?: boolean
+  useColorTexture?: boolean
 }
 
 type MeshUniformValues = {
@@ -70,6 +72,7 @@ type Material = {
   metalness: number
   roughness: number
   color: Vector3
+  colorTexture?: number
 }
 
 export class MeshProgram extends Program<MeshUniformValues> {
@@ -81,6 +84,7 @@ export class MeshProgram extends Program<MeshUniformValues> {
     directionalLightsAmount = 0,
     shadowsAmount = 0,
     useSkinning = false,
+    useColorTexture = false,
   }: Props) {
     const defs = [
       ambientLightsAmount > 0 ? define(USE_AMBIENT_LIGHT) : "",
@@ -89,6 +93,7 @@ export class MeshProgram extends Program<MeshUniformValues> {
       directionalLightsAmount > 0 ? define(USE_DIRECTIONAL_LIGHT) : "",
       shadowsAmount > 0 ? define(USE_SHADOW) : "",
       useSkinning ? define(USE_SKINNING) : "",
+      useColorTexture ? define(USE_COLOR_TEXTURE) : "",
     ]
     const transform = (shader: string) => {
       shader = addDefs(shader, defs)
@@ -181,11 +186,20 @@ const defaultVertex = `
 const defaultFragment = `
   precision highp float;
 
-  struct Material {
-    float metalness;
-    float roughness;
-    vec3 color;
-  };
+  #ifdef USE_COLOR_TEXTURE
+    struct Material {
+      float metalness;
+      float roughness;
+      vec3 color;
+      sampler2D colorTexture;
+    };
+  #else
+    struct Material {
+      float metalness;
+      float roughness;
+      vec3 color;
+    };
+  #endif
 
   uniform vec3 cameraPosition;
   uniform Material material;
@@ -340,6 +354,9 @@ const defaultFragment = `
 
   void main() {
     vec3 tex = material.color;
+    ${ifdef(USE_COLOR_TEXTURE, `
+      tex = texture2D(material.colorTexture, vUv).rgb;
+    `)}
 
     vec3 ambientLight = vec3(0.0);
     vec3 spotLight = vec3(0.0);

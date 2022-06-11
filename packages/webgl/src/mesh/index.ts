@@ -1,11 +1,12 @@
 import { Program } from "@webgl/program"
 import { WebglVertexAttribute } from "@webgl/utils/attribute"
-import { DataTexture } from "@webgl/textures/data"
+import { WebGLDataTexture } from "@webgl/textures/data"
 import { Mesh } from "@core/mesh"
 import { Geometry } from "@core/geometry"
 import { ceilPowerOfTwo } from "@math/operators"
 import { transform } from "@utils/object"
 import { Skeleton } from "@core/skeleton"
+import { WebGLImageTexture } from "@webgl/textures/image"
 
 type Props = {
   gl: WebGLRenderingContext
@@ -13,10 +14,12 @@ type Props = {
 }
 
 export class WebGLMesh {
+  public readonly colorTexture: WebGLImageTexture
+
   private readonly gl: WebGLRenderingContext
   private readonly mesh: Mesh
   private readonly attributes: Partial<Record<keyof Geometry, WebglVertexAttribute>>
-  private boneTexture: DataTexture<Float32Array>
+  private boneTexture: WebGLDataTexture<Float32Array>
   private boneTextureSize: number
 
   constructor({
@@ -29,11 +32,14 @@ export class WebGLMesh {
     if (this.mesh.skeleton) {
       this.computeBoneTexture(this.mesh.skeleton)
     }
+    if (this.mesh.material.colorTexture) {
+      this.colorTexture = new WebGLImageTexture({ gl, image: this.mesh.material.colorTexture.imageSource })
+    }
   }
 
   public render(program: Program): void {
     if (this.mesh.skeleton) {
-      this.computeBoneTexture(this.mesh.skeleton)
+      this.boneTexture.updateTexture(this.mesh.skeleton.boneMatrices, this.boneTextureSize)
     }
     program.use()
     program.uniforms.setValues({
@@ -44,6 +50,7 @@ export class WebGLMesh {
         metalness: this.mesh.material.metalness,
         roughness: this.mesh.material.roughness,
         color: this.mesh.material.color,
+        colorTexture: this.colorTexture,
       },
     })
     program.uniforms.update()
@@ -59,7 +66,7 @@ export class WebGLMesh {
 
   private computeBoneTexture(skeleton: Skeleton): void {
     this.boneTextureSize = Math.max(4, ceilPowerOfTwo(Math.sqrt(skeleton.bones.length * 4)))
-    this.boneTexture = new DataTexture({
+    this.boneTexture = new WebGLDataTexture({
       gl: this.gl,
       size: this.boneTextureSize,
       data: skeleton.boneMatrices,

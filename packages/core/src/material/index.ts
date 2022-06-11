@@ -1,4 +1,5 @@
 import { AlphaMode } from "@core/loaders/types"
+import { Texture } from "@core/texture"
 import * as v4 from "@math/vector4"
 import * as v3 from "@math/vector3"
 import { Vector3, Vector4 } from "@math/types"
@@ -10,12 +11,11 @@ type Props = {
   metallic?: number
   roughness?: number
   emissive?: Vector3
-  // TODO: specify types
-  colorTexture?: any
-  metallicRoughnessTexture?: any
-  normalTexture?: any
-  occlusionTexture?: any
-  emissiveTexture?: any
+  colorTexture?: Texture
+  metallicRoughnessTexture?: Texture
+  normalTexture?: Texture
+  occlusionTexture?: Texture
+  emissiveTexture?: Texture
 }
 
 export class Material {
@@ -27,6 +27,11 @@ export class Material {
   public depthWrite: boolean
   public alphaTest: number
   public emissive: Vector3
+  public colorTexture?: Texture
+  public metallicRoughnessTexture?: Texture
+  public normalTexture?: Texture
+  public occlusionTexture?: Texture
+  public emissiveTexture?: Texture
 
   constructor({
     alphaMode = AlphaMode.Opaque,
@@ -49,6 +54,12 @@ export class Material {
     // check material type
     this.emissive = emissive
 
+    this.colorTexture = colorTexture
+    this.metallicRoughnessTexture = metallicRoughnessTexture
+    this.normalTexture = normalTexture
+    this.occlusionTexture = occlusionTexture
+    this.emissiveTexture = emissiveTexture
+
     if (alphaMode === AlphaMode.Blend) {
       this.transparent = true
       this.depthWrite = false
@@ -57,26 +68,6 @@ export class Material {
       if (alphaMode === AlphaMode.Mask) {
         this.alphaTest = alphaCutoff
       }
-    }
-
-    if (colorTexture) {
-      // attach texture
-    }
-
-    if (metallicRoughnessTexture) {
-      // attach texture
-    }
-
-    if (normalTexture) {
-      // attach texture
-    }
-
-    if (occlusionTexture) {
-      // attach texture
-    }
-
-    if (emissiveTexture) {
-      // attach texture
     }
   }
 }

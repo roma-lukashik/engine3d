@@ -16,12 +16,13 @@ import { Mesh } from "@core/mesh"
 import { BufferAttribute } from "@core/bufferAttribute"
 import { Geometry } from "@core/geometry"
 import { Object3d } from "@core/object3d"
+import { Skeleton } from "@core/skeleton"
+import { Texture } from "@core/texture"
 import { transform } from "@utils/object"
 import { nthOption, mapOption, Option } from "@utils/optionable"
+import { timesMap } from "@utils/array"
 import { Matrix4 } from "@math/types"
 import * as m4 from "@math/matrix4"
-import { Skeleton } from "@core/skeleton"
-import { timesMap } from "@utils/array"
 
 export const parseGltf = (data: Gltf, binaryData: ArrayBuffer) => {
   const version = Number(data.asset?.version ?? 0)
@@ -82,11 +83,12 @@ const parsePrimitive = (data: Gltf, primitive: MeshPrimitive, binaryData: ArrayB
     metallic: gltfMaterial?.pbrMetallicRoughness?.metallicFactor,
     roughness: gltfMaterial?.pbrMetallicRoughness?.roughnessFactor,
     emissive: gltfMaterial?.emissiveFactor,
-    colorTexture: gltfMaterial?.pbrMetallicRoughness?.baseColorTexture,
-    metallicRoughnessTexture: gltfMaterial?.pbrMetallicRoughness?.metallicRoughnessTexture,
-    normalTexture: gltfMaterial?.normalTexture,
-    occlusionTexture: gltfMaterial?.occlusionTexture,
-    emissiveTexture: gltfMaterial?.emissiveTexture,
+    colorTexture: parseTexture(data, gltfMaterial?.pbrMetallicRoughness?.baseColorTexture?.index, binaryData),
+    metallicRoughnessTexture:
+      parseTexture(data, gltfMaterial?.pbrMetallicRoughness?.metallicRoughnessTexture?.index, binaryData),
+    normalTexture: parseTexture(data, gltfMaterial?.normalTexture?.index, binaryData),
+    occlusionTexture: parseTexture(data, gltfMaterial?.occlusionTexture?.index, binaryData),
+    emissiveTexture: parseTexture(data, gltfMaterial?.emissiveTexture?.index, binaryData),
   })
   return createMesh(geometry, material, primitive.mode)
 }
@@ -108,6 +110,20 @@ const createMesh = (geometry: Geometry, material: Material, mode?: MeshPrimitive
     default:
       return new Mesh({ geometry, material })
   }
+}
+
+const parseTexture = (data: Gltf, textureIndex: Option<number>, binaryData: ArrayBuffer): Option<Texture> => {
+  const texture = nthOption(data.textures, textureIndex)
+  const image = nthOption(data.images, texture?.source)
+  if (image?.uri) {
+    throw new Error("Getting texture by uri is not implemented yet.")
+  }
+  const bufferView = nthOption(data.bufferViews, image?.bufferView)
+  const buffer = parseBufferView(data, bufferView, binaryData)
+  if (!buffer) {
+    return
+  }
+  return new Texture({ buffer, mimeType: image?.mimeType })
 }
 
 // Handling sparse has not been implemented yet.
