@@ -1,5 +1,7 @@
 import { AccessorType, BufferViewTarget, ComponentType, Gltf, MeshPrimitiveMode } from "@core/loaders/types"
-import { base64ToBuffer } from "@core/loaders/gltf/__test__/utils"
+import { base64ToUInt8Array } from "@core/loaders/gltf/__test__/utils"
+
+export const simpleBuffer = base64ToUInt8Array("AAABAAIAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAA=")
 
 export const simpleGltf: Gltf = {
   asset: {
@@ -93,5 +95,3 @@ export const simpleGltf: Gltf = {
     },
   ],
 }
-
-export const simpleBuffer = base64ToBuffer("AAABAAIAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAA=")

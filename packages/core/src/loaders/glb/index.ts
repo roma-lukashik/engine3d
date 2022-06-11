@@ -6,11 +6,6 @@ const BINARY_HEADER_MAGIC = 0x46546C67
 const BINARY_CHUNK_JSON_TYPES = 0x4E4F534A
 const BINARY_CHUNK_BIN_TYPES = 0x004E4942
 
-type Glb = {
-  json: Gltf
-  data?: ArrayBuffer
-}
-
 // GLB contains 12 byte header:
 // - magic (unsigned char[4])
 // - version (uint32)
@@ -19,7 +14,7 @@ type Glb = {
 // - contentLength (uint32)
 // - contentFormat (uint32)
 // - json or binary data
-export const parseGlb = (buffer: ArrayBufferLike): Glb => {
+export const parseGlb = (buffer: ArrayBufferLike): Gltf => {
   const [magic, version] = new Uint32Array(buffer, 0, BINARY_HEADER_LENGTH / UINT_SIZE)
   if (magic !== BINARY_HEADER_MAGIC) {
     throw new Error("Unsupported glTF-Binary header.")
@@ -34,10 +29,10 @@ export const parseGlb = (buffer: ArrayBufferLike): Glb => {
   }
   const jsonOffset = BINARY_HEADER_LENGTH + 2 * UINT_SIZE
   const jsonBuffer = buffer.slice(jsonOffset, jsonOffset + jsonLength)
-  const json = JSON.parse(decodeText(jsonBuffer))
+  const json = JSON.parse(decodeText(jsonBuffer)) as Gltf
 
   if (jsonLength + jsonOffset === buffer.byteLength) {
-    return { json }
+    return json
   }
 
   const [binaryLength, binaryFormat] = getHeader(buffer, jsonOffset + jsonLength)
@@ -46,8 +41,9 @@ export const parseGlb = (buffer: ArrayBufferLike): Glb => {
   }
   const binaryOffset = jsonOffset + jsonLength + 2 * UINT_SIZE
   const data = buffer.slice(binaryOffset, binaryOffset + binaryLength)
+  json.buffers = [data]
 
-  return { json, data }
+  return json
 }
 
 const getHeader = (buffer: ArrayBufferLike, offset: number): [length: number, format: number] => {

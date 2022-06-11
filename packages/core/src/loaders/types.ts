@@ -59,7 +59,7 @@ type AccessorSparse = {
   // TODO
 }
 
-type GltfBuffer = {
+type GltfBuffer = ArrayBuffer | {
   uri?: string
   byteLength: number
 }

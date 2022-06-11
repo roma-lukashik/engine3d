@@ -1,11 +1,13 @@
 import { parseGltf } from "@core/loaders/gltf"
 import { simpleBuffer, simpleGltf } from "@core/loaders/gltf/__test__/gltf"
+import { createGlb } from "@core/loaders/__test__/testUtils"
 import { Mesh } from "@core/mesh"
 import { BufferViewTarget, Gltf } from "@core/loaders/types"
 
 describe("parseGltf", () => {
   describe("simple GLTF", () => {
-    const { scene } = parseGltf(simpleGltf, simpleBuffer)
+    const gltfBinary = createGlb({ json: simpleGltf, binary: simpleBuffer })
+    const { scene } = parseGltf(gltfBinary)
     const root = scene.children[0]
 
     describe("scene", () => {
@@ -123,7 +125,8 @@ describe("parseGltf", () => {
           version: "1",
         },
       }
-      expect(() => parseGltf(gltf, simpleBuffer)).toThrowError("Unsupported *.gltf file. Version should be >= 2.0.")
+      const gltfBinary = createGlb({ json: gltf, binary: simpleBuffer })
+      expect(() => parseGltf(gltfBinary)).toThrowError("Unsupported *.gltf file. Version should be >= 2.0.")
     })
   })
 })

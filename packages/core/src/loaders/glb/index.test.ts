@@ -1,5 +1,7 @@
 import { parseGlb } from "@core/loaders/glb"
-import { createGlb } from "@core/loaders/glb/testUtils"
+import { createGlb } from "@core/loaders/__test__/testUtils"
+
+const simpleBinary = new Uint8Array([0xAA, 0xBB, 0xCC])
 
 const simpleJson = {
   asset: {
@@ -11,17 +13,20 @@ const simpleJson = {
   ],
 }
 
-const simpleBinary = new Uint8Array([0xAA, 0xBB, 0xCC])
-
 describe("parseGLB", () => {
   it("returns correct gltf object", () => {
     const glb = createGlb({ json: simpleJson, binary: simpleBinary })
-    expect(parseGlb(glb)).toEqual({ json: simpleJson, data: simpleBinary.buffer })
+    expect(parseGlb(glb)).toEqual({
+      ...simpleJson,
+      buffers: [
+        simpleBinary.buffer,
+      ],
+    })
   })
 
   it("returns correct gltf object with no binary data", () => {
     const glb = createGlb({ json: simpleJson })
-    expect(parseGlb(glb)).toEqual({ json: simpleJson })
+    expect(parseGlb(glb)).toEqual(simpleJson)
   })
 
   it("throws an error if magic is not supported", () => {
