@@ -5,6 +5,7 @@ import * as v3 from "@math/vector3"
 import * as m4 from "@math/matrix4"
 import * as q from "@math/quaternion"
 import { Quaternion, Vector3 } from "@math/types"
+import { EPS } from "@math/constants"
 
 type AnimationData = {
   node: Object3d
@@ -15,11 +16,12 @@ type AnimationData = {
 }
 
 export class Animation {
-  public name: string
-  public data: AnimationData[]
-  public startTime: number
-  public endTime: number
-  public duration: number
+  public readonly name: string
+
+  private readonly data: AnimationData[]
+  private readonly startTime: number
+  private readonly endTime: number
+  private readonly duration: number
 
   constructor(name: string, data: AnimationData[]) {
     this.name = name
@@ -31,7 +33,7 @@ export class Animation {
 
   public update(elapsed: number): void {
     elapsed = elapsed % this.duration
-    elapsed = Math.min(elapsed, this.duration - 0.001) + this.startTime
+    elapsed = Math.min(elapsed, this.duration - EPS) + this.startTime
 
     this.data.forEach(({ node, transform, times, values }) => {
       const prevIndex = Math.max(1, times.findIndex((t) => t > elapsed)) - 1

@@ -26,4 +26,4 @@ const eq = (a: number, b: number, eps: number): boolean => Math.abs(a - b) < eps
 const print = (value: number | number[], precision: number) =>
   Array.isArray(value) ? value.map((x) => precise(x, precision)) : precise(value, precision)
 
-const precise = (value: number, precision: number) => Number(value.toFixed(-precision))
+const precise = (value: number, precision: number) => Number(value.toFixed(precision))

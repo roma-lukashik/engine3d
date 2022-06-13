@@ -48,7 +48,7 @@ export const simpleGltf: Gltf = {
             POSITION: 1,
           },
           indices: 0,
-          material : 0,
+          material: 0,
         },
       ],
     },
@@ -56,7 +56,7 @@ export const simpleGltf: Gltf = {
       primitives: [],
     },
   ],
-  materials : [
+  materials: [
     {
       pbrMetallicRoughness: {
         baseColorFactor: [1, 0.766, 0.336, 1],
@@ -65,33 +65,33 @@ export const simpleGltf: Gltf = {
       },
     },
   ],
-  accessors : [
+  accessors: [
     {
-      bufferView : 0,
-      byteOffset : 0,
-      componentType : ComponentType.Uint16,
-      count : 3,
-      type : AccessorType.Scalar,
+      bufferView: 0,
+      byteOffset: 0,
+      componentType: ComponentType.Uint16,
+      count: 3,
+      type: AccessorType.Scalar,
     },
     {
-      bufferView : 1,
-      byteOffset : 0,
-      componentType : ComponentType.Float32,
-      count : 3,
-      type : AccessorType.Vec3,
+      bufferView: 1,
+      byteOffset: 0,
+      componentType: ComponentType.Float32,
+      count: 3,
+      type: AccessorType.Vec3,
     },
   ],
-  bufferViews : [
+  bufferViews: [
     {
-      buffer : 0,
-      byteOffset : 0,
-      byteLength : 6,
-      target : BufferViewTarget.ElementArrayBuffer,
+      buffer: 0,
+      byteOffset: 0,
+      byteLength: 6,
+      target: BufferViewTarget.ElementArrayBuffer,
     },
     {
-      buffer : 0,
-      byteOffset : 8,
-      byteLength : 36,
+      buffer: 0,
+      byteOffset: 8,
+      byteLength: 36,
     },
   ],
 }
