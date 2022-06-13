@@ -52,7 +52,7 @@ describe("Animation", () => {
   })
 
   it("to be created", () => {
-    expect(animation).not.toBeUndefined()
+    expect(animation).toBeDefined()
   })
 
   it("updates nodes for t=0", () => {

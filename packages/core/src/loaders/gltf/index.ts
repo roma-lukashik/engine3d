@@ -34,7 +34,7 @@ export const parseGltf = async (raw: ArrayBufferLike | string) => {
   }
   const nodes = parseNodes(data)
   const scene = await parseScene(data, nodes)
-  scene.updateWorldMatrix(scene.worldMatrix)
+  scene.updateWorldMatrix(m4.identity())
   const animations = parseAnimations(data, nodes)
   return { scene, animations }
 }

@@ -13,7 +13,7 @@ export class Geometry {
   public skinIndex?: BufferAttribute
   public index?: BufferAttribute
 
-  constructor(data: Partial<Record<keyof MeshPrimitiveAttributes, BufferAttribute>>) {
+  constructor(data: Partial<Record<keyof MeshPrimitiveAttributes, BufferAttribute>> = {}) {
     forEachKey(data, (key, bufferAttribute) => this[attributesMapping[key]] = bufferAttribute)
   }
 }

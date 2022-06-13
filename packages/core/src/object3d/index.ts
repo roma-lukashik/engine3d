@@ -28,7 +28,10 @@ export class Object3d {
     matrix,
   }: ObjectProps = {}) {
     if (matrix) {
-      this.updateMatrix(matrix)
+      this.localMatrix = matrix
+      this.position = m4.translationVector(matrix)
+      this.scale = m4.scalingVector(matrix)
+      this.rotation = m4.rotationVector(matrix)
     } else {
       this.position = position
       this.scale = scale
@@ -46,13 +49,6 @@ export class Object3d {
   public traverse(fn: (object: Object3d) => void): void {
     fn(this)
     this.children.forEach((child) => child.traverse(fn))
-  }
-
-  public updateMatrix(matrix: Matrix4): void {
-    this.localMatrix = matrix
-    this.position = m4.translationVector(matrix)
-    this.scale = m4.scalingVector(matrix)
-    this.rotation = m4.rotationVector(matrix)
   }
 
   public updateWorldMatrix(matrix: Matrix4): void {
