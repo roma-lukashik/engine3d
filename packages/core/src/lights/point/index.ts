@@ -1,8 +1,9 @@
 import { Camera, PerspectiveCamera } from "@core/camera"
 import { LightType, LightWithShadow } from "@core/lights/types"
+import { Color } from "@core/color"
 import { toRadian } from "@math/angle"
-import { hexToRgb } from "@utils/color"
-import { Matrix4, Vector3 } from "@math/types"
+import { Vector3 } from "@math/vector3"
+import { Matrix4 } from "@math/matrix4"
 
 type Props = {
   color?: number
@@ -33,7 +34,7 @@ export class PointLight implements LightWithShadow {
     intensity = 1,
   }: Props = {}) {
     this.type = LightType.Point
-    this.color = hexToRgb(color)
+    this.color = new Color(color).rgb
     this.castShadow = castShadow
     this.intensity = intensity
     this.camera = new PerspectiveCamera({

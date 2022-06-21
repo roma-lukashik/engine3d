@@ -3,10 +3,9 @@ import {
   toSpherical,
   SphericalCoordinate,
 } from "@math/coordinates/spherical"
-import * as v2 from "@math/vector2"
 import { clamp } from "@math/operators"
-import { PI, PI2 } from "@math/constants"
-import { Vector2 } from "@math/types"
+import { EPS, PI, PI2 } from "@math/constants"
+import { Vector2 } from "@math/vector2"
 import { Camera } from "@core/camera/types"
 
 type Props = {
@@ -31,11 +30,11 @@ export class CameraControl {
 
   private onMouseDown = (event: MouseEvent) => {
     const initialCameraPosition = toSpherical(this.camera.position, this.camera.target)
-    const dragStart = v2.vector2(event.clientX, event.clientY)
+    const dragStart = new Vector2(event.clientX, event.clientY)
     const { width, height } = this.getElementSize()
 
     const mouseMove = (event: MouseEvent) => {
-      const offset = v2.subtract(v2.vector2(event.clientX, event.clientY), dragStart)
+      const offset = new Vector2(event.clientX, event.clientY).subtract(dragStart).multiply(this.rotationSpeed)
       this.rotate(initialCameraPosition, offset, width, height)
     }
 
@@ -48,12 +47,11 @@ export class CameraControl {
     window.addEventListener("mouseup", mouseUp, false)
   }
 
-  private rotate({ theta, phi, radius }: SphericalCoordinate, offset: Vector2, width: number, height: number) {
-    const v = v2.multiply(offset, this.rotationSpeed)
+  private rotate({ theta, phi, radius }: SphericalCoordinate, v: Vector2, width: number, height: number) {
     this.camera.setPosition(
       fromSpherical({
-        theta: theta - PI2 * v2.x(v) / width,
-        phi: clamp(phi - PI2 * v2.y(v) / height, 0.00001, PI / 2),
+        theta: theta - PI2 * v.x / width,
+        phi: clamp(phi - PI2 * v.y / height, EPS, PI / 2),
         radius,
       }),
     )

@@ -57,13 +57,13 @@ describe("Animation", () => {
 
   it("updates nodes for t=0", () => {
     animation.update(0)
-    expect(node1.localMatrix).toCloseEqual([
+    expect(node1.localMatrix).toValueEqual([
       2, 0, 0, 0,
       0, 0, 0, 0,
       0, 0, 1, 0,
       0, 0, 0, 1,
     ])
-    expect(node2.localMatrix).toCloseEqual([
+    expect(node2.localMatrix).toValueEqual([
       1, 0, 0, 0,
       0, 1, 0, 0,
       0, 0, 1, 0,
@@ -73,29 +73,29 @@ describe("Animation", () => {
 
   it("updates nodes for t=0.2", () => {
     animation.update(0.2)
-    expect(node1.localMatrix).toCloseEqual([
+    expect(node1.localMatrix).toValueEqual([
       0.618, 1.902, 0, 0,
       -0.380, 0.123, 0, 0,
       0, 0, 1, 0,
       0, 0, 0, 1,
     ])
-    expect(node2.localMatrix).toCloseEqual([
+    expect(node2.localMatrix).toValueEqual([
       1, 0, 0, 0,
       0, 1, 0, 0,
       0, 0, 1, 0,
-      -0.2, -0.5, -1, 1,
+      0, 0, 0, 1,
     ])
   })
 
   it("updates nodes for t=0.5", () => {
     animation.update(0.5)
-    expect(node1.localMatrix).toCloseEqual([
+    expect(node1.localMatrix).toValueEqual([
       -2, 0, 0, 0,
       0, -1, 0, 0,
       0, 0, 1, 0,
       0, 0, 0, 1,
     ])
-    expect(node2.localMatrix).toCloseEqual([
+    expect(node2.localMatrix).toValueEqual([
       1, 0, 0, 0,
       0, 1, 0, 0,
       0, 0, 1, 0,
@@ -105,13 +105,13 @@ describe("Animation", () => {
 
   it("updates nodes for t=0.8", () => {
     animation.update(0.8)
-    expect(node1.localMatrix).toCloseEqual([
+    expect(node1.localMatrix).toValueEqual([
       0.618, -1.902, 0, 0,
       1.521, 0.495, 0, 0,
       0, 0, 1, 0,
       0, 0, 0, 1,
     ])
-    expect(node2.localMatrix).toCloseEqual([
+    expect(node2.localMatrix).toValueEqual([
       1, 0, 0, 0,
       0, 1, 0, 0,
       0, 0, 1, 0,
@@ -121,13 +121,13 @@ describe("Animation", () => {
 
   it("updates nodes for t=1", () => {
     animation.update(1)
-    expect(node1.localMatrix).toCloseEqual([
+    expect(node1.localMatrix).toValueEqual([
       2, 0.002, 0, 0,
       -0.002, 2, 0, 0,
       0, 0, 1, 0,
       0, 0, 0, 1,
     ])
-    expect(node2.localMatrix).toCloseEqual([
+    expect(node2.localMatrix).toValueEqual([
       1, 0, 0, 0,
       0, 1, 0, 0,
       0, 0, 1, 0,

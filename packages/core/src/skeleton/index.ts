@@ -1,6 +1,5 @@
 import { Object3d } from "@core/object3d"
-import { Matrix4 } from "@math/types"
-import * as m4 from "@math/matrix4"
+import { Matrix4 } from "@math/matrix4"
 
 type SkeletonProps = {
   bones: Object3d[]
@@ -15,14 +14,14 @@ export class Skeleton {
   constructor({ bones, boneInverses }: SkeletonProps) {
     this.bones = bones
     this.boneInverses = boneInverses
-    this.boneMatrices = new Float32Array(bones.length * m4.size)
+    this.boneMatrices = new Float32Array(bones.length * Matrix4.size)
   }
 
   public update(node: Object3d) {
-    const globalWorldInverse = m4.invert(node.worldMatrix)
+    const globalWorldInverse = node.worldMatrix.clone().invert()
     this.bones.forEach((bone, i) => {
-      const boneMatrix = m4.multiply(m4.multiply(globalWorldInverse, bone.worldMatrix), this.boneInverses[i])
-      this.boneMatrices.set(boneMatrix, i * m4.size)
+      const boneMatrix = globalWorldInverse.clone().multiply(bone.worldMatrix).multiply(this.boneInverses[i])
+      this.boneMatrices.set(boneMatrix.toArray(), i * Matrix4.size)
     })
   }
 }

@@ -1,6 +1,5 @@
-import { Matrix4, Vector3 } from "@math/types"
-import * as m4 from "@math/matrix4"
-import * as v3 from "@math/vector3"
+import { Matrix4 } from "@math/matrix4"
+import { Vector3 } from "@math/vector3"
 import { Camera } from "@core/camera/types"
 
 type Props = {
@@ -21,12 +20,12 @@ export class OrthographicCamera implements Camera {
   private zoom: number
   private near: number
   private far: number
-  private up: Vector3 = v3.vector3(0, 1, 0)
-  private orthographicMatrix: Matrix4 = m4.identity()
+  private up: Vector3 = new Vector3(0, 1, 0)
+  private orthographicMatrix: Matrix4 = Matrix4.identity()
 
-  public position: Vector3 = v3.vector3(0, 1, 0)
-  public target: Vector3 = v3.zero()
-  public projectionMatrix: Matrix4 = m4.identity()
+  public position: Vector3 = Vector3.zero()
+  public target: Vector3 = Vector3.zero()
+  public projectionMatrix: Matrix4 = Matrix4.identity()
 
   constructor({
     left,
@@ -57,12 +56,16 @@ export class OrthographicCamera implements Camera {
   }
 
   private updateProjectionMatrix(): void {
-    const viewMatrix = m4.invert(m4.lookAt(this.position, this.target, this.up))
-    this.projectionMatrix = m4.multiply(this.orthographicMatrix, viewMatrix)
+    if (this.position.equal(this.target)) {
+      this.projectionMatrix = Matrix4.identity()
+    } else {
+      const viewMatrix = Matrix4.lookAt(this.position, this.target, this.up).invert()
+      this.projectionMatrix = this.orthographicMatrix.clone().multiply(viewMatrix)
+    }
   }
 
   private updateOrthographicMatrix(): void {
-    this.orthographicMatrix = m4.orthographic(
+    this.orthographicMatrix = Matrix4.orthographic(
       this.left / this.zoom,
       this.right / this.zoom,
       this.top / this.zoom,

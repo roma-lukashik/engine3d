@@ -1,78 +1,149 @@
-import { gt } from "@math/operators"
-import { Matrix4, Quaternion } from "@math/types"
+import { lt } from "@math/operators"
+import type { Matrix4 } from "@math/matrix4"
+import { Vector3 } from "@math/vector3"
 
-export const quat = (x: number, y: number, z: number, w: number): Quaternion => [x, y, z, w]
+export type QuaternionArray = [number, number, number, number]
 
-export const identity = () => quat(0, 0, 0, 1)
+export class Quaternion {
+  public static readonly size: number = 4
 
-export const fromRotationMatrix = (m: Matrix4): Quaternion => {
-  const [
-    a11, a12, a13, ,
-    a21, a22, a23, ,
-    a31, a32, a33, ,
-  ] = m
+  private readonly array: Float32Array = new Float32Array(Quaternion.size)
 
-  const trace = a11 + a22 + a33
-
-  if (trace > 0) {
-    const s = 2 * Math.sqrt(trace + 1.0)
-    return [
-      (a23 - a32) / s,
-      (a31 - a13) / s,
-      (a12 - a21) / s,
-      0.25 * s,
-    ]
-  } else if (a11 > a22 && a11 > a33) {
-    const s = 2 * Math.sqrt(1.0 + a11 - a22 - a33)
-    return [
-      0.25 * s,
-      (a12 + a21) / s,
-      (a31 + a13) / s,
-      (a23 - a32) / s,
-    ]
-  } else if (a22 > a33) {
-    const s = 2 * Math.sqrt(1.0 + a22 - a11 - a33)
-    return [
-      (a12 + a21) / s,
-      0.25 * s,
-      (a23 + a32) / s,
-      (a31 - a13) / s,
-    ]
-  } else {
-    const s = 2 * Math.sqrt(1.0 + a33 - a11 - a22)
-    return [
-      (a31 + a13) / s,
-      (a23 + a32) / s,
-      0.25 * s,
-      (a12 - a21) / s,
-    ]
-  }
-}
-
-export const slerp = (a: Quaternion, b: Quaternion, t: number) => {
-  const [ax, ay, az, aw] = a
-  const [bx, by, bz, bw] = b
-
-  const cosom = ax * bx + ay * by + az * bz + aw * bw
-  const cosomSign = Math.sign(cosom)
-  const cosomAbs = Math.abs(cosom)
-
-  let scale0, scale1
-
-  if (gt(1.0, cosomAbs)) {
-    const omega = Math.acos(cosomAbs)
-    const sinom = Math.sin(omega)
-    scale0 = Math.sin((1 - t) * omega) / sinom
-    scale1 = Math.sin(t * omega) / sinom
-  } else {
-    scale0 = 1.0 - t
-    scale1 = t
+  constructor()
+  constructor(x: number, y: number, z: number, w: number)
+  constructor(x: number = 0, y: number = 0, z: number = 0, w: number = 1) {
+    this.set(x, y, z, w)
   }
 
-  return quat(
-    scale0 * ax + scale1 * bx * cosomSign,
-    scale0 * ay + scale1 * by * cosomSign,
-    scale0 * az + scale1 * bz * cosomSign,
-    scale0 * aw + scale1 * bw * cosomSign,
-  )
+  public get x(): number {
+    return this.array[0]
+  }
+
+  public get y(): number {
+    return this.array[1]
+  }
+
+  public get z(): number {
+    return this.array[2]
+  }
+
+  public get w(): number {
+    return this.array[3]
+  }
+
+  public static identity(): Quaternion {
+    return new Quaternion(0, 0, 0, 1)
+  }
+
+  public static fromAxisAngle(axis: Vector3, angle: number): Quaternion {
+    const halfTheta = angle / 2
+    const sin = Math.sin(halfTheta)
+    const cos = Math.cos(halfTheta)
+    const vec = axis.clone().multiply(sin)
+    return new Quaternion(vec.x, vec.y, vec.z, cos)
+  }
+
+  public static fromRotationMatrix(m: Matrix4): Quaternion {
+    const [
+      a11, a12, a13, ,
+      a21, a22, a23, ,
+      a31, a32, a33, ,
+    ] = m.toArray()
+
+    const trace = a11 + a22 + a33
+
+    if (trace > 0) {
+      const s = 2 * Math.sqrt(trace + 1.0)
+      return new Quaternion(
+        (a23 - a32) / s,
+        (a31 - a13) / s,
+        (a12 - a21) / s,
+        0.25 * s,
+      )
+    } else if (a11 > a22 && a11 > a33) {
+      const s = 2 * Math.sqrt(1.0 + a11 - a22 - a33)
+      return new Quaternion(
+        0.25 * s,
+        (a12 + a21) / s,
+        (a31 + a13) / s,
+        (a23 - a32) / s,
+      )
+    } else if (a22 > a33) {
+      const s = 2 * Math.sqrt(1.0 + a22 - a11 - a33)
+      return new Quaternion(
+        (a12 + a21) / s,
+        0.25 * s,
+        (a23 + a32) / s,
+        (a31 - a13) / s,
+      )
+    } else {
+      const s = 2 * Math.sqrt(1.0 + a33 - a11 - a22)
+      return new Quaternion(
+        (a31 + a13) / s,
+        (a23 + a32) / s,
+        0.25 * s,
+        (a12 - a21) / s,
+      )
+    }
+  }
+
+  public static fromArray(array: ArrayLike<number>, offset: number = 0): Quaternion {
+    return new Quaternion(array[offset], array[offset + 1], array[offset + 2], array[offset + 3])
+  }
+
+  public set(x: number, y: number, z: number, w: number): this {
+    this.array[0] = x
+    this.array[1] = y
+    this.array[2] = z
+    this.array[3] = w
+    return this
+  }
+
+  public clone(): Quaternion {
+    return new Quaternion(this.x, this.y, this.z, this.w)
+  }
+
+  public slerp(q: Quaternion, t: number): this {
+    const dot = this.dot(q)
+    const dotAbs = Math.abs(dot)
+
+    let scale0
+    let scale1
+
+    if (lt(dotAbs, 1.0)) {
+      const omega = Math.acos(dotAbs)
+      const sinOmega = Math.sin(omega)
+      scale0 = Math.sin((1 - t) * omega) / sinOmega
+      scale1 = Math.sin(t * omega) / sinOmega
+    } else {
+      scale0 = 1.0 - t
+      scale1 = t
+    }
+
+    return this.multiply(scale0).add(q.clone().multiply(scale1 * Math.sign(dot)))
+  }
+
+  public toArray(): Readonly<Float32Array> {
+    return this.array
+  }
+
+  private add(q: Quaternion): this {
+    this.array[0] += q.x
+    this.array[1] += q.y
+    this.array[2] += q.z
+    this.array[3] += q.w
+    return this
+  }
+
+  private multiply(c: number): this {
+    this.array[0] *= c
+    this.array[1] *= c
+    this.array[2] *= c
+    this.array[3] *= c
+    return this
+  }
+
+  private dot(q: Quaternion): number {
+    return this.x * q.x + this.y * q.y + this.z * q.z + this.w * q.w
+  }
 }

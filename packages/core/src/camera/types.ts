@@ -1,4 +1,5 @@
-import { Matrix4, Vector3 } from "@math/types"
+import { Vector3 } from "@math/vector3"
+import { Matrix4 } from "@math/matrix4"
 
 export type Camera = {
   readonly position: Vector3

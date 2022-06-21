@@ -1,7 +1,6 @@
-import * as m4 from "@math/matrix4"
-import * as v3 from "@math/vector3"
-import * as q from "@math/quaternion"
-import { Matrix4, Quaternion, Vector3 } from "@math/types"
+import { Matrix4 } from "@math/matrix4"
+import { Vector3 } from "@math/vector3"
+import { Quaternion } from "@math/quaternion"
 
 type ObjectProps = {
   name?: string
@@ -14,7 +13,7 @@ type ObjectProps = {
 export class Object3d {
   public name?: string
   public localMatrix: Matrix4
-  public worldMatrix: Matrix4 = m4.identity()
+  public worldMatrix: Matrix4 = Matrix4.identity()
   public position: Vector3
   public scale: Vector3
   public rotation: Quaternion
@@ -22,21 +21,21 @@ export class Object3d {
 
   constructor({
     name,
-    position = v3.zero(),
-    scale = v3.one(),
-    rotation = q.identity(),
+    position = Vector3.zero(),
+    scale = Vector3.one(),
+    rotation = Quaternion.identity(),
     matrix,
   }: ObjectProps = {}) {
     if (matrix) {
       this.localMatrix = matrix
-      this.position = m4.translationVector(matrix)
-      this.scale = m4.scalingVector(matrix)
-      this.rotation = m4.rotationVector(matrix)
+      this.position = matrix.translationVector()
+      this.scale = matrix.scalingVector()
+      this.rotation = matrix.rotationVector()
     } else {
       this.position = position
       this.scale = scale
       this.rotation = rotation
-      this.localMatrix = m4.compose(rotation, position, scale)
+      this.localMatrix = Matrix4.compose(rotation, position, scale)
     }
 
     this.name = name
@@ -51,8 +50,8 @@ export class Object3d {
     this.children.forEach((child) => child.traverse(fn))
   }
 
-  public updateWorldMatrix(matrix: Matrix4): void {
-    this.worldMatrix = m4.multiply(matrix, this.localMatrix)
+  public updateWorldMatrix(matrix: Matrix4 = Matrix4.identity()): void {
+    this.worldMatrix = matrix.clone().multiply(this.localMatrix)
     this.children.forEach((child) => child.updateWorldMatrix(this.worldMatrix))
   }
 }

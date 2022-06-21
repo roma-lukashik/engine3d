@@ -1,42 +1,118 @@
 import { eq } from "@math/operators"
-import { Vector2 } from "@math/types"
 
-export const vector2 = (x: number, y: number): Vector2 => [x, y]
+export type Vector2Array = [number, number]
 
-export const copy = (v: Vector2): Vector2 => [...v]
+export class Vector2 {
+  public static readonly size: number = 2
 
-export const x = (v: Vector2) => v[0]
+  private readonly array: Float32Array = new Float32Array(Vector2.size)
 
-export const y = (v: Vector2) => v[1]
+  public constructor()
+  public constructor(x: number, y: number)
+  public constructor(x: number = 0, y: number = 0) {
+    this.set(x, y)
+  }
 
-export const zero = () => vector2(0, 0)
+  public static zero(): Vector2 {
+    return new Vector2(0, 0)
+  }
 
-export const add = (a: Vector2, b: Vector2) => vector2(x(a) + x(b), y(a) + y(b))
+  public static one(): Vector2 {
+    return new Vector2(1, 1)
+  }
 
-export const subtract = (a: Vector2, b: Vector2) => vector2(x(a) - x(b), y(a) - y(b))
+  public static fromArray(array: ArrayLike<number>, offset: number = 0): Vector2 {
+    return new Vector2(array[offset], array[offset + 1])
+  }
 
-export const multiply = (v: Vector2, c: number) => vector2(x(v) * c, y(v) * c)
+  public get x(): number {
+    return this.array[0]
+  }
 
-export const divide = (v: Vector2, c: number) => vector2(x(v) / c, y(v) / c)
+  public get y(): number {
+    return this.array[1]
+  }
 
-export const lengthSquared = (v: Vector2) => (x(v) ** 2) + (y(v) ** 2)
+  public set(x: number, y: number): this {
+    this.array[0] = x
+    this.array[1] = y
+    return this
+  }
 
-export const length = (v: Vector2) => Math.sqrt(lengthSquared(v))
+  public clone(): Vector2 {
+    return new Vector2(this.x, this.y)
+  }
 
-export const distanceSquared = (a: Vector2, b: Vector2) => (x(a) - x(b)) ** 2 + (y(a) - y(b)) ** 2
+  public add(v: Vector2): this {
+    this.array[0] += v.x
+    this.array[1] += v.y
+    return this
+  }
 
-export const distance = (a: Vector2, b: Vector2) => Math.sqrt(distanceSquared(a, b))
+  public subtract(v: Vector2): this {
+    this.array[0] -= v.x
+    this.array[1] -= v.y
+    return this
+  }
 
-export const normalize = (v: Vector2) => divide(v, length(v))
+  public multiply(c: number): this {
+    this.array[0] *= c
+    this.array[1] *= c
+    return this
+  }
 
-export const dot = (a: Vector2, b: Vector2) => x(a) * x(b) + y(a) * y(b)
+  public divide(c: number): this {
+    this.array[0] /= c
+    this.array[1] /= c
+    return this
+  }
 
-export const cross = (a: Vector2, b: Vector2) => x(a) * y(b) - y(a) * x(b)
+  public lengthSquared(): number {
+    return this.x ** 2 + this.y ** 2
+  }
 
-export const perp = (v: Vector2) => vector2(y(v), -x(v))
+  public length(): number {
+    return Math.sqrt(this.lengthSquared())
+  }
 
-export const negate = (v: Vector2) => vector2(-x(v), -y(v))
+  public distanceSquared(v: Vector2): number {
+    return this.clone().subtract(v).lengthSquared()
+  }
 
-export const angleTo = (a: Vector2, b: Vector2) => Math.atan2(cross(a, b), dot(a, b))
+  public distance(v: Vector2): number {
+    return Math.sqrt(this.distanceSquared(v))
+  }
 
-export const equal = (a: Vector2, b: Vector2) => eq(x(a), x(b)) && eq(y(a), y(b))
+  public normalize(): this {
+    return this.divide(this.length())
+  }
+
+  public negate(): this {
+    return this.multiply(-1)
+  }
+
+  public perp(): this {
+    this.set(this.y, -this.x)
+    return this
+  }
+
+  public angleTo(v: Vector2): number {
+    return Math.atan2(this.cross(v), this.dot(v))
+  }
+
+  public dot(v: Vector2): number {
+    return this.x * v.x + this.y * v.y
+  }
+
+  public cross(v: Vector2): number {
+    return this.x * v.y - this.y * v.x
+  }
+
+  public equal(v: Vector2): boolean {
+    return eq(this.x, v.x) && eq(this.y, v.y)
+  }
+
+  public toArray(): Readonly<Float32Array> {
+    return this.array
+  }
+}

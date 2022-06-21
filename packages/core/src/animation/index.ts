@@ -1,10 +1,9 @@
 import { AnimationInterpolationType } from "@core/loaders/types"
 import { Object3d } from "@core/object3d"
 import { TypedArray } from "@core/types"
-import * as v3 from "@math/vector3"
-import * as m4 from "@math/matrix4"
-import * as q from "@math/quaternion"
-import { Quaternion, Vector3 } from "@math/types"
+import { Vector3 } from "@math/vector3"
+import { Matrix4 } from "@math/matrix4"
+import { Quaternion } from "@math/quaternion"
 import { EPS } from "@math/constants"
 
 type AnimationData = {
@@ -12,7 +11,7 @@ type AnimationData = {
   times: TypedArray
   values: TypedArray
   interpolation: AnimationInterpolationType
-  transform: keyof Pick<Object3d, "position" | "rotation" | "scale">
+  transform: "position" | "rotation" | "scale"
 }
 
 export class Animation {
@@ -39,21 +38,30 @@ export class Animation {
       const prevIndex = Math.max(1, times.findIndex((t) => t > elapsed)) - 1
       const nextIndex = prevIndex + 1
       const alpha = (elapsed - times[prevIndex]) / (times[nextIndex] - times[prevIndex])
-      const size = values.length / times.length
-      const prevVal = fromArray(values, prevIndex * size, size)
-      const nextVal = fromArray(values, nextIndex * size, size)
 
-      if (transform === "rotation") {
-        node.rotation = q.slerp(prevVal as Quaternion, nextVal as Quaternion, alpha)
-      } else if (transform === "position") {
-        node.position = v3.lerp(prevVal as Vector3, nextVal as Vector3, alpha)
-      } else if (transform === "scale") {
-        node.scale = v3.lerp(prevVal as Vector3, nextVal as Vector3, alpha)
+      switch (transform) {
+        case "position":
+        case "scale":
+          node[transform] = transformVector(values, prevIndex, nextIndex, alpha)
+          break
+        case "rotation":
+          node[transform] = transformQuaternion(values, prevIndex, nextIndex, alpha)
+          break
       }
-      node.localMatrix = m4.compose(node.rotation, node.position, node.scale)
+
+      node.localMatrix = Matrix4.compose(node.rotation, node.position, node.scale)
     })
   }
 }
 
-const fromArray = (array: ArrayLike<number>, startIndex: number, count: number): Vector3 | Quaternion =>
-  Array.from({ length: count }, (_: number, i: number) => array[startIndex + i]) as Vector3 | Quaternion
+function transformQuaternion(values: TypedArray, prevIndex: number, nextIndex: number, t: number): Quaternion {
+  const prev = Quaternion.fromArray(values, prevIndex * 4)
+  const next = Quaternion.fromArray(values, nextIndex * 4)
+  return prev.slerp(next, t)
+}
+
+function transformVector(values: TypedArray, prevIndex: number, nextIndex: number, t: number): Vector3 {
+  const prev = Vector3.fromArray(values, prevIndex * 3)
+  const next = Vector3.fromArray(values, nextIndex * 3)
+  return prev.lerp(next, t)
+}

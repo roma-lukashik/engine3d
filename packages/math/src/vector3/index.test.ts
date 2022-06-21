@@ -1,86 +1,124 @@
-import * as v3 from "@math/vector3"
+import { Vector3 } from "@math/vector3"
 
-describe("vector3", () => {
-  const a = v3.vector3(1, 2, 3)
-  const b = v3.vector3(2, 3, 1)
+describe("Vector3", () => {
+  const a = new Vector3()
+  const b = new Vector3()
 
-  it("#vector3", () => {
-    expect(a).toEqual([1, 2, 3])
+  beforeEach(() => {
+    a.set(1, 2, 3)
+    b.set(2, 3, 1)
   })
 
-  it("#copy", () => {
-    expect(v3.copy(a)).toEqual([1, 2, 3])
-    expect(v3.copy(a)).not.toBe(a)
+  it("constructor with no arguments", () => {
+    expect(new Vector3()).toValueEqual([0, 0, 0])
   })
 
-  it("#x", () => {
-    expect(v3.x(a)).toBe(1)
+  it("constructor with arguments", () => {
+    expect(new Vector3(1, 2, 3)).toValueEqual([1, 2, 3])
   })
 
-  it("#y", () => {
-    expect(v3.y(a)).toBe(2)
+  it("x", () => {
+    expect(a.x).toBe(1)
   })
 
-  it("#z", () => {
-    expect(v3.z(a)).toBe(3)
+  it("y", () => {
+    expect(a.y).toBe(2)
   })
 
-  it("#zero", () => {
-    expect(v3.zero()).toEqual([0, 0, 0])
+  it("z", () => {
+    expect(a.z).toBe(3)
   })
 
-  it("#add", () => {
-    expect(v3.add(a, b)).toEqual([3, 5, 4])
+  it("zero", () => {
+    expect(Vector3.zero()).toValueEqual([0, 0, 0])
   })
 
-  it("#subtract", () => {
-    expect(v3.subtract(a, b)).toEqual([-1, -1, 2])
+  it("one", () => {
+    expect(Vector3.one()).toValueEqual([1, 1, 1])
   })
 
-  it("#multiply", () => {
-    expect(v3.multiply(a, 2)).toEqual([2, 4, 6])
+  it("fromArray", () => {
+    expect(Vector3.fromArray([0, 1, 2, 3, 4, 5])).toValueEqual([0, 1, 2])
+    expect(Vector3.fromArray([0, 1, 2, 3, 4, 5], 3)).toValueEqual([3, 4, 5])
   })
 
-  it("#divide", () => {
-    expect(v3.divide(a, 2)).toEqual([0.5, 1, 1.5])
+  it("clone", () => {
+    expect(a.clone()).toValueEqual([1, 2, 3])
+    expect(a.clone()).not.toBe(a)
   })
 
-  it("#lengthSquared", () => {
-    expect(v3.lengthSquared(a)).toBe(14)
+  it("set", () => {
+    expect(a.set(0, 1, 2)).toValueEqual([0, 1, 2])
   })
 
-  it("#length", () => {
-    expect(v3.length(a)).toCloseEqual(3.7416)
+  it("add", () => {
+    expect(a.add(b)).toValueEqual([3, 5, 4])
   })
 
-  it("#distanceSquared", () => {
-    expect(v3.distanceSquared(a, b)).toBe(6)
+  it("subtract", () => {
+    expect(a.subtract(b)).toValueEqual([-1, -1, 2])
   })
 
-  it("#distance", () => {
-    expect(v3.distance(a, b)).toCloseEqual(2.449)
+  it("multiply", () => {
+    expect(a.multiply(2)).toValueEqual([2, 4, 6])
   })
 
-  it("#normalize", () => {
-    expect(v3.normalize(a)).toCloseEqual([0.267, 0.534, 0.802])
+  it("divide", () => {
+    expect(a.divide(2)).toValueEqual([0.5, 1, 1.5])
   })
 
-  it("#negate", () => {
-    expect(v3.negate(a)).toEqual([-1, -2, -3])
+  it("lengthSquared", () => {
+    expect(a.lengthSquared()).toBe(14)
   })
 
-  it("#dot", () => {
-    expect(v3.dot(a, b)).toBe(11)
+  it("length", () => {
+    expect(a.length()).toBeCloseTo(3.7416)
   })
 
-  it("#cross", () => {
-    expect(v3.cross(a, b)).toEqual([-7, 5, -1])
+  it("distanceSquared", () => {
+    expect(a.distanceSquared(b)).toBe(6)
   })
 
-  it("#equal", () => {
-    expect(v3.equal(a, b)).toBe(false)
-    expect(v3.equal(a, v3.copy(a))).toBe(true)
-    expect(v3.equal(a, v3.vector3(1.001, 2.001, 3.001))).toBe(true)
-    expect(v3.equal(a, v3.vector3(1.002, 2.002, 3.002))).toBe(false)
+  it("distance", () => {
+    expect(a.distance(b)).toBeCloseTo(2.449)
+  })
+
+  it("normalize", () => {
+    expect(a.normalize()).toValueEqual([0.267, 0.534, 0.802])
+  })
+
+  it("negate", () => {
+    expect(a.negate()).toValueEqual([-1, -2, -3])
+  })
+
+  it("dot", () => {
+    expect(a.dot(b)).toBe(11)
+  })
+
+  it("cross", () => {
+    expect(a.cross(b)).toValueEqual([-7, 5, -1])
+  })
+
+  it.each<[number, [number, number, number]]>([
+    [0, [1, 1, 1]],
+    [0.25, [2, 3.25, 1.25]],
+    [0.5, [3, 5.5, 1.5]],
+    [0.75, [4, 7.75, 1.75]],
+    [1, [5, 10, 2]],
+  ])("lerp", (t, result) => {
+    const a = new Vector3(1, 1, 1)
+    const b = new Vector3(5, 10, 2)
+    expect(a.lerp(b, t)).toValueEqual(result)
+  })
+
+  it("toArray", () => {
+    expect(a.toArray()).toEqual(new Float32Array([1, 2, 3]))
+  })
+
+  it("equal", () => {
+    expect(a.equal(b)).toBe(false)
+    expect(a.equal(a.clone())).toBe(true)
+    expect(a.equal(new Vector3(1.0009, 2.0009, 3.0009))).toBe(true)
+    expect(a.equal(new Vector3(1.002, 2.002, 3.002))).toBe(false)
   })
 })

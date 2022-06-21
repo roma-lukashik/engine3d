@@ -1,4 +1,4 @@
-import { Matrix4 } from "@math/types"
+import { Matrix4 } from "@math/matrix4"
 
 export type Light = {
   readonly type: LightType

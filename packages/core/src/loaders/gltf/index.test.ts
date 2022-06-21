@@ -20,7 +20,7 @@ describe("parseGltf", () => {
       })
 
       it("has correct matrix", () => {
-        expect(scene.localMatrix).toEqual([
+        expect(scene.localMatrix).toValueEqual([
           1, 0, 0, 0,
           0, 1, 0, 0,
           0, 0, 1, 0,
@@ -42,7 +42,7 @@ describe("parseGltf", () => {
       })
 
       it("has correct matrix", () => {
-        expect(root.localMatrix).toEqual([
+        expect(root.localMatrix).toValueEqual([
           1, 0, 0, 0,
           0, 1, 0, 0,
           0, 0, 1, 0,
@@ -64,7 +64,7 @@ describe("parseGltf", () => {
       })
 
       it("has a correct matrix", () => {
-        expect(child.localMatrix).toEqual([
+        expect(child.localMatrix).toValueEqual([
           2, 0, 0, 0,
           0, 0.865838, 0.500388, 0,
           0, -0.250194, 0.432919, 0,
@@ -108,7 +108,7 @@ describe("parseGltf", () => {
           const material = mesh.material
           expect(material.roughness).toBe(0.1)
           expect(material.metalness).toBe(0.5)
-          expect(material.color).toEqual([1, 0.766, 0.336])
+          expect(material.color).toValueEqual([1, 0.766, 0.336])
           expect(material.opacity).toBe(1)
         })
       })
@@ -123,7 +123,7 @@ describe("parseGltf", () => {
       })
 
       it("has a correct matrix", () => {
-        expect(child.localMatrix).toEqual([
+        expect(child.localMatrix).toValueEqual([
           2, 0, 0, 0,
           0, 0.866, 0.5, 0,
           0, -0.25, 0.433, 0,

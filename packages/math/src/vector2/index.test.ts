@@ -1,89 +1,116 @@
-import * as v2 from "@math/vector2"
+import { Vector2 } from "@math/vector2"
 
-describe("vector2", () => {
-  it("#vector2", () => {
-    expect(v2.vector2(1, -3.14)).toCloseEqual([1, -3.14])
+describe("Vector2", () => {
+  const a = new Vector2()
+  const b = new Vector2()
+
+  beforeEach(() => {
+    a.set(1, 2)
+    b.set(3, 4)
   })
 
-  it("#copy", () => {
-    const v = v2.vector2(1, -3.14)
-    expect(v2.copy(v)).toEqual(v)
-    expect(v2.copy(v)).not.toBe(v)
+  it("constructor with no arguments", () => {
+    expect(new Vector2()).toValueEqual([0, 0])
   })
 
-  it("#x", () => {
-    expect(v2.x(v2.vector2(1, -3.14))).toBe(1)
+  it("constructor with arguments", () => {
+    expect(new Vector2(1, 2)).toValueEqual([1, 2])
   })
 
-  it("#y", () => {
-    expect(v2.y(v2.vector2(1, -3.14))).toBe(-3.14)
+  it("x", () => {
+    expect(a.x).toBe(1)
   })
 
-  it("#zero", () => {
-    expect(v2.zero()).toCloseEqual([0, 0])
+  it("y", () => {
+    expect(a.y).toBe(2)
   })
 
-  it("#add", () => {
-    expect(v2.add(v2.vector2(-1, 3.14), v2.vector2(3.14, -1))).toCloseEqual([2.14, 2.14])
+  it("zero", () => {
+    expect(Vector2.zero()).toValueEqual([0, 0])
   })
 
-  it("#subtract", () => {
-    expect(v2.subtract(v2.vector2(-1, 3.14), v2.vector2(3.14, -1))).toCloseEqual([-4.14, 4.14])
+  it("one", () => {
+    expect(Vector2.one()).toValueEqual([1, 1])
   })
 
-  it("#multiply", () => {
-    expect(v2.multiply(v2.vector2(-1, 3.14), 2)).toCloseEqual([-2, 6.28])
+  it("fromArray", () => {
+    expect(Vector2.fromArray([0, 1, 2, 3, 4])).toValueEqual([0, 1])
+    expect(Vector2.fromArray([0, 1, 2, 3, 4], 3)).toValueEqual([3, 4])
   })
 
-  it("#divide", () => {
-    expect(v2.divide(v2.vector2(-1, 3.14), 2)).toCloseEqual([-0.5, 1.57])
+  it("clone", () => {
+    expect(a.clone()).toValueEqual([1, 2])
+    expect(a.clone()).not.toBe(a)
   })
 
-  it("#lengthSquared", () => {
-    expect(v2.lengthSquared(v2.vector2(-2, 3.14))).toEqual(13.8596)
+  it("set", () => {
+    expect(a.set(0, 1)).toValueEqual([0, 1])
   })
 
-  it("#length", () => {
-    expect(v2.length(v2.vector2(-2, 3.14))).toCloseEqual(3.722)
+  it("add", () => {
+    expect(a.add(b)).toValueEqual([4, 6])
   })
 
-  it("#distanceSquared", () => {
-    expect(v2.distanceSquared(v2.vector2(-2, 3.14), v2.vector2(-1, 0))).toCloseEqual(10.8596)
+  it("subtract", () => {
+    expect(a.subtract(b)).toValueEqual([-2, -2])
   })
 
-  it("#distance", () => {
-    expect(v2.distance(v2.vector2(-2, 3.14), v2.vector2(-1, 0))).toCloseEqual(3.295)
+  it("multiply", () => {
+    expect(a.multiply(2)).toValueEqual([2, 4])
   })
 
-  it("#normalize", () => {
-    expect(v2.normalize(v2.vector2(-2, 3.14))).toCloseEqual([-0.537, 0.843])
+  it("divide", () => {
+    expect(a.divide(2)).toValueEqual([0.5, 1])
   })
 
-  it("#dot", () => {
-    expect(v2.dot(v2.vector2(-2, 3.14), v2.vector2(1, -2))).toCloseEqual(-8.28)
+  it("lengthSquared", () => {
+    expect(b.lengthSquared()).toBe(25)
   })
 
-  it("#cross", () => {
-    expect(v2.cross(v2.vector2(-2, 3.14), v2.vector2(1, -2))).toCloseEqual(0.86)
+  it("length", () => {
+    expect(b.length()).toBeCloseTo(5)
   })
 
-  it("#perp", () => {
-    expect(v2.perp(v2.vector2(-1, 3.14))).toCloseEqual([3.14, 1])
+  it("distanceSquared", () => {
+    expect(a.distanceSquared(b)).toBe(8)
   })
 
-  it("#negate", () => {
-    expect(v2.negate(v2.vector2(-1, 3.14))).toCloseEqual([1, -3.14])
+  it("distance", () => {
+    expect(a.distance(b)).toBeCloseTo(2.828)
   })
 
-  it("#angleTo", () => {
-    expect(v2.angleTo(v2.vector2(-2, 3.14), v2.vector2(1, -2))).toCloseEqual(3.038)
+  it("normalize", () => {
+    expect(b.normalize()).toValueEqual([0.6, 0.8])
   })
 
-  it("#equal", () => {
-    expect(v2.equal(v2.vector2(-2, 3.14), v2.vector2(-2, 3.14))).toBe(true)
-    expect(v2.equal(v2.vector2(-2, 3.142), v2.vector2(-2, 3.143))).toBe(true)
-    expect(v2.equal(v2.vector2(-2.001, 3.142), v2.vector2(-2, 3.143))).toBe(true)
-    expect(v2.equal(v2.vector2(-2, 3.141), v2.vector2(-2, 3.143))).toBe(false)
-    expect(v2.equal(v2.vector2(-2.002, 3.142), v2.vector2(-2, 3.143))).toBe(false)
+  it("negate", () => {
+    expect(a.negate()).toValueEqual([-1, -2])
+  })
+
+  it("dot", () => {
+    expect(a.dot(b)).toBe(11)
+  })
+
+  it("cross", () => {
+    expect(a.cross(b)).toBe(-2)
+  })
+
+  it("perp", () => {
+    expect(a.perp()).toValueEqual([2, -1])
+  })
+
+  it("angleTo", () => {
+    expect(a.angleTo(b)).toBeCloseTo(-0.18)
+  })
+
+  it("toArray", () => {
+    expect(a.toArray()).toEqual(new Float32Array([1, 2]))
+  })
+
+  it("equal", () => {
+    expect(a.equal(b)).toBe(false)
+    expect(a.equal(a.clone())).toBe(true)
+    expect(a.equal(new Vector2(1.001, 2.001))).toBe(true)
+    expect(a.equal(new Vector2(1.002, 2.002))).toBe(false)
   })
 })

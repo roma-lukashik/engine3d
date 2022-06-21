@@ -6,7 +6,7 @@ describe("AmbientLight", () => {
     const light = new AmbientLight()
 
     it("has a correct color", () => {
-      expect(light.color).toEqual([1, 1, 1])
+      expect(light.color).toValueEqual([1, 1, 1])
     })
 
     it("has a correct intensity", () => {
@@ -26,7 +26,7 @@ describe("AmbientLight", () => {
     const light = new AmbientLight({ color: 0x333333, intensity: 0.5 })
 
     it("has a correct color", () => {
-      expect(light.color).toEqual([0.2, 0.2, 0.2])
+      expect(light.color).toValueEqual([0.2, 0.2, 0.2])
     })
 
     it("has a correct intensity", () => {
