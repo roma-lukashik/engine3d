@@ -1,4 +1,4 @@
-import { nthOption, mapOption } from "@utils/optionable"
+import { nthOption, mapOption, mapOptionAsync } from "@utils/optionable"
 
 describe("Optionable", () => {
   describe("#nthOption", () => {
@@ -26,6 +26,23 @@ describe("Optionable", () => {
 
     it("returns an empty array", () => {
       expect(mapOption(undefined, (x: number) => x * x)).toEqual([])
+    })
+  })
+
+  describe("mapOptionAsync", () => {
+    it("returns the new array", async () => {
+      const arr = await mapOptionAsync([0, 1, 2], async (x) => x * x)
+      expect(arr).toEqual([0, 1, 4])
+    })
+
+    it("skips undefined values", async () => {
+      const arr = await mapOptionAsync([0, 1, 2], async (x) => x < 2 ? undefined : x * x)
+      expect(arr).toEqual([4])
+    })
+
+    it("returns an empty array", async () => {
+      const arr = await mapOptionAsync(undefined, async (x: number) => x * x)
+      expect(arr).toEqual([])
     })
   })
 })
