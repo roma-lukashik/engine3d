@@ -2,7 +2,7 @@ import { Vector3 } from "@math/vector3"
 import { PI } from "@math/constants"
 import { Quaternion } from "@math/quaternion"
 
-type Matrix4Array = [
+export type Matrix4Array = [
   number, number, number, number,
   number, number, number, number,
   number, number, number, number,
@@ -10,7 +10,7 @@ type Matrix4Array = [
 ]
 
 export class Matrix4 {
-  public static readonly size: number = 16
+  public static readonly size = 16
 
   private readonly array: Float32Array = new Float32Array(Matrix4.size)
 

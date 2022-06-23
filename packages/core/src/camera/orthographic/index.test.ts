@@ -7,7 +7,7 @@ describe("OrthographicCamera", () => {
       left: -5,
       right: 5,
       top: -5,
-      bottom: 5
+      bottom: 5,
     })
 
     it("has a correct position", () => {

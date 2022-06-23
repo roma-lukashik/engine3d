@@ -2,10 +2,10 @@ import { lt } from "@math/operators"
 import type { Matrix4 } from "@math/matrix4"
 import { Vector3 } from "@math/vector3"
 
-export type QuaternionArray = [number, number, number, number]
+export type QuaternionArray = [x: number, y: number, z: number, w: number]
 
 export class Quaternion {
-  public static readonly size: number = 4
+  public static readonly size = 4
 
   private readonly array: Float32Array = new Float32Array(Quaternion.size)
 

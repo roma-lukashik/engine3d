@@ -1,4 +1,7 @@
-import { Vector3, Vector4, Matrix4, Quaternion } from "@math/types"
+import type { Vector3Array } from "@math/vector3"
+import type { Vector4Array } from "@math/vector4"
+import type { QuaternionArray } from "@math/quaternion"
+import type { Matrix4Array } from "@math/matrix4"
 
 export type Gltf = {
   asset?: GltfAsset
@@ -124,10 +127,10 @@ export type MeshPrimitiveAttributes = {
 
 export type GltfNode = {
   name?: string
-  translation?: Vector3
-  rotation?: Quaternion
-  scale?: Vector3
-  matrix?: Matrix4
+  translation?: Vector3Array
+  rotation?: QuaternionArray
+  scale?: Vector3Array
+  matrix?: Matrix4Array
   children?: ResourceId[]
   mesh?: ResourceId
   skin?: ResourceId
@@ -142,7 +145,7 @@ export type GltfMaterial = {
   normalTexture?: MaterialNormalTextureInfo
   occlusionTexture?: MaterialOcclusionTextureInfo
   emissiveTexture?: TextureInfo
-  emissiveFactor?: Vector3
+  emissiveFactor?: Vector3Array
   alphaMode?: AlphaMode
   alphaCutoff?: number
   doubleSided?: boolean
@@ -155,7 +158,7 @@ export enum AlphaMode {
 }
 
 type MaterialPbrMetallicRoughness = {
-  baseColorFactor?: Vector4
+  baseColorFactor?: Vector4Array
   baseColorTexture?: TextureInfo
   metallicFactor?: number
   roughnessFactor?: number

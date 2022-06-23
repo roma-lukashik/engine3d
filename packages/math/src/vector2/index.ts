@@ -1,9 +1,9 @@
 import { eq } from "@math/operators"
 
-export type Vector2Array = [number, number]
+export type Vector2Array = [x: number, y: number]
 
 export class Vector2 {
-  public static readonly size: number = 2
+  public static readonly size = 2
 
   private readonly array: Float32Array = new Float32Array(Vector2.size)
 
