@@ -1,15 +1,16 @@
+/* eslint-disable quote-props */
 module.exports = {
   "env": {
     "browser": true,
-    "es2021": true
+    "es2021": true,
   },
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": 12,
-    "sourceType": "module"
+    "sourceType": "module",
   },
   "plugins": [
-    "@typescript-eslint"
+    "@typescript-eslint",
   ],
   "rules": {
     "no-extra-semi": "error",
@@ -18,6 +19,7 @@ module.exports = {
     "no-var": "error",
     "prefer-const": ["error", { "destructuring": "all" }],
     "quotes": ["error", "double"],
+    "quote-props": ["error", "consistent-as-needed"],
     "no-duplicate-imports": "error",
     "comma-spacing": "error",
     "max-len": ["warn", {
@@ -32,12 +34,12 @@ module.exports = {
     "no-multi-spaces": ["error"],
     "space-infix-ops": ["error"],
     "@typescript-eslint/member-delimiter-style": ["error", {
-      multiline: {
-        delimiter: "none",
+      "multiline": {
+        "delimiter": "none",
       },
-      singleline: {
-        requireLast: true,
-        delimiter: "semi",
+      "singleline": {
+        "requireLast": true,
+        "delimiter": "semi",
       },
     }],
   },

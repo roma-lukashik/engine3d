@@ -11,6 +11,7 @@ describe("Geometry", () => {
     const skinWeight = createBufferAttribute()
     const skinIndex = createBufferAttribute()
     const tangent = createBufferAttribute()
+    const index = createBufferAttribute()
 
     const geometry = new Geometry({
       POSITION: position,
@@ -21,6 +22,7 @@ describe("Geometry", () => {
       WEIGHTS_0: skinWeight,
       JOINTS_0: skinIndex,
       TANGENT: tangent,
+      index,
     })
 
     expect(geometry).toMatchObject<Geometry>({
@@ -32,6 +34,7 @@ describe("Geometry", () => {
       skinIndex,
       skinWeight,
       tangent,
+      index,
     })
   })
 })

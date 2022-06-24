@@ -1,6 +1,6 @@
 import { Animation } from "@core/animation"
 import { Object3d } from "@core/object3d"
-import { AnimationInterpolationType } from "@core/loaders/types"
+import { AnimationSample } from "@core/animationSample"
 
 describe("Animation", () => {
   let animation: Animation
@@ -10,45 +10,45 @@ describe("Animation", () => {
   beforeEach(() => {
     node1 = new Object3d()
     node2 = new Object3d()
-    animation = new Animation("Test", [
-      {
-        node: node1,
-        times: new Float32Array([0.0, 0.25, 0.5, 0.75, 1.0]),
-        values: new Float32Array([
-          0.0, 0.0, 0.0, 1.0,
-          0.0, 0.0, 0.707, 0.707,
-          0.0, 0.0, 1.0, 0.0,
-          0.0, 0.0, 0.707, -0.707,
-          0.0, 0.0, 0.0, 1.0,
-        ]),
-        interpolation: AnimationInterpolationType.Linear,
-        transform: "rotation",
-      },
-      {
-        node: node2,
-        times: new Float32Array([0.2, 0.4, 0.6, 0.8, 1.0, 1.2]),
-        values: new Float32Array([
-          0.0, 0.0, 0.0,
-          0.2, 0.5, 1.0,
-          0.4, 1.0, 2.0,
-          0.6, 1.5, 3.0,
-          0.8, 2.0, 4.0,
-          1.0, 2.5, 5.0,
-        ]),
-        interpolation: AnimationInterpolationType.Linear,
-        transform: "position",
-      },
-      {
-        node: node1,
-        times: new Float32Array([0.5, 1.0]),
-        values: new Float32Array([
-          2.0, 1.0, 1.0,
-          2.0, 2.0, 1.0,
-        ]),
-        interpolation: AnimationInterpolationType.Linear,
-        transform: "scale",
-      },
-    ])
+
+    const sample1 = new AnimationSample({
+      node: node1,
+      times: new Float32Array([0.0, 0.25, 0.5, 0.75, 1.0]),
+      values: new Float32Array([
+        0.0, 0.0, 0.0, 1.0,
+        0.0, 0.0, 0.707, 0.707,
+        0.0, 0.0, 1.0, 0.0,
+        0.0, 0.0, 0.707, -0.707,
+        0.0, 0.0, 0.0, 1.0,
+      ]),
+      transform: "rotation",
+    })
+
+    const sample2 = new AnimationSample({
+      node: node2,
+      times: new Float32Array([0.2, 0.4, 0.6, 0.8, 1.0, 1.2]),
+      values: new Float32Array([
+        0.0, 0.0, 0.0,
+        0.2, 0.5, 1.0,
+        0.4, 1.0, 2.0,
+        0.6, 1.5, 3.0,
+        0.8, 2.0, 4.0,
+        1.0, 2.5, 5.0,
+      ]),
+      transform: "position",
+    })
+
+    const sample3 = new AnimationSample({
+      node: node1,
+      times: new Float32Array([0.5, 1.0]),
+      values: new Float32Array([
+        2.0, 1.0, 1.0,
+        2.0, 2.0, 1.0,
+      ]),
+      transform: "scale",
+    })
+
+    animation = new Animation("Test", [sample1, sample2, sample3])
   })
 
   it("to be created", () => {
