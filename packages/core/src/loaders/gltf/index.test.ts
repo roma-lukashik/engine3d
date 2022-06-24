@@ -1,16 +1,19 @@
 import { parseGltf } from "@core/loaders/gltf"
-import { simpleBuffer, simpleGltf } from "@core/loaders/gltf/__test__/gltf"
-import { createGlb } from "@core/loaders/__test__/testUtils"
+import { animationGltf, simpleGltf } from "@core/loaders/gltf/__test__/gltf"
 import { Mesh } from "@core/mesh"
-import { BufferViewTarget, Gltf } from "@core/loaders/types"
+import { AnimationInterpolationType, BufferViewTarget, Gltf } from "@core/loaders/types"
 import { Object3d } from "@core/object3d"
+import { Animation } from "@core/animation"
+import { AnimationSample } from "@core/animationSample"
+import { Geometry } from "@core/geometry"
+import { Material } from "@core/material"
+import { BufferAttribute } from "@core/bufferAttribute"
 
 describe("parseGltf", () => {
   describe("simple GLTF", () => {
     let scene: Object3d
     beforeAll(async () => {
-      const gltfBinary = createGlb({ json: simpleGltf, binary: simpleBuffer })
-      const gltf = await parseGltf(gltfBinary)
+      const gltf = await parseGltf(simpleGltf)
       scene = gltf.scene
     })
 
@@ -137,6 +140,52 @@ describe("parseGltf", () => {
     })
   })
 
+  describe("parses animation", () => {
+    let animations: Animation[]
+    beforeAll(async () => {
+      const gltf = await parseGltf(animationGltf)
+      animations = gltf.animations
+    })
+
+    it("parses correctly", () => {
+      const interpolation = AnimationInterpolationType.Linear
+      const transform = "rotation"
+      const times = new Float32Array([0, 0.25, 0.5, 0.75, 1])
+      const values = new Float32Array([
+        0, 0, 0, 1,
+        0, 0, 0.707, 0.707,
+        0, 0, 1, 0,
+        0, 0, 0.707, -0.707,
+        0, 0, 0, 1,
+      ])
+      const node = new Object3d()
+      const geometry = new Geometry({
+        POSITION: new BufferAttribute({
+          array: new Float32Array([
+            0, 0, 0,
+            1, 0, 0,
+            0, 1, 0,
+          ]),
+          itemSize: 3,
+        }),
+        index: new BufferAttribute({
+          array: new Uint16Array([0, 1, 2]),
+          itemSize: 1,
+          target: BufferViewTarget.ElementArrayBuffer,
+        }),
+      })
+      const material = new Material()
+      const mesh = new Mesh({ geometry, material })
+      node.add([mesh])
+
+      expect(animations).toEqual([
+        new Animation("animation_0", [
+          new AnimationSample({ interpolation, times, values, transform, node }),
+        ]),
+      ])
+    })
+  })
+
   describe("errors handling", () => {
     it("throws an error if version is lower than 2", () => {
       const gltf: Gltf = {
@@ -145,8 +194,7 @@ describe("parseGltf", () => {
           version: "1",
         },
       }
-      const gltfBinary = createGlb({ json: gltf, binary: simpleBuffer })
-      expect(() => parseGltf(gltfBinary)).rejects.toThrowError("Unsupported *.gltf file. Version should be >= 2.0.")
+      expect(() => parseGltf(gltf)).rejects.toThrowError("Unsupported *.gltf file. Version should be >= 2.0.")
     })
   })
 })

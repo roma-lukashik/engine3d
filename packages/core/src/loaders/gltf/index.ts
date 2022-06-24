@@ -1,7 +1,6 @@
 import {
   AccessorType,
   AnimationChannelPath,
-  AnimationInterpolationType,
   BufferViewTarget,
   ComponentType,
   Gltf,
@@ -27,9 +26,10 @@ import { Matrix4 } from "@math/matrix4"
 import { Vector3 } from "@math/vector3"
 import { Quaternion } from "@math/quaternion"
 import { Vector4 } from "@math/vector4"
+import { AnimationSample } from "@core/animationSample"
 
-export const parseGltf = async (raw: ArrayBufferLike | string) => {
-  const data = typeof raw === "string" ? JSON.parse(raw) as Gltf : parseGlb(raw)
+export const parseGltf = async (raw: ArrayBufferLike | string | Gltf) => {
+  const data = typeof raw === "string" ? JSON.parse(raw) as Gltf : "byteLength" in raw ? parseGlb(raw) : raw
   const version = Number(data.asset?.version ?? 0)
   if (version < 2) {
     throw new Error("Unsupported *.gltf file. Version should be >= 2.0.")
@@ -89,8 +89,10 @@ const parsePrimitive = async (data: Gltf, primitive: MeshPrimitive): Promise<Mes
   const geometryData = transform(primitive.attributes, (accessorIndex) => {
     return parseAttributeAccessor(data, accessorIndex)
   })
-  const geometry = new Geometry(geometryData)
-  geometry.index = parseAttributeAccessor(data, primitive.indices, BufferViewTarget.ElementArrayBuffer)
+  const geometry = new Geometry({
+    ...geometryData,
+    index: parseAttributeAccessor(data, primitive.indices, BufferViewTarget.ElementArrayBuffer),
+  })
   const gltfMaterial = nthOption(data.materials, primitive.material) ?? {}
 
   const [
@@ -259,13 +261,13 @@ const parseAnimation = (data: Gltf, nodes: Object3d[], animation: GltfAnimation)
     if (!times || !values || !node) {
       return
     }
-    const interpolation = sampler.interpolation ?? AnimationInterpolationType.Linear
     // TODO Handle weights is not implemented yet.
     if (target.path === "weights") {
       return
     }
+    const interpolation = sampler.interpolation
     const transform = TransformType[target.path]
-    return { node, times, values, interpolation, transform }
+    return new AnimationSample({ node, times, values, interpolation, transform })
   })
 }
 

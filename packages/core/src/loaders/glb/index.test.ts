@@ -1,7 +1,7 @@
 import { parseGlb } from "@core/loaders/glb"
 import { createGlb } from "@core/loaders/__test__/testUtils"
 
-const simpleBinary = new Uint8Array([0xAA, 0xBB, 0xCC])
+const simpleBinary = new Uint8Array([0xAA, 0xBB, 0xCC]).buffer
 
 const simpleJson = {
   asset: {
@@ -19,7 +19,7 @@ describe("parseGLB", () => {
     expect(parseGlb(glb)).toEqual({
       ...simpleJson,
       buffers: [
-        simpleBinary.buffer,
+        simpleBinary,
       ],
     })
   })

@@ -1,32 +1,23 @@
-import { AnimationInterpolationType } from "@core/loaders/types"
-import { Object3d } from "@core/object3d"
+import { AnimationSample } from "@core/animationSample"
 import { TypedArray } from "@core/types"
 import { Vector3 } from "@math/vector3"
 import { Matrix4 } from "@math/matrix4"
 import { Quaternion } from "@math/quaternion"
 import { EPS } from "@math/constants"
 
-type AnimationData = {
-  node: Object3d
-  times: TypedArray
-  values: TypedArray
-  interpolation: AnimationInterpolationType
-  transform: "position" | "rotation" | "scale"
-}
-
 export class Animation {
   public readonly name: string
 
-  private readonly data: AnimationData[]
+  private readonly samples: AnimationSample[]
   private readonly startTime: number
   private readonly endTime: number
   private readonly duration: number
 
-  constructor(name: string, data: AnimationData[]) {
+  constructor(name: string, samples: AnimationSample[]) {
     this.name = name
-    this.data = data
-    this.startTime = Math.min(...data.map(({ times }) => times[0]))
-    this.endTime = Math.max(...data.map(({ times }) => times[times.length - 1]))
+    this.samples = samples
+    this.startTime = Math.min(...samples.map(({ times }) => times[0]))
+    this.endTime = Math.max(...samples.map(({ times }) => times[times.length - 1]))
     this.duration = this.endTime - this.startTime
   }
 
@@ -34,7 +25,7 @@ export class Animation {
     elapsed = elapsed % this.duration
     elapsed = Math.min(elapsed, this.duration - EPS) + this.startTime
 
-    this.data.forEach(({ node, transform, times, values }) => {
+    this.samples.forEach(({ node, transform, times, values }) => {
       const prevIndex = Math.max(1, times.findIndex((t) => t > elapsed)) - 1
       const nextIndex = prevIndex + 1
       const alpha = (elapsed - times[prevIndex]) / (times[nextIndex] - times[prevIndex])

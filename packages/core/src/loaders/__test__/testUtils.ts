@@ -14,13 +14,13 @@ export const createGlb = ({
   version?: number
   json?: object
   jsonFormat?: number
-  binary?: Uint8Array
+  binary?: ArrayBuffer
   binaryFormat?: number
 } = {}): ArrayBuffer => {
   const jsonBuffer = new TextEncoder().encode(JSON.stringify(json)).buffer
   const jsonBufferLength = BYTES_PER_UINT32 * Math.ceil(jsonBuffer.byteLength / BYTES_PER_UINT32)
   const headerLength = 5 * BYTES_PER_UINT32
-  const length = headerLength + jsonBufferLength + (binary ? 2 * BYTES_PER_UINT32 + binary.length : 0)
+  const length = headerLength + jsonBufferLength + (binary ? 2 * BYTES_PER_UINT32 + binary.byteLength : 0)
   const glb = new DataView(new ArrayBuffer(length))
 
   writeHeader(glb, magic, version, length)
