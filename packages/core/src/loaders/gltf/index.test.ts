@@ -1,5 +1,5 @@
 import { parseGltf } from "@core/loaders/gltf"
-import { animationGltf, simpleGltf } from "@core/loaders/gltf/__test__/gltf"
+import { simpleGltf, advancedGltf } from "@core/loaders/gltf/__test__/gltf"
 import { Mesh } from "@core/mesh"
 import { AnimationInterpolationType, BufferViewTarget, Gltf } from "@core/loaders/types"
 import { Object3d } from "@core/object3d"
@@ -8,6 +8,9 @@ import { AnimationSample } from "@core/animationSample"
 import { Geometry } from "@core/geometry"
 import { Material } from "@core/material"
 import { BufferAttribute } from "@core/bufferAttribute"
+import { Vector3 } from "@math/vector3"
+import { Skeleton } from "@core/skeleton"
+import { Matrix4 } from "@math/matrix4"
 
 describe("parseGltf", () => {
   describe("simple GLTF", () => {
@@ -140,43 +143,118 @@ describe("parseGltf", () => {
     })
   })
 
-  describe("parses animation", () => {
+  describe("advanced GLTF", () => {
+    let scene: Object3d
     let animations: Animation[]
     beforeAll(async () => {
-      const gltf = await parseGltf(animationGltf)
+      const gltf = await parseGltf(advancedGltf)
+      scene = gltf.scene
       animations = gltf.animations
     })
 
-    it("parses correctly", () => {
+    it("builds scene hierarchy correctly", () => {
+      const root = new Object3d({ name: "Scene" })
+      const child1 = new Object3d()
+      const child2 = new Object3d()
+      const child21 = new Object3d({ position: new Vector3(0, 1, 0) })
+      const mesh = new Mesh({
+        geometry: new Geometry({
+          index: new BufferAttribute({
+            array: new Uint16Array([0, 1, 3, 0, 3, 2, 2, 3, 5, 2, 5, 4, 4, 5, 7, 4, 7, 6, 6, 7, 9, 6, 9, 8]),
+            itemSize: 1,
+            target: BufferViewTarget.ElementArrayBuffer,
+          }),
+          POSITION: new BufferAttribute({
+            array: new Float32Array([
+              -0.5, 0, 0,
+              0.5, 0, 0,
+              -0.5, 0.5, 0,
+              0.5, 0.5, 0,
+              -0.5, 1, 0,
+              0.5, 1, 0,
+              -0.5, 1.5, 0,
+              0.5, 1.5, 0,
+              -0.5, 2, 0,
+              0.5, 2, 0,
+            ]),
+            itemSize: 3,
+          }),
+          JOINTS_0: new BufferAttribute({
+            array: new Uint16Array([
+              0, 0, 0, 0,
+              0, 0, 0, 0,
+              0, 0, 0, 0,
+              0, 0, 0, 0,
+              0, 1, 0, 0,
+              0, 0, 0, 0,
+              0, 1, 0, 0,
+              0, 0, 0, 0,
+              0, 1, 0, 0,
+              0, 0, 0, 0,
+            ]),
+            itemSize: 4,
+            stride: 16,
+          }),
+          WEIGHTS_0: new BufferAttribute({
+            array: new Float32Array([
+              1, 0, 0, 0,
+              1, 0, 0, 0,
+              0.75, 0.25, 0, 0,
+              0.75, 0.25, 0, 0,
+              0.5, 0.5, 0, 0,
+              0.5, 0.5, 0, 0,
+              0.25, 0.75, 0, 0,
+              0.25, 0.75, 0, 0,
+              0, 1, 0, 0,
+              0, 1, 0, 0,
+            ]),
+            itemSize: 4,
+            stride: 16,
+          }),
+        }),
+        material: new Material(),
+      })
+      const skeleton = new Skeleton({
+        bones: [child2, child21],
+        boneInverses: [
+          Matrix4.identity(),
+          new Matrix4([
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, -1, 0, 1,
+          ]),
+        ],
+      })
+      root.add([child1, child2])
+      child1.add([mesh])
+      child2.add([child21])
+      root.updateWorldMatrix()
+      mesh.bindSkeleton(skeleton)
+      mesh.updateSkeleton()
+      expect(scene).toEqual(root)
+    })
+
+    it("build animations correctly", () => {
       const interpolation = AnimationInterpolationType.Linear
       const transform = "rotation"
-      const times = new Float32Array([0, 0.25, 0.5, 0.75, 1])
+      const times = new Float32Array([0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5])
       const values = new Float32Array([
         0, 0, 0, 1,
-        0, 0, 0.707, 0.707,
-        0, 0, 1, 0,
-        0, 0, 0.707, -0.707,
+        0, 0, 0.382999986410141, 0.9240000247955322,
+        0, 0, 0.7070000171661377, 0.7070000171661377,
+        0, 0, 0.7070000171661377, 0.7070000171661377,
+        0, 0, 0.382999986410141, 0.9240000247955322,
+        0, 0, 0, 1,
+        0, 0, 0, 1,
+        0, 0, -0.382999986410141, 0.9240000247955322,
+        0, 0, -0.7070000171661377, 0.7070000171661377,
+        0, 0, -0.7070000171661377, 0.7070000171661377,
+        0, 0, -0.382999986410141, 0.9240000247955322,
         0, 0, 0, 1,
       ])
-      const node = new Object3d()
-      const geometry = new Geometry({
-        POSITION: new BufferAttribute({
-          array: new Float32Array([
-            0, 0, 0,
-            1, 0, 0,
-            0, 1, 0,
-          ]),
-          itemSize: 3,
-        }),
-        index: new BufferAttribute({
-          array: new Uint16Array([0, 1, 2]),
-          itemSize: 1,
-          target: BufferViewTarget.ElementArrayBuffer,
-        }),
-      })
-      const material = new Material()
-      const mesh = new Mesh({ geometry, material })
-      node.add([mesh])
+      const node = new Object3d({ position: new Vector3(0, 1, 0) })
+      node.updateWorldMatrix()
 
       expect(animations).toEqual([
         new Animation("animation_0", [

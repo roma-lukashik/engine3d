@@ -59,10 +59,10 @@ const parseNodes = (data: Gltf): Object3d[] => {
 }
 
 const parseScene = async (data: Gltf, nodes: Object3d[]): Promise<Object3d>=> {
+  const scene = new Object3d({ name: "Scene" })
   const gltfScene = nthOption(data.scenes, data.scene ?? 0)
   const children = await mapOptionAsync(gltfScene?.nodes, (nodeId) => parseNode(data, nodes, nodeId))
-  const scene = new Object3d({ name: "Scene" })
-  scene.add(children.filter((x): x is Object3d => !!x))
+  scene.add(children)
   return scene
 }
 
@@ -239,7 +239,7 @@ const parseSkin = (data: Gltf, nodes: Object3d[], skinIndex: Option<number>) => 
     return
   }
   const bones = skin.joints.map((joint) => nodes[joint])
-  const boneInverses = timesMap(skin.joints.length, (i) => {
+  const boneInverses = timesMap(bones.length, (i) => {
     return Matrix4.fromArray(inverseMatrices.array, Matrix4.size * i)
   })
   return new Skeleton({ bones, boneInverses })

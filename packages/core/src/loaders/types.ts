@@ -70,7 +70,7 @@ type GltfBuffer = ArrayBuffer | {
 export type GltfBufferView = {
   buffer: ResourceId
   byteLength: number
-  byteOffset: number
+  byteOffset?: number
   byteStride?: number
   target?: BufferViewTarget
 }
