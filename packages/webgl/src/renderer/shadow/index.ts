@@ -2,7 +2,7 @@ import { WebGLMesh } from "@webgl/mesh"
 import { ShadowProgram } from "@webgl/program/shadow"
 import { LightWithShadow } from "@core/lights"
 import { Mesh } from "@core/mesh"
-import { TexturesStore } from "@webgl/shadow/texturesStore"
+import { TexturesStore } from "@webgl/renderer/shadow/texturesStore"
 
 type Props = {
   gl: WebGLRenderingContext
@@ -37,7 +37,7 @@ export class ShadowRenderer {
           }))
         }
         const program = this.programs.get(mesh)!
-        program.uniforms.setValues({ projectionMatrix: light.projectionMatrix })
+        program.uniforms.setValues({ projectionMatrix: light.projectionMatrix.toArray() })
         mesh.render(program)
       })
     })

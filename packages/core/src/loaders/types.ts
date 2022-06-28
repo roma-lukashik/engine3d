@@ -207,7 +207,7 @@ export type GltfAnimation = {
   extras?: any
 }
 
-type AnimationChannel = {
+export type AnimationChannel = {
   sampler: ResourceId
   target: AnimationChannelTarget
   extensions?: any

@@ -17,7 +17,6 @@ import {
   USE_SPOT_LIGHT,
 } from "@webgl/utils/glsl"
 import { WebGLBaseTexture } from "@webgl/textures/types"
-import { Matrix4, Vector3 } from "@math/types"
 
 type Props = {
   gl: WebGLRenderingContext
@@ -31,10 +30,10 @@ type Props = {
 }
 
 type MeshUniformValues = {
-  worldMatrix?: Matrix4
-  cameraPosition?: Vector3
-  textureMatrices?: Matrix4[]
-  projectionMatrix?: Matrix4
+  worldMatrix?: Float32Array
+  cameraPosition?: Float32Array
+  textureMatrices?: Float32Array[]
+  projectionMatrix?: Float32Array
   ambientLights?: AmbientLight[]
   pointLights?: PointLight[]
   spotLights?: SpotLight[]
@@ -46,32 +45,32 @@ type MeshUniformValues = {
 }
 
 type PointLight = {
-  color: Vector3
-  position: Vector3
+  color: Float32Array
+  position: Float32Array
 }
 
 type SpotLight = {
-  color: Vector3
-  position: Vector3
-  target: Vector3
+  color: Float32Array
+  position: Float32Array
+  target: Float32Array
   coneCos: number
   penumbraCos: number
   distance: number
 }
 
 type AmbientLight = {
-  color: Vector3
+  color: Float32Array
 }
 
 type DirectionalLight = {
-  color: Vector3
-  direction: Vector3
+  color: Float32Array
+  direction: Float32Array
 }
 
 type Material = {
   metalness: number
   roughness: number
-  color: Vector3
+  color: Float32Array
   colorTexture?: number
 }
 

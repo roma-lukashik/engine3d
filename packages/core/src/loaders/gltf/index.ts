@@ -1,5 +1,6 @@
 import {
   AccessorType,
+  AnimationChannel,
   AnimationChannelPath,
   BufferViewTarget,
   ComponentType,
@@ -253,22 +254,31 @@ const parseAnimations = (data: Gltf, nodes: Object3d[]): Animation[] => {
 
 const parseAnimation = (data: Gltf, nodes: Object3d[], animation: GltfAnimation) => {
   return mapOption(animation.channels, (channel) => {
-    const sampler = animation.samplers[channel.sampler]
-    const target = channel.target
-    const node = nthOption(nodes, target.node)
-    const times = parseAttributeAccessor(data, sampler.input)?.array
-    const values = parseAttributeAccessor(data, sampler.output)?.array
-    if (!times || !values || !node) {
-      return
-    }
-    // TODO Handle weights is not implemented yet.
-    if (target.path === "weights") {
-      return
-    }
-    const interpolation = sampler.interpolation
-    const transform = TransformType[target.path]
-    return new AnimationSample({ node, times, values, interpolation, transform })
+    return parseAnimationSample(data, nodes, animation, channel)
   })
+}
+
+const parseAnimationSample = (
+  data: Gltf,
+  nodes: Object3d[],
+  animation: GltfAnimation,
+  channel: AnimationChannel,
+): Option<AnimationSample> => {
+  const sampler = animation.samplers[channel.sampler]
+  const target = channel.target
+  const node = nthOption(nodes, target.node)
+  const times = parseAttributeAccessor(data, sampler.input)?.array
+  const values = parseAttributeAccessor(data, sampler.output)?.array
+  if (!times || !values || !node) {
+    return
+  }
+  // TODO Handle weights is not implemented yet.
+  if (target.path === "weights") {
+    return
+  }
+  const interpolation = sampler.interpolation
+  const transform = TransformType[target.path]
+  return new AnimationSample({ node, times, values, interpolation, transform })
 }
 
 const TransformType = {

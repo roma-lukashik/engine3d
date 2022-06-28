@@ -52,7 +52,10 @@ export class Uniform<T = any> {
     } else if (this.structProperty !== undefined) {
       this.value = value[this.structProperty]
     } else if (this.arrayIndex !== undefined) {
-      this.value = value.flat()
+      const arr = value as number[][]
+      const length = arr[0].length
+      this.value = new Float32Array(arr.length * length) as any
+      arr.forEach((x, i) => (this.value as any).set(x, i * length))
     } else {
       this.value = value
     }

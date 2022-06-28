@@ -43,13 +43,13 @@ export class WebGLMesh {
     }
     program.use()
     program.uniforms.setValues({
-      worldMatrix: this.mesh.worldMatrix,
+      worldMatrix: this.mesh.worldMatrix.toArray(),
       boneTexture: this.boneTexture,
       boneTextureSize: this.boneTextureSize,
       material: {
         metalness: this.mesh.material.metalness,
         roughness: this.mesh.material.roughness,
-        color: this.mesh.material.color,
+        color: this.mesh.material.color.toArray(),
         colorTexture: this.colorTexture,
       },
     })
