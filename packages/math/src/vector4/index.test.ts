@@ -51,8 +51,12 @@ describe("Vector4", () => {
     expect(a.clone()).not.toBe(a)
   })
 
-  it("set", () => {
+  it("set(0, 1, 2, 3)", () => {
     expect(a.set(0, 1, 2, 3)).toValueEqual([0, 1, 2, 3])
+  })
+
+  it("set(2)", () => {
+    expect(a.set(2)).toValueEqual([2, 2, 2, 2])
   })
 
   it("add", () => {

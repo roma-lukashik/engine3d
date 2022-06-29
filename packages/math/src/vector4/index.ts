@@ -41,7 +41,9 @@ export class Vector4 {
     return this.array[3]
   }
 
-  public set(x: number, y: number, z: number, w: number): this {
+  public set(x: number): this
+  public set(x: number, y: number, z: number, w: number): this
+  public set(x: number, y: number = x, z: number = x, w: number = x): this {
     this.array[0] = x
     this.array[1] = y
     this.array[2] = z

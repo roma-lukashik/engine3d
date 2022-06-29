@@ -43,8 +43,12 @@ describe("Vector2", () => {
     expect(a.clone()).not.toBe(a)
   })
 
-  it("set", () => {
+  it("set(0, 1)", () => {
     expect(a.set(0, 1)).toValueEqual([0, 1])
+  })
+
+  it("set(2)", () => {
+    expect(a.set(2)).toValueEqual([2, 2])
   })
 
   it("add", () => {
@@ -110,7 +114,7 @@ describe("Vector2", () => {
   it("equal", () => {
     expect(a.equal(b)).toBe(false)
     expect(a.equal(a.clone())).toBe(true)
-    expect(a.equal(new Vector2(1.001, 2.001))).toBe(true)
+    expect(a.equal(new Vector2(1.0009, 2.0009))).toBe(true)
     expect(a.equal(new Vector2(1.002, 2.002))).toBe(false)
   })
 })

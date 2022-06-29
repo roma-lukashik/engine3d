@@ -22,6 +22,11 @@ describe("Quaternion", () => {
     expect(Quaternion.identity()).toValueEqual([0, 0, 0, 1])
   })
 
+  it("fromArray", () => {
+    expect(Quaternion.fromArray([0, 1, 2, 3, 4, 5, 6])).toValueEqual([0, 1, 2, 3])
+    expect(Quaternion.fromArray([0, 1, 2, 3, 4, 5, 6], 3)).toValueEqual([3, 4, 5, 6])
+  })
+
   it("fromAxisAngle", () => {
     const axis = new Vector3(0.802, 0.267, 0.534)
     const angle = PI / 4

@@ -9,6 +9,13 @@ export type Matrix4Array = [
   number, number, number, number,
 ]
 
+const identity: Matrix4Array = [
+  1, 0, 0, 0,
+  0, 1, 0, 0,
+  0, 0, 1, 0,
+  0, 0, 0, 1,
+]
+
 export class Matrix4 {
   public static readonly size = 16
 
@@ -23,12 +30,7 @@ export class Matrix4 {
   }
 
   public static identity(): Matrix4 {
-    return new Matrix4([
-      1, 0, 0, 0,
-      0, 1, 0, 0,
-      0, 0, 1, 0,
-      0, 0, 0, 1,
-    ])
+    return new Matrix4(identity)
   }
 
   public static zero(): Matrix4 {

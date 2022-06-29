@@ -17,16 +17,31 @@ describe("Vector3", () => {
     expect(new Vector3(1, 2, 3)).toValueEqual([1, 2, 3])
   })
 
-  it("x", () => {
+  it("get x", () => {
     expect(a.x).toBe(1)
   })
 
-  it("y", () => {
+  it("get y", () => {
     expect(a.y).toBe(2)
   })
 
-  it("z", () => {
+  it("get z", () => {
     expect(a.z).toBe(3)
+  })
+
+  it("set x", () => {
+    a.x = 0
+    expect(a).toValueEqual([0, 2, 3])
+  })
+
+  it("set y", () => {
+    a.y = 0
+    expect(a).toValueEqual([1, 0, 3])
+  })
+
+  it("set z", () => {
+    a.z = 0
+    expect(a).toValueEqual([1, 2, 0])
   })
 
   it("zero", () => {
@@ -47,8 +62,12 @@ describe("Vector3", () => {
     expect(a.clone()).not.toBe(a)
   })
 
-  it("set", () => {
+  it("set(0, 1, 2)", () => {
     expect(a.set(0, 1, 2)).toValueEqual([0, 1, 2])
+  })
+
+  it("set(2)", () => {
+    expect(a.set(2)).toValueEqual([2, 2, 2])
   })
 
   it("add", () => {

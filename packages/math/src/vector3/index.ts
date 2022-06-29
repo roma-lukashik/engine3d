@@ -29,15 +29,29 @@ export class Vector3 {
     return this.array[0]
   }
 
+  public set x(x: number) {
+    this.array[0] = x
+  }
+
   public get y(): number {
     return this.array[1]
+  }
+
+  public set y(y: number) {
+    this.array[1] = y
   }
 
   public get z(): number {
     return this.array[2]
   }
 
-  public set(x: number, y: number, z: number): this {
+  public set z(z: number) {
+    this.array[2] = z
+  }
+
+  public set(x: number): this
+  public set(x: number, y: number, z: number): this
+  public set(x: number, y: number = x, z: number = x): this {
     this.array[0] = x
     this.array[1] = y
     this.array[2] = z
