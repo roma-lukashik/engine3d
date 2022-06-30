@@ -13,12 +13,12 @@ export class Geometry {
   public skinIndex?: BufferAttribute
   public index?: BufferAttribute
 
-  constructor(data: Partial<Record<keyof MeshPrimitiveAttributes, BufferAttribute>> = {}) {
+  constructor(data: Partial<Record<keyof MeshPrimitiveAttributes | "index", BufferAttribute>> = {}) {
     forEachKey(data, (key, bufferAttribute) => this[attributesMapping[key]] = bufferAttribute)
   }
 }
 
-const attributesMapping: Record<keyof MeshPrimitiveAttributes, keyof Geometry> = {
+const attributesMapping: Record<keyof MeshPrimitiveAttributes | "index", keyof Geometry> = {
   POSITION: "position",
   NORMAL: "normal",
   TANGENT: "tangent",
@@ -27,4 +27,5 @@ const attributesMapping: Record<keyof MeshPrimitiveAttributes, keyof Geometry> =
   COLOR_0: "color",
   WEIGHTS_0: "skinWeight",
   JOINTS_0: "skinIndex",
+  index: "index",
 }

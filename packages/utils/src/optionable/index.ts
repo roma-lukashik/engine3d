@@ -12,7 +12,7 @@ export const mapOptionAsync = async <T, K>(
   fn: (x: T, i: number, arr: T[]) => Promise<Option<K>>,
 ): Promise<K[]> => {
   const promises = await Promise.all(array?.map((item, i, arr) => fn(item, i, arr)) ?? [])
-  return promises.filter((item): item is Awaited<K> => !!item)
+  return promises.filter((item): item is Awaited<K> => item !== undefined)
 }
 
 export const nthOption = <T>(array: Option<T[]>, index: Option<number>): Option<T> =>

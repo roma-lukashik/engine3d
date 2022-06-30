@@ -1,9 +1,9 @@
-import * as v3 from "@math/vector3"
+import { Vector3 } from "@math/vector3"
+import { Matrix4 } from "@math/matrix4"
 import { clamp } from "@math/operators"
-import { Matrix4, Vector3 } from "@math/types"
 import { Camera, OrthographicCamera } from "@core/camera"
 import { LightType, LightWithShadow } from "@core/lights/types"
-import { hexToRgb } from "@utils/color"
+import { Color } from "@core/color"
 
 type Props = {
   // Hexadecimal color of the light.
@@ -36,16 +36,16 @@ export class DirectionalLight implements LightWithShadow {
     color = 0xFFFFFF,
   }: Props = {}) {
     this.type = LightType.Directional
-    this.color = hexToRgb(color)
+    this.color = new Color(color).rgb
     this.castShadow = castShadow
     this.intensity = clamp(intensity, 0, 1)
     this.camera = new OrthographicCamera({
-      left: -5,
-      right: 5,
-      top: 5,
-      bottom: -5,
+      left: -2000,
+      right: 2000,
+      top: 2000,
+      bottom: -2000,
       near: 0.5,
-      far: 100,
+      far: 8000,
     })
     this.updateDirection()
   }
@@ -61,6 +61,6 @@ export class DirectionalLight implements LightWithShadow {
   }
 
   private updateDirection(): void {
-    this.direction = v3.normalize(v3.subtract(this.camera.position, this.camera.target))
+    this.direction = this.camera.position.clone().subtract(this.camera.target).normalize()
   }
 }

@@ -1,25 +1,27 @@
 import { toSpherical, fromSpherical } from "@math/coordinates/spherical"
-import { vector3, zero } from "@math/vector3"
+import { Vector3 } from "@math/vector3"
+import { PI } from "@math/constants"
+
+const PI6 = PI / 6
 
 describe("sphericalCoordinateSystem", () => {
-  describe("#toSpherical", () => {
+  describe("toSpherical", () => {
     it("works correctly", () => {
-      const v = vector3(2, 4 * Math.sqrt(3), 2 * Math.sqrt(3))
-      const { radius, theta, phi } = toSpherical(v, zero())
-      expect(radius).toCloseEqual(8)
-      expect(theta).toCloseEqual(Math.PI / 6)
-      expect(phi).toCloseEqual(Math.PI / 6)
+      const v = new Vector3(2, 4 * Math.sqrt(3), 2 * Math.sqrt(3))
+      const { radius, theta, phi } = toSpherical(v, Vector3.zero())
+      expect(radius).toBeCloseTo(8)
+      expect(theta).toBeCloseTo(PI6)
+      expect(phi).toBeCloseTo(PI6)
     })
   })
 
-  describe("#fromSpherical", () => {
+  describe("fromSpherical", () => {
     it("works correctly", () => {
-      const s = {
+      expect(fromSpherical({
         radius: 8,
-        theta: Math.PI / 6,
-        phi: Math.PI / 6,
-      }
-      expect(fromSpherical(s)).toCloseEqual([
+        theta: PI6,
+        phi: PI6,
+      })).toValueEqual([
         2,
         4 * Math.sqrt(3),
         2 * Math.sqrt(3),

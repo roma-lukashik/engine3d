@@ -1,7 +1,8 @@
 import { Camera, PerspectiveCamera } from "@core/camera"
 import { LightType, LightWithShadow } from "@core/lights/types"
-import { hexToRgb } from "@utils/color"
-import { Matrix4, Vector3 } from "@math/types"
+import { Color } from "@core/color"
+import { Vector3 } from "@math/vector3"
+import { Matrix4 } from "@math/matrix4"
 
 type Props = {
   // Hexadecimal color of the light.
@@ -64,7 +65,7 @@ export class SpotLight implements LightWithShadow {
     penumbra = 0,
   }: Props = {}) {
     this.type = LightType.SpotLight
-    this.color = hexToRgb(color)
+    this.color = new Color(color).rgb
     this.castShadow = castShadow
     this.intensity = intensity
     this.distance = distance

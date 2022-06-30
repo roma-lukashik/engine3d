@@ -1,5 +1,6 @@
 import { WebGLMesh } from "@webgl/mesh"
 import { Mesh } from "@core/mesh"
+import { Object3d } from "@core/object3d"
 import {
   AmbientLight,
   DirectionalLight,
@@ -48,9 +49,11 @@ export class Scene {
     this.gl = gl
   }
 
-  public addMesh(...meshes: Mesh[]): void {
-    meshes.forEach((mesh) => {
-      this.meshes.set(mesh, new WebGLMesh({ gl: this.gl, mesh }))
+  public addMesh(object: Object3d): void {
+    object.traverse((node) => {
+      if (node instanceof Mesh) {
+        this.meshes.set(node, new WebGLMesh({ gl: this.gl, mesh: node }))
+      }
     })
   }
 

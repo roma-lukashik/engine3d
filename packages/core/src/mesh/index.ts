@@ -27,4 +27,8 @@ export class Mesh extends Object3d {
   public bindSkeleton(skeleton: Skeleton): void {
     this.skeleton = skeleton
   }
+
+  public updateSkeleton(): void {
+    this.skeleton?.update(this)
+  }
 }

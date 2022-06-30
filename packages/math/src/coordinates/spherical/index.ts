@@ -1,6 +1,5 @@
-import * as v3 from "@math/vector3"
 import { clamp } from "@math/operators"
-import { Vector3 } from "@math/types"
+import { Vector3 } from "@math/vector3"
 
 export type SphericalCoordinate = {
   radius: number
@@ -9,18 +8,18 @@ export type SphericalCoordinate = {
 }
 
 export const toSpherical = (point: Vector3, origin: Vector3): SphericalCoordinate => {
-  const direction = v3.subtract(point, origin)
-  const radius = v3.length(direction)
+  const direction = point.clone().subtract(origin)
+  const radius = direction.length()
   return {
     radius,
-    theta: Math.atan2(v3.x(direction), v3.z(direction)),
-    phi: Math.acos(clamp(v3.y(direction) / radius, -1, 1)),
+    theta: Math.atan2(direction.x, direction.z),
+    phi: Math.acos(clamp(direction.y / radius, -1, 1)),
   }
 }
 
 export const fromSpherical = ({ radius, theta, phi }: SphericalCoordinate): Vector3 => {
   const sinPhiRadius = radius * Math.sin(phi)
-  return v3.vector3(
+  return new Vector3(
     sinPhiRadius * Math.sin(theta),
     radius * Math.cos(phi),
     sinPhiRadius * Math.cos(theta),

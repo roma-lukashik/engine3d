@@ -1,4 +1,7 @@
-import { Vector3, Vector4, Matrix4, Quaternion } from "@math/types"
+import type { Vector3Tuple } from "@math/vector3"
+import type { Vector4Tuple } from "@math/vector4"
+import type { QuaternionTuple } from "@math/quaternion"
+import type { Matrix4Tuple } from "@math/matrix4"
 
 export type Gltf = {
   asset?: GltfAsset
@@ -67,7 +70,7 @@ type GltfBuffer = ArrayBuffer | {
 export type GltfBufferView = {
   buffer: ResourceId
   byteLength: number
-  byteOffset: number
+  byteOffset?: number
   byteStride?: number
   target?: BufferViewTarget
 }
@@ -124,10 +127,10 @@ export type MeshPrimitiveAttributes = {
 
 export type GltfNode = {
   name?: string
-  translation?: Vector3
-  rotation?: Quaternion
-  scale?: Vector3
-  matrix?: Matrix4
+  translation?: Vector3Tuple
+  rotation?: QuaternionTuple
+  scale?: Vector3Tuple
+  matrix?: Matrix4Tuple
   children?: ResourceId[]
   mesh?: ResourceId
   skin?: ResourceId
@@ -142,7 +145,7 @@ export type GltfMaterial = {
   normalTexture?: MaterialNormalTextureInfo
   occlusionTexture?: MaterialOcclusionTextureInfo
   emissiveTexture?: TextureInfo
-  emissiveFactor?: Vector3
+  emissiveFactor?: Vector3Tuple
   alphaMode?: AlphaMode
   alphaCutoff?: number
   doubleSided?: boolean
@@ -155,7 +158,7 @@ export enum AlphaMode {
 }
 
 type MaterialPbrMetallicRoughness = {
-  baseColorFactor?: Vector4
+  baseColorFactor?: Vector4Tuple
   baseColorTexture?: TextureInfo
   metallicFactor?: number
   roughnessFactor?: number
@@ -204,7 +207,7 @@ export type GltfAnimation = {
   extras?: any
 }
 
-type AnimationChannel = {
+export type AnimationChannel = {
   sampler: ResourceId
   target: AnimationChannelTarget
   extensions?: any

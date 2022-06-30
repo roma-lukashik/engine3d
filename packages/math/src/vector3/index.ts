@@ -1,48 +1,145 @@
 import { eq } from "@math/operators"
-import { Vector3 } from "@math/types"
 
-export const vector3 = (x: number, y: number, z: number): Vector3 => [x, y, z]
+export type Vector3Tuple = [x: number, y: number, z: number]
 
-export const copy = (v: Vector3): Vector3 => [...v]
+export class Vector3Array extends Float32Array {
+  public constructor() {
+    super(Vector3.size)
+  }
+}
 
-export const x = (v: Vector3) => v[0]
+export class Vector3 {
+  public static readonly size = 3
 
-export const y = (v: Vector3) => v[1]
+  private readonly array: Vector3Array = new Vector3Array()
 
-export const z = (v: Vector3) => v[2]
+  public constructor()
+  public constructor(x: number, y: number, z: number)
+  public constructor(x: number = 0, y: number = 0, z: number = 0) {
+    this.set(x, y, z)
+  }
 
-export const zero = () => vector3(0, 0, 0)
+  public static zero(): Vector3 {
+    return new Vector3(0, 0, 0)
+  }
 
-export const one = () => vector3(1, 1, 1)
+  public static one(): Vector3 {
+    return new Vector3(1, 1, 1)
+  }
 
-export const add = (a: Vector3, b: Vector3) => vector3(x(a) + x(b), y(a) + y(b), z(a) + z(b))
+  public static fromArray(array: ArrayLike<number>, offset: number = 0): Vector3 {
+    return new Vector3(array[offset], array[offset + 1], array[offset + 2])
+  }
 
-export const subtract = (a: Vector3, b: Vector3) => vector3(x(a) - x(b), y(a) - y(b), z(a) - z(b))
+  public get x(): number {
+    return this.array[0]
+  }
 
-export const multiply = (v: Vector3, c: number) => vector3(x(v) * c, y(v) * c, z(v) * c)
+  public set x(x: number) {
+    this.array[0] = x
+  }
 
-export const divide = (v: Vector3, c: number) => vector3(x(v) / c, y(v) / c, z(v) / c)
+  public get y(): number {
+    return this.array[1]
+  }
 
-export const lengthSquared = (v: Vector3) => (x(v) ** 2) + (y(v) ** 2) + (z(v) ** 2)
+  public set y(y: number) {
+    this.array[1] = y
+  }
 
-export const length = (v: Vector3) => Math.sqrt(lengthSquared(v))
+  public get z(): number {
+    return this.array[2]
+  }
 
-export const distanceSquared = (a: Vector3, b: Vector3) => (x(a) - x(b)) ** 2 + (y(a) - y(b)) ** 2 + (z(a) - z(b)) ** 2
+  public set z(z: number) {
+    this.array[2] = z
+  }
 
-export const distance = (a: Vector3, b: Vector3) => Math.sqrt(distanceSquared(a, b))
+  public set(x: number): this
+  public set(x: number, y: number, z: number): this
+  public set(x: number, y: number = x, z: number = x): this {
+    this.array[0] = x
+    this.array[1] = y
+    this.array[2] = z
+    return this
+  }
 
-export const normalize = (v: Vector3) => divide(v, length(v))
+  public clone(): Vector3 {
+    return new Vector3(this.x, this.y, this.z)
+  }
 
-export const negate = (v: Vector3) => vector3(-x(v), -y(v), -z(v))
+  public add(v: Vector3): this {
+    this.array[0] += v.x
+    this.array[1] += v.y
+    this.array[2] += v.z
+    return this
+  }
 
-export const dot = (a: Vector3, b: Vector3) => x(a) * x(b) + y(a) * y(b) + z(a) * z(b)
+  public subtract(v: Vector3): this {
+    this.array[0] -= v.x
+    this.array[1] -= v.y
+    this.array[2] -= v.z
+    return this
+  }
 
-export const cross = (a: Vector3, b: Vector3) => vector3(
-  y(a) * z(b) - z(a) * y(b),
-  z(a) * x(b) - x(a) * z(b),
-  x(a) * y(b) - y(a) * x(b),
-)
+  public multiply(c: number): this {
+    this.array[0] *= c
+    this.array[1] *= c
+    this.array[2] *= c
+    return this
+  }
 
-export const equal = (a: Vector3, b: Vector3) => eq(x(a), x(b)) && eq(y(a), y(b)) && eq(z(a), z(b))
+  public divide(c: number): this {
+    this.array[0] /= c
+    this.array[1] /= c
+    this.array[2] /= c
+    return this
+  }
 
-export const lerp = (a: Vector3, b: Vector3, t: number) => add(a, multiply(subtract(b, a), t))
+  public lengthSquared(): number {
+    return this.dot(this)
+  }
+
+  public length(): number {
+    return Math.sqrt(this.lengthSquared())
+  }
+
+  public distanceSquared(v: Vector3): number {
+    return this.clone().subtract(v).lengthSquared()
+  }
+
+  public distance(v: Vector3): number {
+    return Math.sqrt(this.distanceSquared(v))
+  }
+
+  public normalize(): this {
+    return this.divide(this.length())
+  }
+
+  public negate(): this {
+    return this.multiply(-1)
+  }
+
+  public dot(v: Vector3): number {
+    return this.x * v.x + this.y * v.y + this.z * v.z
+  }
+
+  public cross(v: Vector3): this {
+    const x = this.y * v.z - this.z * v.y
+    const y = this.z * v.x - this.x * v.z
+    const z = this.x * v.y - this.y * v.x
+    return this.set(x, y, z)
+  }
+
+  public lerp(v: Vector3, t: number): this {
+    return this.add(v.clone().subtract(this).multiply(t))
+  }
+
+  public equal(v: Vector3): boolean {
+    return eq(this.x, v.x) && eq(this.y, v.y) && eq(this.z, v.z)
+  }
+
+  public toArray(): Readonly<Vector3Array> {
+    return this.array
+  }
+}

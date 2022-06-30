@@ -1,23 +1,25 @@
 import { Material } from "@core/material"
 import { AlphaMode } from "@core/loaders/types"
+import { Vector3 } from "@math/vector3"
+import { Vector4 } from "@math/vector4"
 
 describe("Material", () => {
   it("uses default props", () => {
     const material = new Material()
     expect(material).toMatchObject<Partial<Material>>({
-      color: [1, 1, 1],
+      color: new Vector3(1, 1, 1),
       opacity: 1,
       metalness: 1,
       roughness: 1,
-      emissive: [0, 0, 0],
+      emissive: new Vector3(0, 0, 0),
       transparent: false,
     })
   })
 
   it("uses custom color", () => {
-    const material = new Material({ color: [0.1, 0.2, 0.3, 0.5] })
+    const material = new Material({ color: new Vector4(0.1, 0.2, 0.3, 0.5) })
     expect(material).toMatchObject<Partial<Material>>({
-      color: [0.1, 0.2, 0.3],
+      color: new Vector3(0.1, 0.2, 0.3),
       opacity: 0.5,
     })
   })
