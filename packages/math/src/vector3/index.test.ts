@@ -131,7 +131,7 @@ describe("Vector3", () => {
   })
 
   it("toArray", () => {
-    expect(a.toArray()).toEqual(new Float32Array([1, 2, 3]))
+    expect(a.toArray()).toValueEqual([1, 2, 3])
   })
 
   it("equal", () => {

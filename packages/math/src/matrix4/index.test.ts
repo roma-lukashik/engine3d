@@ -321,12 +321,12 @@ describe("Matrix4", () => {
   })
 
   it("toArray", () => {
-    expect(a.toArray()).toEqual(new Float32Array([
+    expect(a.toArray()).toValueEqual([
       1, 2,	3, 4,
       4, 1,	3, 2,
       4, 3,	2, 1,
       3, 2,	4, 1,
-    ]))
+    ])
   })
 
   it("rotationVector", () => {

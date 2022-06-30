@@ -18,6 +18,12 @@ describe("AABB", () => {
   })
 
   it("min", () => {
+    const aabb = new AABB([
+      0, 0, 0,
+      1, 1, 1,
+      2, 1, 3,
+      -1, 0, 4,
+    ])
     expect(aabb.min).toValueEqual([-1, 0, 0])
   })
 
@@ -30,6 +36,7 @@ describe("AABB", () => {
   })
 
   it("clone", () => {
+    const aabb = new AABB([0, 0, 0, 2, 2, 2])
     const clone = aabb.clone()
     expect(clone).toEqual(aabb)
     expect(clone).not.toBe(aabb)

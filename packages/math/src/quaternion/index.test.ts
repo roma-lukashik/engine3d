@@ -102,6 +102,6 @@ describe("Quaternion", () => {
   })
 
   it("toArray", () => {
-    expect(q.toArray()).toEqual(new Float32Array([0.1, 0.2, 0.3, 0.5]))
+    expect(q.toArray()).toValueEqual([0.1, 0.2, 0.3, 0.5])
   })
 })

@@ -138,9 +138,9 @@ export class Matrix4 {
   }
 
   public static compose(quat: Quaternion, translation: Vector3, scale: Vector3): Matrix4 {
-    const [x, y, z, w] = quat.toArray()
-    const [sx, sy, sz] = scale.toArray()
-    const [tx, ty, tz] = translation.toArray()
+    const x = quat.x, y = quat.y, z = quat.z, w = quat.w
+    const sx = scale.x, sy = scale.y, sz = scale.z
+    const tx = translation.x, ty = translation.y, tz = translation.z
     const x2 = x + x
     const y2 = y + y
     const z2 = z + z
