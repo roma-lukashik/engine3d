@@ -1,10 +1,11 @@
+import { Matrix4Array } from "@math/matrix4"
 import { Program } from "@webgl/program"
 import { WebGLBaseTexture } from "@webgl/textures/types"
 import { define, ifdef, USE_SKINNING } from "@webgl/utils/glsl"
 
 type ShadowUniforms = {
-  projectionMatrix?: Float32Array
-  worldMatrix?: Float32Array
+  projectionMatrix?: Matrix4Array
+  worldMatrix?: Matrix4Array
   boneTexture?: WebGLBaseTexture
   boneTextureSize?: number
 }

@@ -1,11 +1,17 @@
 import { eq } from "@math/operators"
 
-export type Vector3Array = [x: number, y: number, z: number]
+export type Vector3Tuple = [x: number, y: number, z: number]
+
+export class Vector3Array extends Float32Array {
+  public constructor() {
+    super(Vector3.size)
+  }
+}
 
 export class Vector3 {
   public static readonly size = 3
 
-  private readonly array: Float32Array = new Float32Array(Vector3.size)
+  private readonly array: Vector3Array = new Vector3Array()
 
   public constructor()
   public constructor(x: number, y: number, z: number)
@@ -91,7 +97,7 @@ export class Vector3 {
   }
 
   public lengthSquared(): number {
-    return this.x ** 2 + this.y ** 2 + this.z ** 2
+    return this.dot(this)
   }
 
   public length(): number {
@@ -122,8 +128,7 @@ export class Vector3 {
     const x = this.y * v.z - this.z * v.y
     const y = this.z * v.x - this.x * v.z
     const z = this.x * v.y - this.y * v.x
-    this.set(x, y, z)
-    return this
+    return this.set(x, y, z)
   }
 
   public lerp(v: Vector3, t: number): this {
@@ -134,7 +139,7 @@ export class Vector3 {
     return eq(this.x, v.x) && eq(this.y, v.y) && eq(this.z, v.z)
   }
 
-  public toArray(): Readonly<Float32Array> {
+  public toArray(): Readonly<Vector3Array> {
     return this.array
   }
 }

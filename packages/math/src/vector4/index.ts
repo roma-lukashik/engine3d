@@ -1,11 +1,17 @@
 import { eq } from "@math/operators"
 
-export type Vector4Array = [x: number, Y: number, z: number, w: number]
+export type Vector4Tuple = [x: number, Y: number, z: number, w: number]
+
+export class Vector4Array extends Float32Array {
+  public constructor() {
+    super(Vector4.size)
+  }
+}
 
 export class Vector4 {
   public static readonly size = 4
 
-  private readonly array: Float32Array = new Float32Array(Vector4.size)
+  private readonly array: Vector4Array = new Vector4Array()
 
   public constructor()
   public constructor(x: number, y: number, z: number, w: number)
@@ -88,7 +94,7 @@ export class Vector4 {
   }
 
   public lengthSquared(): number {
-    return this.x ** 2 + this.y ** 2 + this.z ** 2 + this.w ** 2
+    return this.dot(this)
   }
 
   public length(): number {
@@ -111,11 +117,15 @@ export class Vector4 {
     return this.multiply(-1)
   }
 
+  public dot(v: Vector4): number {
+    return this.x * v.x + this.y * v.y + this.z * v.z + this.w * v.w
+  }
+
   public equal(v: Vector4): boolean {
     return eq(this.x, v.x) && eq(this.y, v.y) && eq(this.z, v.z) && eq(this.w, v.w)
   }
 
-  public toArray(): Readonly<Float32Array> {
+  public toArray(): Readonly<Vector4Array> {
     return this.array
   }
 }

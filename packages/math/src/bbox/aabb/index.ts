@@ -6,8 +6,20 @@ export class AABB {
   public max: Vector3 = new Vector3()
   public center: Vector3 = new Vector3()
 
-  constructor(points: ArrayLike<number>) {
-    this.calculate(points)
+  public constructor(min: Vector3, max: Vector3)
+  public constructor(points: ArrayLike<number>)
+  public constructor(...args: [Vector3, Vector3] | [ArrayLike<number>]) {
+    if (args.length === 1) {
+      this.calculate(args[0])
+    } else {
+      this.min = args[0]
+      this.max = args[1]
+      this.calculateCenter()
+    }
+  }
+
+  public clone(): AABB {
+    return new AABB(this.min, this.max)
   }
 
   public collide(aabb: AABB): boolean {
@@ -36,6 +48,10 @@ export class AABB {
       this.max.z = Math.max(z, this.max.z)
     }
 
+    this.calculateCenter()
+  }
+
+  private calculateCenter(): void {
     this.center = this.min.clone().add(this.max).divide(2)
   }
 }

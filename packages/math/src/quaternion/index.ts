@@ -2,12 +2,18 @@ import { lt } from "@math/operators"
 import type { Matrix4 } from "@math/matrix4"
 import { Vector3 } from "@math/vector3"
 
-export type QuaternionArray = [x: number, y: number, z: number, w: number]
+export type QuaternionTuple = [x: number, y: number, z: number, w: number]
+
+export class QuaternionArray extends Float32Array {
+  public constructor() {
+    super(Quaternion.size)
+  }
+}
 
 export class Quaternion {
   public static readonly size = 4
 
-  private readonly array: Float32Array = new Float32Array(Quaternion.size)
+  private readonly array: QuaternionArray = new QuaternionArray()
 
   constructor()
   constructor(x: number, y: number, z: number, w: number)
@@ -123,7 +129,7 @@ export class Quaternion {
     return this.multiply(scale0).add(q.clone().multiply(scale1 * Math.sign(dot)))
   }
 
-  public toArray(): Readonly<Float32Array> {
+  public toArray(): Readonly<QuaternionArray> {
     return this.array
   }
 

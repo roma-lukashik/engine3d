@@ -1,4 +1,5 @@
 import { AABB } from "@math/bbox/aabb"
+import { Vector3 } from "@math/vector3"
 
 describe("AABB", () => {
   const aabb = new AABB([
@@ -8,8 +9,12 @@ describe("AABB", () => {
     -1, 0, 4,
   ])
 
-  it("to be created", () => {
+  it("to be created by points", () => {
     expect(aabb).toBeDefined()
+  })
+
+  it("to be created by min and max", () => {
+    expect(new AABB(Vector3.zero(), Vector3.one())).toBeDefined()
   })
 
   it("min", () => {
@@ -22,6 +27,12 @@ describe("AABB", () => {
 
   it("center", () => {
     expect(aabb.center).toValueEqual([0.5, 0.5, 2])
+  })
+
+  it("clone", () => {
+    const clone = aabb.clone()
+    expect(clone).toEqual(aabb)
+    expect(clone).not.toBe(aabb)
   })
 
   it.each([

@@ -75,6 +75,10 @@ describe("Vector4", () => {
     expect(a.divide(2)).toValueEqual([0.5, 1, 1.5, 2])
   })
 
+  it("dot", () => {
+    expect(a.dot(b)).toBe(70)
+  })
+
   it("lengthSquared", () => {
     expect(a.lengthSquared()).toBe(30)
   })

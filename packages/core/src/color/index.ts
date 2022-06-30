@@ -1,4 +1,4 @@
-import { Vector3, Vector3Array } from "@math/vector3"
+import { Vector3, Vector3Tuple } from "@math/vector3"
 import { Vector4 } from "@math/vector4"
 
 export class Color {
@@ -15,7 +15,7 @@ export class Color {
 
 const MAX_BYTE = 255
 
-const hexToRgb = (hex: number): Vector3Array => {
+const hexToRgb = (hex: number): Vector3Tuple => {
   const r = (hex >> 16 & MAX_BYTE) / MAX_BYTE
   const g = (hex >> 8 & MAX_BYTE) / MAX_BYTE
   const b = (hex & MAX_BYTE) / MAX_BYTE

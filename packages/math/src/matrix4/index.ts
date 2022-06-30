@@ -2,28 +2,34 @@ import { Vector3 } from "@math/vector3"
 import { PI } from "@math/constants"
 import { Quaternion } from "@math/quaternion"
 
-export type Matrix4Array = [
+export type Matrix4Tuple = [
   number, number, number, number,
   number, number, number, number,
   number, number, number, number,
   number, number, number, number,
 ]
 
-const identity: Matrix4Array = [
+const identity: Matrix4Tuple = [
   1, 0, 0, 0,
   0, 1, 0, 0,
   0, 0, 1, 0,
   0, 0, 0, 1,
 ]
 
+export class Matrix4Array extends Float32Array {
+  public constructor() {
+    super(Matrix4.size)
+  }
+}
+
 export class Matrix4 {
   public static readonly size = 16
 
-  private readonly array: Float32Array = new Float32Array(Matrix4.size)
+  private readonly array: Matrix4Array = new Matrix4Array()
 
   public constructor()
-  public constructor(elements: Matrix4Array)
-  public constructor(elements?: Matrix4Array) {
+  public constructor(elements: Matrix4Tuple)
+  public constructor(elements?: Matrix4Tuple) {
     if (elements) {
       this.set(elements)
     }
@@ -157,11 +163,11 @@ export class Matrix4 {
   }
 
   public static fromArray(array: ArrayLike<number>, offset: number = 0): Matrix4 {
-    const elements = Array.from({ length: Matrix4.size }, (_, i) => array[i + offset]) as Matrix4Array
+    const elements = Array.from({ length: Matrix4.size }, (_, i) => array[i + offset]) as Matrix4Tuple
     return new Matrix4(elements)
   }
 
-  public set(elements: Matrix4Array): this {
+  public set(elements: Matrix4Tuple): this {
     elements.forEach((x, i) => this.array[i] = x)
     return this
   }
@@ -361,7 +367,7 @@ export class Matrix4 {
     )
   }
 
-  public toArray(): Readonly<Float32Array> {
+  public toArray(): Readonly<Matrix4Array> {
     return this.array
   }
 }

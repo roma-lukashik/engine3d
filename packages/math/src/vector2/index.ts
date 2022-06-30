@@ -1,11 +1,17 @@
 import { eq } from "@math/operators"
 
-export type Vector2Array = [x: number, y: number]
+export type Vector2Tuple = [x: number, y: number]
+
+export class Vector2Array extends Float32Array {
+  public constructor() {
+    super(Vector2.size)
+  }
+}
 
 export class Vector2 {
   public static readonly size = 2
 
-  private readonly array: Float32Array = new Float32Array(Vector2.size)
+  private readonly array: Vector2Array = new Vector2Array()
 
   public constructor()
   public constructor(x: number, y: number)
@@ -70,7 +76,7 @@ export class Vector2 {
   }
 
   public lengthSquared(): number {
-    return this.x ** 2 + this.y ** 2
+    return this.dot(this)
   }
 
   public length(): number {
@@ -94,8 +100,7 @@ export class Vector2 {
   }
 
   public perp(): this {
-    this.set(this.y, -this.x)
-    return this
+    return this.set(this.y, -this.x)
   }
 
   public angleTo(v: Vector2): number {
@@ -114,7 +119,7 @@ export class Vector2 {
     return eq(this.x, v.x) && eq(this.y, v.y)
   }
 
-  public toArray(): Readonly<Float32Array> {
+  public toArray(): Readonly<Vector2Array> {
     return this.array
   }
 }
