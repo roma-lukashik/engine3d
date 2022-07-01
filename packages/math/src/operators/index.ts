@@ -1,16 +1,21 @@
 import { EPS } from "@math/constants"
 
-export const eq = (a: number, b: number): boolean => Math.abs(a - b) <= EPS
+export const eq = (a: number, b: number, eps = EPS): boolean => zero(a - b, eps)
 
-export const neq = (a: number, b: number): boolean => !eq(a, b)
+export const neq = (a: number, b: number, eps = EPS): boolean => !eq(a, b, eps)
 
-export const gt = (a: number, b: number): boolean => a - b > EPS
+export const gt = (a: number, b: number, eps = EPS): boolean => a - b > eps
 
-export const gte = (a: number, b: number): boolean => gt(a, b) || eq(a, b)
+export const gte = (a: number, b: number, eps = EPS): boolean => {
+  const diff = a - b
+  return diff > eps || zero(diff, eps)
+}
 
-export const lt = (a: number, b: number): boolean => b - a > EPS
+export const lt = (a: number, b: number, eps = EPS): boolean => b - a > eps
 
-export const lte = (a: number, b: number): boolean => lt(a, b) || eq(a, b)
+export const lte = (a: number, b: number, eps = EPS): boolean => gte(b, a, eps)
+
+export const zero = (a: number, eps = EPS): boolean => Math.abs(a) <= eps
 
 export const clamp = (x: number, min: number, max: number): number => Math.max(min, Math.min(max, x))
 

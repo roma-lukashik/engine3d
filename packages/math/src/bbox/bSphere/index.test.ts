@@ -29,4 +29,27 @@ describe("BSphere", () => {
     expect(clone).toEqual(sphere)
     expect(clone).not.toBe(sphere)
   })
+
+  it.each([
+    [new Vector3(0, 0, 0), 5], // B inside A
+    [new Vector3(0, 0, 0), 11], // A inside B
+    [new Vector3(0, 0, 0), 10], // A equal B
+    [new Vector3(12, 12, 12), 15], // intersect
+    [new Vector3(11, 0, 0), 1], // touch
+    [new Vector3(11, 0, 0), 1.001], // touch with precision
+    [new Vector3(11, 0, 0), 0.999], // touch with precision
+  ])("to be intersect %#", (center, radius) => {
+    const a = new BSphere(Vector3.zero(), 10)
+    const b = new BSphere(center, radius)
+    expect(a.intersectBSphere(b)).toBe(true)
+  })
+
+  it.each([
+    [new Vector3(12, 0, 0), 1],
+    [new Vector3(11, 0, 0), 0.998],
+  ])("to not be intersect %#", (center, radius) => {
+    const a = new BSphere(Vector3.zero(), 10)
+    const b = new BSphere(center, radius)
+    expect(a.intersectBSphere(b)).toBe(false)
+  })
 })

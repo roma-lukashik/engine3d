@@ -1,6 +1,7 @@
 import { Vector3 } from "@math/vector3"
 import { AABB } from "@math/bbox/aabb"
 import { lte } from "@math/operators"
+import { EPS_SQRT } from "@math/constants"
 
 export class BSphere {
   public center: Vector3
@@ -22,7 +23,8 @@ export class BSphere {
   }
 
   public intersectBSphere(bSphere: BSphere): boolean {
-    return lte(this.center.distanceSquared(bSphere.center), this.radius * this.radius + bSphere.radius * bSphere.radius)
+    const sum = this.radius + bSphere.radius
+    return lte(this.center.distanceSquared(bSphere.center), sum * sum, EPS_SQRT)
   }
 
   private fromPoints(points: ArrayLike<number>): void {
