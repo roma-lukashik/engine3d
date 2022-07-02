@@ -1,9 +1,9 @@
+import { AABB } from "@geometry/bbox/aabb"
 import { Vector3 } from "@math/vector3"
-import { AABB } from "@math/bbox/aabb"
 import { lte } from "@math/operators"
 import { EPS_SQRT } from "@math/constants"
 
-export class BSphere {
+export class Sphere {
   public center: Vector3
   public radius: number
 
@@ -18,13 +18,13 @@ export class BSphere {
     }
   }
 
-  public clone(): BSphere {
-    return new BSphere(this.center, this.radius)
+  public clone(): Sphere {
+    return new Sphere(this.center, this.radius)
   }
 
-  public intersectBSphere(bSphere: BSphere): boolean {
-    const sum = this.radius + bSphere.radius
-    return lte(this.center.distanceSquared(bSphere.center), sum * sum, EPS_SQRT)
+  public intersectSphere(sphere: Sphere): boolean {
+    const sum = this.radius + sphere.radius
+    return lte(this.center.distanceSquared(sphere.center), sum * sum, EPS_SQRT)
   }
 
   private fromPoints(points: ArrayLike<number>): void {

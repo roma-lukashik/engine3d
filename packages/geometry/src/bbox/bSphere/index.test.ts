@@ -1,13 +1,13 @@
-import { BSphere } from "@math/bbox/bSphere"
+import { Sphere } from "@geometry/bbox/bSphere"
 import { Vector3 } from "@math/vector3"
 
-describe("BSphere", () => {
+describe("Sphere", () => {
   it("to be defined", () => {
-    expect(new BSphere(Vector3.zero(), 10)).toBeDefined()
+    expect(new Sphere(Vector3.zero(), 10)).toBeDefined()
   })
 
   it("to be created by points", () => {
-    const sphere = new BSphere([
+    const sphere = new Sphere([
       0, 0, 0,
       1, 1, 1,
       2, 1, 3,
@@ -18,13 +18,13 @@ describe("BSphere", () => {
   })
 
   it("to be created by center point and radius", () => {
-    const sphere = new BSphere(new Vector3(0.5, 0.5, 2), 2.55)
+    const sphere = new Sphere(new Vector3(0.5, 0.5, 2), 2.55)
     expect(sphere.center).toValueEqual([0.5, 0.5, 2])
     expect(sphere.radius).toBeCloseTo(2.55)
   })
 
   it("clone", () => {
-    const sphere = new BSphere(new Vector3(0.5, 0.5, 2), 2.55)
+    const sphere = new Sphere(new Vector3(0.5, 0.5, 2), 2.55)
     const clone = sphere.clone()
     expect(clone).toEqual(sphere)
     expect(clone).not.toBe(sphere)
@@ -39,17 +39,17 @@ describe("BSphere", () => {
     [new Vector3(11, 0, 0), 1.001], // touch with precision
     [new Vector3(11, 0, 0), 0.999], // touch with precision
   ])("to be intersect %#", (center, radius) => {
-    const a = new BSphere(Vector3.zero(), 10)
-    const b = new BSphere(center, radius)
-    expect(a.intersectBSphere(b)).toBe(true)
+    const a = new Sphere(Vector3.zero(), 10)
+    const b = new Sphere(center, radius)
+    expect(a.intersectSphere(b)).toBe(true)
   })
 
   it.each([
     [new Vector3(12, 0, 0), 1],
     [new Vector3(11, 0, 0), 0.998],
   ])("to not be intersect %#", (center, radius) => {
-    const a = new BSphere(Vector3.zero(), 10)
-    const b = new BSphere(center, radius)
-    expect(a.intersectBSphere(b)).toBe(false)
+    const a = new Sphere(Vector3.zero(), 10)
+    const b = new Sphere(center, radius)
+    expect(a.intersectSphere(b)).toBe(false)
   })
 })

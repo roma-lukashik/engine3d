@@ -1,4 +1,4 @@
-import { AABB } from "@math/bbox/aabb"
+import { AABB } from "@geometry/bbox/aabb"
 import { Vector3 } from "@math/vector3"
 
 describe("AABB", () => {
