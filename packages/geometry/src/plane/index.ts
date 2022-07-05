@@ -1,11 +1,15 @@
 import { Vector3 } from "@math/vector3"
 
 export class Plane {
-  private normal: Vector3
-  private constant: number
+  public normal: Vector3
+  public constant: number
 
   public constructor(normal: Vector3, constant: number = 0) {
     this.set(normal, constant)
+  }
+
+  public static fromComponents(x: number, y: number, z: number, constant: number): Plane {
+    return new Plane(new Vector3(x, y, z), constant)
   }
 
   public copy(): Plane {

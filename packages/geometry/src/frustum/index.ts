@@ -41,7 +41,24 @@ export class Frustum {
     this.planes = [left, right, bottom, top, near, far]
   }
 
-  public fromProjectionMatrix(matrix: Matrix4): Frustum {
+  public static fromProjectionMatrix(matrix: Matrix4): Frustum {
+    const [
+      a00, a01, a02, a03,
+      a10, a11, a12, a13,
+      a20, a21, a22, a23,
+      a30, a31, a32, a33,
+    ] = matrix.toArray()
+    return new Frustum(
+      Plane.fromComponents(a03 + a00, a13 + a10, a23 + a20, a33 + a30).normalize(),
+      Plane.fromComponents(a03 - a00, a13 - a10, a23 - a20, a33 - a30).normalize(),
+      Plane.fromComponents(a03 + a01, a13 + a11, a23 + a21, a33 + a31).normalize(),
+      Plane.fromComponents(a03 - a01, a13 - a11, a23 - a21, a33 - a31).normalize(),
+      Plane.fromComponents(a03 + a02, a13 + a12, a23 + a22, a33 + a32).normalize(),
+      Plane.fromComponents(a03 - a02, a13 - a12, a23 - a22, a33 - a32).normalize(),
+    )
+  }
+
+  public setFromProjectionMatrix(matrix: Matrix4): this {
     const [
       a00, a01, a02, a03,
       a10, a11, a12, a13,
