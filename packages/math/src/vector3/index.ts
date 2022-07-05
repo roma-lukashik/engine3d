@@ -1,4 +1,5 @@
 import { eq } from "@math/operators"
+import type { Matrix4 } from "@math/matrix4"
 
 export type Vector3Tuple = [x: number, y: number, z: number]
 
@@ -133,6 +134,17 @@ export class Vector3 {
 
   public lerp(v: Vector3, t: number): this {
     return this.add(v.clone().subtract(this).multiply(t))
+  }
+
+  public transformMatrix4(matrix: Matrix4): this {
+    const x = this.x, y = this.y, z = this.z
+    const m = matrix.toArray()
+    const w = (m[3] * x + m[7] * y + m[11] * z + m[15]) || 1
+    return this.set(
+      (m[0] * x + m[4] * y + m[8] * z + m[12]) / w,
+      (m[1] * x + m[5] * y + m[9] * z + m[13]) / w,
+      (m[2] * x + m[6] * y + m[10] * z + m[14]) / w,
+    )
   }
 
   public equal(v: Vector3): boolean {

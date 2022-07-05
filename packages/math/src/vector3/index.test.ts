@@ -1,3 +1,4 @@
+import { Matrix4 } from "@math/matrix4"
 import { Vector3 } from "@math/vector3"
 
 describe("Vector3", () => {
@@ -128,6 +129,16 @@ describe("Vector3", () => {
     const a = new Vector3(1, 1, 1)
     const b = new Vector3(5, 10, 2)
     expect(a.lerp(b, t)).toValueEqual(result)
+  })
+
+  it("transformMatrix4", () => {
+    const m = new Matrix4([
+      1, 2, 3, 4,
+      4, 3, 2, 1,
+      5, 6, 7, 8,
+      8, 7, 6, 5,
+    ])
+    expect(a.transformMatrix4(m)).toValueEqual([])
   })
 
   it("toArray", () => {
