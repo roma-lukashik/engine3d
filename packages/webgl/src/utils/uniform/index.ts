@@ -51,7 +51,7 @@ export class Uniform<T = any> {
       this.value = value[this.arrayIndex][this.structProperty]
     } else if (this.structProperty !== undefined) {
       this.value = value[this.structProperty]
-    } else if (this.arrayIndex !== undefined) {
+    } else if (this.arrayIndex !== undefined && !this.isTexture()) {
       const arr = value as number[][]
       const length = arr[0].length
       this.value = new Float32Array(arr.length * length) as any

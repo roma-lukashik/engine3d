@@ -41,7 +41,7 @@ export class Scene {
     return this.lights.filter(isAmbientLight)
   }
 
-  public get shadowLights(): Array<LightWithShadow> {
+  public get shadowLights(): LightWithShadow[] {
     return this.lights.filter(isShadowLight)
   }
 
