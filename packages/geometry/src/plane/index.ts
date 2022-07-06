@@ -37,6 +37,6 @@ export class Plane {
   }
 
   public distanceToPoint(point: Vector3): number {
-    return -this.normal.dot(point) + this.constant
+    return this.normal.dot(point) + this.constant
   }
 }

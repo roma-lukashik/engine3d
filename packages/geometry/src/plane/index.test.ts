@@ -50,11 +50,13 @@ describe("Plane", () => {
   })
 
   it.each([
-    [new Vector3(0, 0, 0), 10],
-    [new Vector3(3, 2, 3), 8],
+    [new Vector3(0, 0, 0), -10],
+    [new Vector3(3, 2, 3), -8],
     [new Vector3(2, 10, 3), 0],
+    [new Vector3(2, 18, 3), 8],
+    [new Vector3(2, 20, 3), 10],
   ])("distanceToPoint %#", (point, distance) => {
-    const plane = new Plane(new Vector3(0, 1, 0), 10)
+    const plane = new Plane(new Vector3(0, 1, 0), -10)
     expect(plane.distanceToPoint(point)).toBe(distance)
   })
 })
