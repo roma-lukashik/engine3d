@@ -1,6 +1,6 @@
 import { Plane } from "@geometry/plane"
 import { Matrix4 } from "@math/matrix4"
-import { Sphere } from "@geometry/bbox/bSphere"
+import { Sphere } from "@geometry/bbox/sphere"
 import { lte } from "@math/operators"
 
 export class Frustum {

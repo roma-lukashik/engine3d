@@ -138,7 +138,7 @@ describe("Vector3", () => {
       5, 6, 7, 8,
       8, 7, 6, 5,
     ])
-    expect(a.transformMatrix4(m)).toValueEqual([])
+    expect(a.transformMatrix4(m)).toValueEqual([0.914, 0.943, 0.971])
   })
 
   it("toArray", () => {

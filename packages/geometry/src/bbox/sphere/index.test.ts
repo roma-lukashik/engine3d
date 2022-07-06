@@ -1,4 +1,4 @@
-import { Sphere } from "@geometry/bbox/bSphere"
+import { Sphere } from "@geometry/bbox/sphere"
 import { Vector3 } from "@math/vector3"
 
 describe("Sphere", () => {
