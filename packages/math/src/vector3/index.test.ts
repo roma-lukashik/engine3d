@@ -125,7 +125,7 @@ describe("Vector3", () => {
     [0.5, [3, 5.5, 1.5]],
     [0.75, [4, 7.75, 1.75]],
     [1, [5, 10, 2]],
-  ])("lerp", (t, result) => {
+  ])("lerp %#", (t, result) => {
     const a = new Vector3(1, 1, 1)
     const b = new Vector3(5, 10, 2)
     expect(a.lerp(b, t)).toValueEqual(result)

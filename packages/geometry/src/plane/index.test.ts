@@ -1,11 +1,9 @@
 import { Plane } from "@geometry/plane"
 import { Vector3 } from "@math/vector3"
 
-const up = new Vector3(0, 1, 0)
-
 describe("Plane", () => {
   it("to be created", () => {
-    const plane = new Plane(up, 2)
+    const plane = new Plane(new Vector3(0, 1, 0), 2)
     expect(plane.normal).toValueEqual([0, 1, 0])
     expect(plane.constant).toBe(2)
   })
@@ -17,21 +15,21 @@ describe("Plane", () => {
   })
 
   it("copy", () => {
-    const plane = new Plane(up, 2)
+    const plane = new Plane(new Vector3(0, 1, 0), 2)
     const copy = plane.copy()
     expect(copy).toEqual(plane)
     expect(copy).not.toBe(plane)
   })
 
   it("set", () => {
-    const plane = new Plane(up, 2)
+    const plane = new Plane(new Vector3(0, 1, 0), 2)
     plane.set(Vector3.one(), 1)
     expect(plane.normal).toValueEqual([1, 1, 1])
     expect(plane.constant).toBe(1)
   })
 
   it("setComponents", () => {
-    const plane = new Plane(up, 2)
+    const plane = new Plane(new Vector3(0, 1, 0), 2)
     plane.setComponents(1, 1, 1, 1)
     expect(plane.normal).toValueEqual([1, 1, 1])
     expect(plane.constant).toBe(1)
@@ -51,8 +49,12 @@ describe("Plane", () => {
     expect(plane.constant).toBe(0)
   })
 
-  it("distanceToPoint", () => {
-    const plane = new Plane(up, 10)
-    expect(plane.distanceToPoint(new Vector3(3, 2, 3))).toBeCloseTo(18)
+  it.each([
+    [new Vector3(0, 0, 0), 10],
+    [new Vector3(3, 2, 3), 8],
+    [new Vector3(2, 10, 3), 0],
+  ])("distanceToPoint %#", (point, distance) => {
+    const plane = new Plane(new Vector3(0, 1, 0), 10)
+    expect(plane.distanceToPoint(point)).toBe(distance)
   })
 })
