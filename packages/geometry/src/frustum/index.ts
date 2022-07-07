@@ -1,7 +1,7 @@
 import { Plane } from "@geometry/plane"
 import { Matrix4 } from "@math/matrix4"
 import { Sphere } from "@geometry/bbox/sphere"
-import { lte } from "@math/operators"
+import { gte } from "@math/operators"
 
 export class Frustum {
   private readonly planes: [
@@ -75,8 +75,8 @@ export class Frustum {
   }
 
   public intersectSphere(sphere: Sphere): boolean {
-    return this.planes.some((plane) => {
-      return lte(Math.abs(plane.distanceToPoint(sphere.center)), sphere.radius)
+    return this.planes.every((plane) => {
+      return gte(plane.distanceToPoint(sphere.center), -sphere.radius)
     })
   }
 }
