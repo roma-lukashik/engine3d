@@ -11,6 +11,7 @@
       "@webgl/*": ["src/*"],
       "@core/*": ["../core/src/*"],
       "@math/*": ["../math/src/*"],
+      "@geometry/*": ["../geometry/src/*"],
       "@utils/*": ["../utils/src/*"]
     }
   }

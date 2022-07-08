@@ -46,7 +46,7 @@ export class Uniforms<U extends UniformValues> {
     })
   }
 
-  public setValues(values: U): void {
+  public setValues(values: Partial<U>): void {
     this.uniforms.forEach((uniform) => {
       if (values[uniform.name]) {
         uniform.setValue(values[uniform.name])

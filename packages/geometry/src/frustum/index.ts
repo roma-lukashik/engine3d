@@ -75,8 +75,6 @@ export class Frustum {
   }
 
   public intersectSphere(sphere: Sphere): boolean {
-    return this.planes.every((plane) => {
-      return gte(plane.distanceToPoint(sphere.center), -sphere.radius)
-    })
+    return this.planes.every((plane) => gte(plane.distanceToPoint(sphere.center), -sphere.radius))
   }
 }

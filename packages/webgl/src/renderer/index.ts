@@ -2,6 +2,7 @@ import { Scene } from "@webgl/scene"
 import { Camera } from "@core/camera"
 import { ShadowRenderer } from "@webgl/renderer/shadow"
 import { MeshRenderer } from "@webgl/renderer/mesh"
+import { LightDebugInfoRenderer } from "@webgl/renderer/lightDebugInfo"
 
 type Props = {
   canvas?: HTMLCanvasElement
@@ -14,6 +15,7 @@ export class Renderer {
 
   private readonly shadowRenderer: ShadowRenderer
   private readonly meshRenderer: MeshRenderer
+  private readonly lightDebugInfoRenderer: LightDebugInfoRenderer
 
   constructor({
     canvas = document.createElement("canvas"),
@@ -33,6 +35,7 @@ export class Renderer {
     this.gl = gl
     this.shadowRenderer = new ShadowRenderer({ gl })
     this.meshRenderer = new MeshRenderer({ gl, shadowRenderer: this.shadowRenderer })
+    this.lightDebugInfoRenderer = new LightDebugInfoRenderer({ gl })
     this.resize(width, height)
     this.gl.clearColor(0, 0, 0, 1)
   }
@@ -40,6 +43,7 @@ export class Renderer {
   public render(scene: Scene, camera: Camera): void {
     this.shadowRenderer.render(scene.shadowLights, scene.meshes)
     this.meshRenderer.render(scene, camera)
+    this.lightDebugInfoRenderer.render(scene.shadowLights, camera)
   }
 
   public resize(width: number, height: number): void {
