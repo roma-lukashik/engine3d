@@ -6,8 +6,8 @@ describe("Skeleton", () => {
   const bone1 = new Object3d({ matrix: Matrix4.scaling(2, 2, 2) })
   const bone2 = new Object3d({ matrix: Matrix4.scaling(3, 3, 3) })
   const bones = [bone1, bone2]
-  bone1.updateWorldMatrix(Matrix4.identity())
-  bone2.updateWorldMatrix(Matrix4.identity())
+  bone1.updateWorldMatrix()
+  bone2.updateWorldMatrix()
 
   const boneInverses = [
     Matrix4.translation(2, 2, 2),
@@ -31,18 +31,27 @@ describe("Skeleton", () => {
 
   it("fills a boneMatrices array", () => {
     const skeleton = new Skeleton({ bones, boneInverses })
-    skeleton.update(new Object3d())
+    const node = new Object3d({
+      matrix: new Matrix4([
+        1, 1, 1, -1,
+        1, 1, -1, 1,
+        1, -1, 1, 1,
+        -1, 1, 1, 1,
+      ]),
+    })
+    node.updateWorldMatrix()
+    skeleton.update(node)
 
     expect(skeleton.boneMatrices).toEqual(new Float32Array([
-      2, 0, 0, 0,
-      0, 2, 0, 0,
-      0, 0, 2, 0,
-      4, 4, 4, 1,
+      0.5, 0.5, 0.5, -0.5,
+      0.5, 0.5, -0.5, 0.5,
+      0.5, -0.5, 0.5, 0.5,
+      2.75, 1.25, 1.25, 1.25,
 
-      3, 0, 0, 0,
-      0, 3, 0, 0,
-      0, 0, 3, 0,
-      9, 9, 9, 1,
+      0.75, 0.75, 0.75, -0.75,
+      0.75, 0.75, -0.75, 0.75,
+      0.75, -0.75, 0.75, 0.75,
+      6.5, 2.5, 2.5, 2.5,
     ]))
   })
 })
