@@ -59,9 +59,6 @@ export class MeshRenderer {
       ambientLights: scene.ambientLights.map(({ color, intensity }) => {
         return { color: color.clone().multiply(intensity).toArray() }
       }),
-      pointLights: scene.pointLights.map(({ color, position }) => {
-        return { color: color.toArray(), position: position.toArray() }
-      }),
       spotLights: scene.spotLights.map(({ color, intensity, position, target, distance, coneCos, penumbraCos }) => {
         return {
           color: color.clone().multiply(intensity).toArray(),

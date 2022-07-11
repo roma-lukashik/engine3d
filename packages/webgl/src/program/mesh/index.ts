@@ -313,25 +313,6 @@ const defaultFragment = `
     }
   `)}
 
-  ${ifdef(USE_DIRECTIONAL_LIGHT, `
-    struct DirectionalLight {
-      vec3 direction;
-      vec3 color;
-    };
-
-    uniform DirectionalLight directionalLights[${DIRECTIONAL_LIGHTS_AMOUNT}];
-
-    vec3 calcDirectionalLight(vec3 normal, vec3 tex) {
-      vec3 diffuseColor = vec3(0.0);
-      for(int i = 0; i < ${DIRECTIONAL_LIGHTS_AMOUNT}; i++) {
-        vec3 diffuse = BRDF(tex, directionalLights[i].direction);
-        float NdL = saturate(dot(normal, directionalLights[i].direction));
-        diffuseColor += NdL * directionalLights[i].color * diffuse;
-      }
-      return diffuseColor;
-    }
-  `)}
-
   ${ifdef(USE_SHADOW, `
     uniform sampler2D shadowTextures[${SHADOWS_AMOUNT}];
     uniform mat4 textureMatrices[${SHADOWS_AMOUNT}];
@@ -340,17 +321,37 @@ const defaultFragment = `
       return dot(v, 1.0 / vec4(1.0, 255.0, 65025.0, 16581375.0));
     }
 
-    float calcShadow(sampler2D textures[${SHADOWS_AMOUNT}]) {
-      float bias = 0.001;
-      float shadow = 0.0;
-      for(int i = 0; i < ${SHADOWS_AMOUNT}; i++) {
-        vec4 projectedTextureCoordinates = textureMatrices[i] * vec4(vPosition, 1.0);
-        vec3 lightPosition = projectedTextureCoordinates.xyz / projectedTextureCoordinates.w;
-        float depth = lightPosition.z - bias;
-        float occluder = unpackRGBA(texture2D(textures[i], lightPosition.xy));
-        shadow += mix(0.2, 1.0, step(depth, occluder));
+    float texture2DCompare(sampler2D depths, vec2 uv, float compare) {
+      return step(compare, unpackRGBA(texture2D(depths, uv)));
+    }
+
+    float getShadow(sampler2D shadowMap, float bias, vec4 coord) {
+      vec3 lightPosition = coord.xyz / coord.w;
+      float depth = lightPosition.z - bias;
+      return texture2DCompare(shadowMap, lightPosition.xy, depth);
+    }
+  `)}
+
+  ${ifdef(USE_DIRECTIONAL_LIGHT, `
+    struct DirectionalLight {
+      vec3 direction;
+      vec3 color;
+    };
+
+    uniform DirectionalLight directionalLights[${DIRECTIONAL_LIGHTS_AMOUNT}];
+
+    vec3 calcDirectionalLight(vec3 normal, vec3 tex, sampler2D textures[${SHADOWS_AMOUNT}]) {
+      vec3 diffuseColor = vec3(0.0);
+      for(int i = 0; i < ${DIRECTIONAL_LIGHTS_AMOUNT}; i++) {
+        vec3 color = tex;
+        ${ifdef(USE_SHADOW, `
+          color *= getShadow(textures[i], 0.001, textureMatrices[i] * vec4(vPosition, 1.0));
+        `)}
+        vec3 diffuse = BRDF(color, directionalLights[i].direction);
+        float NdL = saturate(dot(normal, directionalLights[i].direction));
+        diffuseColor += NdL * directionalLights[i].color * diffuse;
       }
-      return shadow;
+      return diffuseColor;
     }
   `)}
 
@@ -374,13 +375,9 @@ const defaultFragment = `
     `)}
 
     ${ifdef(USE_DIRECTIONAL_LIGHT, `
-      directionalLight = calcDirectionalLight(vNormal, tex);
+      directionalLight = calcDirectionalLight(vNormal, tex, shadowTextures);
     `)}
 
-    ${ifdef(USE_SHADOW, `
-      shadow = calcShadow(shadowTextures);
-    `)}
-
-    gl_FragColor = vec4(ambientLight + (spotLight + directionalLight) * shadow, 1.0);
+    gl_FragColor = vec4(ambientLight + spotLight + directionalLight, 1.0);
   }
 `
