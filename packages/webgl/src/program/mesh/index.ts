@@ -16,10 +16,16 @@ import {
   USE_SKINNING,
   USE_SPOT_LIGHT,
 } from "@webgl/utils/glsl"
-import { WebGLBaseTexture } from "@webgl/textures/types"
-import { Matrix4Array } from "@math/matrix4"
-import { Vector3Array } from "@math/vector3"
-import { Vector4Array } from "@math/vector4"
+import { MeshUniformValues } from "@webgl/program/mesh/types"
+
+// @ts-ignore
+import brdf from "@webgl/shaders/brdf.glsl"
+// @ts-ignore
+import skeleton from "@webgl/shaders/skeleton.glsl"
+// @ts-ignore
+import shadow from "@webgl/shaders/shadow.glsl"
+// @ts-ignore
+import helpers from "@webgl/shaders/helpers.glsl"
 
 type Props = {
   gl: WebGLRenderingContext
@@ -30,51 +36,6 @@ type Props = {
   shadowsAmount?: number
   useSkinning?: boolean
   useColorTexture?: boolean
-}
-
-type MeshUniformValues = {
-  worldMatrix?: Matrix4Array
-  cameraPosition?: Vector3Array
-  textureMatrices?: Matrix4Array[]
-  projectionMatrix?: Matrix4Array
-  ambientLights?: AmbientLight[]
-  pointLights?: PointLight[]
-  spotLights?: SpotLight[]
-  directionalLights?: DirectionalLight[]
-  material?: Material
-  shadowTextures?: WebGLBaseTexture[]
-  boneTexture?: WebGLBaseTexture
-  boneTextureSize?: number
-}
-
-type PointLight = {
-  color: Vector4Array
-  position: Vector3Array
-}
-
-type SpotLight = {
-  color: Vector4Array
-  position: Vector3Array
-  target: Vector3Array
-  coneCos: number
-  penumbraCos: number
-  distance: number
-}
-
-type AmbientLight = {
-  color: Vector4Array
-}
-
-type DirectionalLight = {
-  color: Vector4Array
-  direction: Vector3Array
-}
-
-type Material = {
-  metalness: number
-  roughness: number
-  color: Vector4Array
-  colorTexture?: number
 }
 
 export class MeshProgram extends Program<MeshUniformValues> {
@@ -132,19 +93,7 @@ const defaultVertex = `
   varying vec3 vNormal;
   varying vec2 vUv;
 
-  mat4 getBoneMatrix(float i) {
-    float j = i * 4.0;
-    float dx = 1.0 / boneTextureSize;
-    float x = mod(j, boneTextureSize);
-    float y = dx * (floor(j / boneTextureSize) + 0.5);
-
-    return mat4(
-      texture2D(boneTexture, vec2(dx * (x + 0.5), y)),
-      texture2D(boneTexture, vec2(dx * (x + 1.5), y)),
-      texture2D(boneTexture, vec2(dx * (x + 2.5), y)),
-      texture2D(boneTexture, vec2(dx * (x + 3.5), y))
-    );
-  }
+  ${skeleton}
 
   ${ifdef(USE_AMBIENT_LIGHT, `
     struct AmbientLight {
@@ -156,18 +105,7 @@ const defaultVertex = `
   `)}
 
   void main() {
-    mat4 worldSkinMatrix = worldMatrix;
-
-    ${ifdef(USE_SKINNING, `
-      mat4 skinMatrix =
-        getBoneMatrix(skinIndex.x) * skinWeight.x +
-        getBoneMatrix(skinIndex.y) * skinWeight.y +
-        getBoneMatrix(skinIndex.z) * skinWeight.z +
-        getBoneMatrix(skinIndex.w) * skinWeight.w;
-
-      worldSkinMatrix = worldMatrix * skinMatrix;
-    `)}
-
+    mat4 worldSkinMatrix = getWorldSkinMatrix();
     vec4 modelPosition = worldSkinMatrix * vec4(position, 1.0);
 
     vPosition = modelPosition.xyz;
@@ -210,61 +148,9 @@ const defaultFragment = `
   varying vec3 vNormal;
   varying vec2 vUv;
 
-  const float PI = 3.14159265359;
-
-  float pow2(float x) { return x * x; }
-  float saturate(float x) { return clamp(x, 0.0, 1.0); }
-
-  float geometryGGX(float NdV, float NdL, float alpha) {
-    float a2 = pow2(alpha);
-    float gv = 2.0 * NdL / (NdL + sqrt(a2 + (1.0 - a2) * pow2(NdV)));
-    float gl = 2.0 * NdV / (NdV + sqrt(a2 + (1.0 - a2) * pow2(NdV)));
-    return gv * gl;
-  }
-
-  float distributionGGX(float NdH, float alpha) {
-    float a2 = pow2(alpha);
-    float f = pow2(NdH) * (a2 - 1.0) + 1.0;
-    return a2 / (PI * pow2(f));
-  }
-
-  vec3 fresnelSchlick(vec3 r0, vec3 r90, float VdH) {
-    return r0 + (r90 - r0) * pow(1.0 - VdH, 5.0);
-  }
-
-  // https://learnopengl.com/PBR/Theory
-  // https://en.wikipedia.org/wiki/Bidirectional_reflectance_distribution_function
-  vec3 BRDF(vec3 baseColor, vec3 lightDirection) {
-    float alpha = pow2(material.roughness);
-    float metalness = material.metalness;
-
-    vec3 f0 = vec3(0.04);
-    vec3 specularColor = mix(f0, baseColor, metalness);
-    vec3 diffuseColor = baseColor * (1.0 - f0) * (1.0 - metalness);
-    vec3 r0 = specularColor;
-    vec3 r90 = vec3(clamp(max(max(specularColor.r, specularColor.g), specularColor.b) * 25.0, 0.0, 1.0));
-
-    vec3 N = vNormal;
-    vec3 V = normalize(cameraPosition - vPosition);
-    vec3 L = lightDirection;
-    vec3 H = normalize(L + V);
-
-    float NdL = saturate(dot(N, L));
-    float NdV = saturate(dot(N, V));
-    float NdH = saturate(dot(N, H));
-    float LdH = saturate(dot(L, H));
-    float VdH = saturate(dot(V, H));
-
-    vec3 F = fresnelSchlick(r0, r90, VdH);
-    float G = geometryGGX(NdV, NdL, alpha);
-    float D = distributionGGX(NdH, alpha);
-
-    vec3 diffuse = (1.0 - F) * (diffuseColor / PI);
-    vec3 specular = F * G * D / (4.0 * NdV * NdL);
-
-    // TODO fix ten times multiplier.
-    return 10.0 * (diffuse + specular);
-  }
+  ${helpers}
+  ${shadow}
+  ${brdf}
 
   ${ifdef(USE_AMBIENT_LIGHT, `
     varying vec3 ambientColor;
@@ -316,20 +202,6 @@ const defaultFragment = `
   ${ifdef(USE_SHADOW, `
     uniform sampler2D shadowTextures[${SHADOWS_AMOUNT}];
     uniform mat4 textureMatrices[${SHADOWS_AMOUNT}];
-
-    float unpackRGBA(vec4 v) {
-      return dot(v, 1.0 / vec4(1.0, 255.0, 65025.0, 16581375.0));
-    }
-
-    float texture2DCompare(sampler2D depths, vec2 uv, float compare) {
-      return step(compare, unpackRGBA(texture2D(depths, uv)));
-    }
-
-    float getShadow(sampler2D shadowMap, float bias, vec4 coord) {
-      vec3 lightPosition = coord.xyz / coord.w;
-      float depth = lightPosition.z - bias;
-      return texture2DCompare(shadowMap, lightPosition.xy, depth);
-    }
   `)}
 
   ${ifdef(USE_DIRECTIONAL_LIGHT, `

@@ -11,9 +11,10 @@ type Props = {
 }
 
 export class Uniforms<U extends UniformValues> {
+  public readonly uniforms: Uniform[] = []
+
   private readonly gl: WebGLRenderingContext
   private readonly program: WebGLProgram
-  private readonly uniforms: Uniform[] = []
 
   constructor({ gl, program }: Props) {
     this.gl = gl

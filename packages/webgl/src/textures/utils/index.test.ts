@@ -1,16 +1,17 @@
-import { createTexture2D, supportMipmap } from "@webgl/textures/utils"
-import {
-  createWebGLRenderingContextStub,
-  WebGLRenderingContextStub,
-} from "../../../../../tests/stubs/renderingContext"
+import { bindTexture, createTexture2D, supportMipmap } from "@webgl/textures/utils"
+import { WebGLRenderingContextStub } from "../../../../../tests/stubs/renderingContext"
 
 describe("Texture Utils", () => {
   let gl: WebGLRenderingContextStub
   beforeEach(() => {
-    gl = createWebGLRenderingContextStub()
+    gl = new WebGLRenderingContextStub()
   })
 
-  describe("#createTexture2D", () => {
+  afterEach(() => {
+    jest.resetAllMocks()
+  })
+
+  describe("createTexture2D", () => {
     it("creates a texture", () => {
       const texture = createTexture2D(gl)
       expect(texture).toBeDefined()
@@ -22,12 +23,20 @@ describe("Texture Utils", () => {
     })
 
     it("throws an error if texture cannot be created", () => {
-      gl.createTexture.mockReturnValue(null)
+      jest.spyOn(gl, "createTexture").mockReturnValue(null)
       expect(() => createTexture2D(gl)).toThrowError("Cannot create a texture")
     })
   })
 
-  describe("#supportMipmap", () => {
+  describe("bindTexture", () => {
+    it("binds texture", () => {
+      const texture = {} as WebGLTexture
+      bindTexture(gl, texture, 2)
+      expect(gl.getParameter(gl.TEXTURE_BINDING_2D)).toBe(texture)
+    })
+  })
+
+  describe("supportMipmap", () => {
     it.each([0, 1, 2, 32, 128, 1024])("returns true for %s", (value) => {
       expect(supportMipmap({ width: value, height: value })).toBe(true)
     })
