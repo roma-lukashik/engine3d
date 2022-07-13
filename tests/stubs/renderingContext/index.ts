@@ -11,7 +11,14 @@ export class WebGLRenderingContextStub extends autoImplement<WebGLRenderingConte
 
   private activeTextureUnit = WebGLConstant.TEXTURE0
   private textureUnits: TextureUnit[] = []
-  private programParameters: WeakMap<WebGLProgram, WebglProgramParameters> = new WeakMap()
+
+  private uniforms: WeakMap<WebGLProgram, WebGLActiveInfo[]> = new WeakMap()
+  private uniformLocations: WeakMap<WebGLActiveInfo, WebGLUniformLocation> = new WeakMap()
+  private uniformValues: WeakMap<WebGLUniformLocation, any> = new WeakMap()
+
+  private attributes: WeakMap<WebGLProgram, WebGLActiveInfo[]> = new WeakMap()
+  private attributesLocations: WeakMap<WebGLActiveInfo, GLint> = new WeakMap()
+
   private shaderSources: WeakMap<WebGLShader, string> = new WeakMap()
 
   public constructor() {
@@ -47,7 +54,14 @@ export class WebGLRenderingContextStub extends autoImplement<WebGLRenderingConte
     if (!source) {
       throw new Error("Cannot find a source for the shader")
     }
-    this.programParameters.set(program, parse(source))
+    const { uniforms, uniformValues, attributes } = parse(source)
+    this.uniforms.set(program, uniforms)
+    uniforms.forEach((uniform, i) => {
+      const location: WebGLUniformLocation = {}
+      this.uniformLocations.set(uniform, location)
+      this.uniformValues.set(location, uniformValues[i])
+    })
+    this.attributes.set(program, attributes)
   }
 
   public bindTexture(target: GLenum, texture: WebGLTexture | null) {
@@ -86,38 +100,39 @@ export class WebGLRenderingContextStub extends autoImplement<WebGLRenderingConte
   public getProgramParameter(program: WebGLProgram, pname: GLenum): any {
     switch (pname) {
       case this.ACTIVE_UNIFORMS:
-        return this.programParameters.get(program)?.uniforms.length ?? null
+        return this.uniforms.get(program)?.length ?? null
       case this.ACTIVE_ATTRIBUTES:
-        return this.programParameters.get(program)?.attributes.length ?? null
+        return this.attributes.get(program)?.length ?? null
       default:
         throw new Error(`Getting ${pname} parameter is not supported`)
     }
   }
 
   public getActiveUniform(program: WebGLProgram, index: GLuint): WebGLActiveInfo | null {
-    return this.programParameters.get(program)?.uniforms[index] ?? null
+    return this.uniforms.get(program)?.[index] ?? null
   }
 
   public getUniformLocation(program: WebGLProgram, name: string): WebGLUniformLocation | null {
-    const params = this.programParameters.get(program)
-    const uniform = params?.uniforms.find((u) => u.name === name)
-    return uniform ? params?.uniformLocations.get(uniform) ?? null : null
+    const uniform = this.uniforms.get(program)?.find((u) => u.name === name)
+    return uniform ? this.uniformLocations.get(uniform) ?? null : null
   }
 
-  public getUniform(program: WebGLProgram, location: WebGLUniformLocation): any {
-    const params = this.programParameters.get(program)
-    return params?.uniforms.find((u) => params?.uniformLocations.get(u) === location) ?? null
+  public getUniform(_program: WebGLProgram, location: WebGLUniformLocation): any {
+    return this.uniformValues.get(location) ?? null
+  }
+
+  public getActiveAttrib(program: WebGLProgram, index: GLuint): WebGLActiveInfo | null {
+    return this.attributes.get(program)?.[index] ?? null
+  }
+
+  public getAttribLocation(program: WebGLProgram, name: string): GLint {
+    const attrib = this.attributes.get(program)?.find((a) => a.name === name)
+    return attrib ? this.attributesLocations.get(attrib) ?? -1 : -1
   }
 }
 
 function autoImplement<T>(): new () => T {
   return class { } as any
-}
-
-type WebglProgramParameters = {
-  uniforms: WebGLActiveInfo[]
-  attributes: WebGLActiveInfo[]
-  uniformLocations: WeakMap<WebGLActiveInfo, WebGLUniformLocation>
 }
 
 type TextureUnit = {
