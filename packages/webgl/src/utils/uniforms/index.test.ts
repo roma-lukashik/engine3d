@@ -1,6 +1,8 @@
 import { Uniforms } from "@webgl/utils/uniforms"
-import { Matrix4Array } from "@math/matrix4"
+import { Matrix4, Matrix4Array } from "@math/matrix4"
 import { WebGLBaseTexture } from "@webgl/textures/types"
+import { WebGLDataTexture } from "@webgl/textures/data"
+import { WebGLDepthTexture } from "@webgl/textures/depth"
 import { WebGLRenderingContextStub } from "../../../../../tests/stubs/renderingContext"
 
 type TestUniforms = {
@@ -24,11 +26,14 @@ void main() {
 `
 
 describe("Uniforms", () => {
+  let gl: WebGLRenderingContextStub
   let uniforms: Uniforms<TestUniforms>
+  let program: WebGLProgram
 
   beforeEach(() => {
-    const gl = new WebGLRenderingContextStub()
-    const program = gl.createProgram()!
+    gl = new WebGLRenderingContextStub()
+    program = gl.createProgram()!
+
     const vertex = gl.createShader()!
 
     gl.shaderSource(vertex, vertexShader)
@@ -37,32 +42,72 @@ describe("Uniforms", () => {
     uniforms = new Uniforms({ gl, program })
   })
 
-  it("contains correct uniforms", () => {
-    expect(uniforms.uniforms).toHaveLength(5)
+  function getUniformValue(name: string): any {
+    const location = gl.getUniformLocation(program, name)
+    if (!location) {
+      throw new Error(`Program does not contain ${name} uniform.`)
+    }
+    return gl.getUniform(program, location)
+  }
 
-    expect(uniforms.uniforms[0].name).toBe("worldMatrix")
-    expect(uniforms.uniforms[0].value).toEqual(new Float32Array([
+  it("contains correct uniforms", () => {
+    expect(getUniformValue("worldMatrix")).toEqual(new Float32Array([
       0, 0, 0, 0,
       0, 0, 0, 0,
       0, 0, 0, 0,
       0, 0, 0, 0,
     ]))
-
-    expect(uniforms.uniforms[1].name).toBe("boneTextureSize")
-    expect(uniforms.uniforms[1].value).toBe(0)
-
-    expect(uniforms.uniforms[2].name).toBe("boneTexture")
-    expect(uniforms.uniforms[2].value).toBe(0)
-
-    expect(uniforms.uniforms[3].name).toBe("shadowTextures")
-    expect(uniforms.uniforms[3].value).toEqual(0)
-
-    expect(uniforms.uniforms[4].name).toBe("textureMatrices")
-    expect(uniforms.uniforms[4].value).toEqual(new Float32Array([
+    expect(getUniformValue("boneTextureSize")).toBe(0)
+    expect(getUniformValue("boneTexture")).toBe(0)
+    expect(getUniformValue("shadowTextures[0]")).toEqual(0)
+    expect(getUniformValue("textureMatrices[0]")).toEqual(new Float32Array([
       0, 0, 0, 0,
       0, 0, 0, 0,
       0, 0, 0, 0,
       0, 0, 0, 0,
+    ]))
+  })
+
+  it("updates uniforms", () => {
+    const boneTexture = {} as WebGLDataTexture<Float32Array>
+    const shadowTexture1 = {} as WebGLDepthTexture
+    const shadowTexture2 = {} as WebGLDepthTexture
+
+    uniforms.setValues({
+      worldMatrix: Matrix4.identity().toArray(),
+      boneTextureSize: 16,
+      boneTexture: boneTexture,
+      shadowTextures: [
+        shadowTexture1,
+        shadowTexture2,
+      ],
+      textureMatrices: [
+        Matrix4.translation(0.5, 0.5, 0.5).scale(0.5, 0.5, 0.5).toArray(),
+        Matrix4.identity().toArray(),
+      ],
+    })
+
+    uniforms.update()
+
+    expect(getUniformValue("worldMatrix")).toValueEqual(new Float32Array([
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1,
+    ]))
+    expect(getUniformValue("boneTextureSize")).toBe(16)
+    expect(getUniformValue("boneTexture")).toBe(0)
+    expect(getUniformValue("shadowTextures[0]")).toEqual([1, 2])
+    expect(getUniformValue("textureMatrices[0]")).toValueEqual(new Float32Array([
+      0.5, 0, 0, 0,
+      0, 0.5, 0, 0,
+      0, 0, 0.5, 0,
+      0.5, 0.5, 0.5, 1,
+
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1,
     ]))
   })
 })

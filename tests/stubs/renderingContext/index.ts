@@ -84,6 +84,155 @@ export class WebGLRenderingContextStub extends autoImplement<WebGLRenderingConte
     }
   }
 
+  public texParameteri(_target: GLenum, _pname: GLenum, _param: GLint): void {
+    // Stub
+  }
+
+  public texImage2D(
+    target: GLenum,
+    level: GLint,
+    internalformat: GLint,
+    format: GLenum,
+    type: GLenum,
+    source: TexImageSource,
+  ): void
+  public texImage2D(
+    _target: GLenum,
+    _level: GLint,
+    _internalformat: GLint,
+    _width: GLsizei,
+    _height: GLsizei,
+    _border: GLint,
+    _format: GLenum,
+    _type: GLenum,
+    _pixels: ArrayBufferView | null,
+  ): void
+  public texImage2D(..._args: any[]){
+    // Stub
+  }
+
+  public createFramebuffer(): WebGLFramebuffer | null {
+    // Stub
+    return {}
+  }
+
+  public createRenderbuffer(): WebGLRenderbuffer | null {
+    // Stub
+    return {}
+  }
+
+  public bindFramebuffer(_target: GLenum, _framebuffer: WebGLFramebuffer | null): void {
+    // Noop
+  }
+
+  public bindRenderbuffer(_target: GLenum, _renderbuffer: WebGLRenderbuffer | null) {
+    // Noop
+  }
+
+  public framebufferTexture2D(
+    _target: GLenum,
+    _attachment: GLenum,
+    _textarget: GLenum,
+    _texture: WebGLTexture | null,
+    _level: GLint,
+  ): void {
+    // Noop
+  }
+
+  public renderbufferStorage(_target: GLenum, _internalformat: GLenum, _width: GLsizei, _height: GLsizei): void {
+    // Noop
+  }
+
+  public framebufferRenderbuffer(
+    _target: GLenum,
+    _attachment: GLenum,
+    _renderbuffertarget: GLenum,
+    _renderbuffer: WebGLRenderbuffer | null,
+  ): void {
+    // Noop
+  }
+
+  public uniform1fv(location: WebGLUniformLocation | null, v: Float32List): void {
+    if (location !== null) {
+      this.uniformValues.set(location, v)
+    }
+  }
+
+  public uniform2fv(location: WebGLUniformLocation | null, v: Float32List): void {
+    if (location !== null) {
+      this.uniformValues.set(location, v)
+    }
+  }
+
+  public uniform3fv(location: WebGLUniformLocation | null, v: Float32List): void {
+    if (location !== null) {
+      this.uniformValues.set(location, v)
+    }
+  }
+
+  public uniform4fv(location: WebGLUniformLocation | null, v: Float32List): void {
+    if (location !== null) {
+      this.uniformValues.set(location, v)
+    }
+  }
+
+  public uniform1iv(location: WebGLUniformLocation | null, v: Int32List): void {
+    if (location !== null) {
+      this.uniformValues.set(location, v)
+    }
+  }
+
+  public uniform2iv(location: WebGLUniformLocation | null, v: Int32List): void {
+    if (location !== null) {
+      this.uniformValues.set(location, v)
+    }
+  }
+
+  public uniform3iv(location: WebGLUniformLocation | null, v: Int32List): void {
+    if (location !== null) {
+      this.uniformValues.set(location, v)
+    }
+  }
+
+  public uniform4iv(location: WebGLUniformLocation | null, v: Int32List): void {
+    if (location !== null) {
+      this.uniformValues.set(location, v)
+    }
+  }
+
+  public uniform1f(location: WebGLUniformLocation | null, x: GLfloat) {
+    if (location !== null) {
+      this.uniformValues.set(location, x)
+    }
+  }
+
+  public uniform1i(location: WebGLUniformLocation | null, x: GLint) {
+    if (location !== null) {
+      this.uniformValues.set(location, x)
+    }
+  }
+
+  // TODO Transpose
+  public uniformMatrix2fv(location: WebGLUniformLocation | null, _transpose: GLboolean, value: Float32List) {
+    if (location !== null) {
+      this.uniformValues.set(location, value)
+    }
+  }
+
+  // TODO Transpose
+  public uniformMatrix3fv(location: WebGLUniformLocation | null, _transpose: GLboolean, value: Float32List) {
+    if (location !== null) {
+      this.uniformValues.set(location, value)
+    }
+  }
+
+  // TODO Transpose
+  public uniformMatrix4fv(location: WebGLUniformLocation | null, _transpose: GLboolean, value: Float32List) {
+    if (location !== null) {
+      this.uniformValues.set(location, value)
+    }
+  }
+
   public getParameter(pname: GLenum): any {
     switch (pname) {
       case this.ACTIVE_TEXTURE:
@@ -92,6 +241,8 @@ export class WebGLRenderingContextStub extends autoImplement<WebGLRenderingConte
         return this.textureUnits[this.activeTextureUnit]?.TEXTURE_2D ?? null
       case this.TEXTURE_BINDING_CUBE_MAP:
         return this.textureUnits[this.activeTextureUnit]?.TEXTURE_CUBE_MAP ?? null
+      case this.MAX_TEXTURE_IMAGE_UNITS:
+        return 8
       default:
         throw new Error(`Getting ${pname} parameter is not supported`)
     }
