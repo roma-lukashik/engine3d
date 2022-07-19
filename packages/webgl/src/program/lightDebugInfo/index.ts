@@ -1,18 +1,18 @@
 import { Matrix4Array } from "@math/matrix4"
 import { Program } from "@webgl/program"
+import { WebglRenderState } from "@webgl/utils/renderState"
 
 type LightDebugInfoUniforms = {
   projectionMatrix: Matrix4Array
   worldMatrix: Matrix4Array
 }
 
-type Props = {
-  gl: WebGLRenderingContext
-}
-
 export class LightDebugInfoProgram extends Program<LightDebugInfoUniforms> {
-  public constructor({ gl }: Props) {
-    super({ gl, vertex, fragment })
+  public constructor(
+    gl: WebGLRenderingContext,
+    state: WebglRenderState,
+  ) {
+    super(gl, state, vertex, fragment)
   }
 }
 

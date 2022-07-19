@@ -17,6 +17,7 @@ import {
   USE_SPOT_LIGHT,
 } from "@webgl/utils/glsl"
 import { MeshUniformValues } from "@webgl/program/mesh/types"
+import { WebglRenderState } from "@webgl/utils/renderState"
 
 // @ts-ignore
 import brdf from "@webgl/shaders/brdf.glsl"
@@ -27,8 +28,7 @@ import shadow from "@webgl/shaders/shadow.glsl"
 // @ts-ignore
 import helpers from "@webgl/shaders/helpers.glsl"
 
-type Props = {
-  gl: WebGLRenderingContext
+type Options = {
   ambientLightsAmount?: number
   pointLightsAmount?: number
   spotLightsAmount?: number
@@ -39,16 +39,19 @@ type Props = {
 }
 
 export class MeshProgram extends Program<MeshUniformValues> {
-  constructor({
-    gl,
-    ambientLightsAmount = 0,
-    pointLightsAmount = 0,
-    spotLightsAmount = 0,
-    directionalLightsAmount = 0,
-    shadowsAmount = 0,
-    useSkinning = false,
-    useColorTexture = false,
-  }: Props) {
+  public constructor(
+    gl: WebGLRenderingContext,
+    state: WebglRenderState,
+    {
+      ambientLightsAmount = 0,
+      pointLightsAmount = 0,
+      spotLightsAmount = 0,
+      directionalLightsAmount = 0,
+      shadowsAmount = 0,
+      useSkinning = false,
+      useColorTexture = false,
+    }: Options = {},
+  ) {
     const defs = [
       ambientLightsAmount > 0 ? define(USE_AMBIENT_LIGHT) : "",
       pointLightsAmount > 0 ? define(USE_POINT_LIGHT) : "",
@@ -70,7 +73,7 @@ export class MeshProgram extends Program<MeshUniformValues> {
     const vertex = transform(defaultVertex)
     const fragment = transform(defaultFragment)
 
-    super({ gl, fragment, vertex })
+    super(gl, state, vertex, fragment)
   }
 }
 

@@ -6,19 +6,19 @@ import { BufferViewTarget } from "@core/loaders/types"
 import { LightWithShadow } from "@core/lights"
 import { Camera } from "@core/camera"
 import { indexes, positions } from "@webgl/renderer/lightDebugInfo/data"
-
-type Props = {
-  gl: WebGLRenderingContext
-}
+import { WebglRenderState } from "@webgl/utils/renderState"
 
 export class LightDebugInfoRenderer {
   private readonly gl: WebGLRenderingContext
   private readonly program: LightDebugInfoProgram
   private readonly attributes: Partial<Record<keyof Geometry, WebglVertexAttribute>>
 
-  public constructor({ gl }: Props) {
+  public constructor(
+    gl: WebGLRenderingContext,
+    state: WebglRenderState,
+  ) {
     this.gl = gl
-    this.program = new LightDebugInfoProgram({ gl })
+    this.program = new LightDebugInfoProgram(gl, state)
     this.attributes = {
       position: new WebglVertexAttribute(gl, new BufferAttribute({
         array: positions,
@@ -45,7 +45,6 @@ export class LightDebugInfoRenderer {
       this.program.uniforms.setValues({
         worldMatrix: light.projectionMatrix.clone().invert().toArray(),
       })
-      this.program.uniforms.update()
       this.drawBuffer()
     })
   }

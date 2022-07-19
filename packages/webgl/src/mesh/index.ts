@@ -41,7 +41,6 @@ export class WebGLMesh {
     if (this.mesh.skeleton) {
       this.boneTexture.updateTexture(this.mesh.skeleton.boneMatrices, this.boneTextureSize)
     }
-    program.use()
     program.uniforms.setValues({
       worldMatrix: this.mesh.worldMatrix.toArray(),
       boneTexture: this.boneTexture,
@@ -53,7 +52,6 @@ export class WebGLMesh {
         colorTexture: this.colorTexture,
       },
     })
-    program.uniforms.update()
     program.attributes.update(this.attributes)
     this.drawBuffer()
   }

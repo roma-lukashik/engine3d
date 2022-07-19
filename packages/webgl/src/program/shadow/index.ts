@@ -2,6 +2,7 @@ import { Matrix4Array } from "@math/matrix4"
 import { Program } from "@webgl/program"
 import { WebGLBaseTexture } from "@webgl/textures/types"
 import { define, ifdef, USE_SKINNING } from "@webgl/utils/glsl"
+import { WebglRenderState } from "@webgl/utils/renderState"
 
 type ShadowUniforms = {
   projectionMatrix?: Matrix4Array
@@ -10,16 +11,18 @@ type ShadowUniforms = {
   boneTextureSize?: number
 }
 
-type Props = {
-  gl: WebGLRenderingContext
+type Options = {
   useSkinning?: boolean
 }
 
 export class ShadowProgram extends Program<ShadowUniforms> {
-  constructor({
-    gl,
-    useSkinning = false,
-  }: Props) {
+  public constructor(
+    gl: WebGLRenderingContext,
+    state: WebglRenderState,
+    {
+      useSkinning = false,
+    }: Options = {},
+  ) {
     const defs = [
       useSkinning ? define(USE_SKINNING) : "",
     ]
@@ -30,7 +33,7 @@ export class ShadowProgram extends Program<ShadowUniforms> {
     const vertex = transform(shadowVertex)
     const fragment = transform(shadowFragment)
 
-    super({ gl, vertex, fragment })
+    super(gl, state, vertex, fragment)
   }
 }
 
