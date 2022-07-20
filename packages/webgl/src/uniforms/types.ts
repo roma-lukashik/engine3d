@@ -3,4 +3,4 @@ export type Uniform<T> = {
   setValue(value: T): void
 }
 
-export type UniformSetter = (location: WebGLUniformLocation, value: any) => void
+export type UniformSetter = (value: any) => void

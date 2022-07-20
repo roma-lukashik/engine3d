@@ -33,54 +33,55 @@ export class ArrayUniform<T> implements Uniform<T[]> {
   public setValue(value: T[]): void {
     if (this.value !== value) {
       this.value = value
-      this.uniformSetter(this.location, value)
+      this.uniformSetter(value)
     }
   }
 
   private getUniformSetter(type: number): UniformSetter {
     const gl = this.gl
+    const location = this.location
 
     switch (type) {
       case gl.FLOAT_VEC2:
-        return (location, value: Float32Array[]) => gl.uniform2fv(location, flatten(value))
+        return (value: Float32Array[]) => gl.uniform2fv(location, flatten(value))
       case gl.FLOAT_VEC3:
-        return (location, value: Float32Array[]) => gl.uniform3fv(location, flatten(value))
+        return (value: Float32Array[]) => gl.uniform3fv(location, flatten(value))
       case gl.FLOAT_VEC4:
-        return (location, value: Float32Array[]) => gl.uniform4fv(location, flatten(value))
+        return (value: Float32Array[]) => gl.uniform4fv(location, flatten(value))
 
       case gl.SAMPLER_2D:
-        return (location, value: WebGLBaseTexture[]) => this.setSampler2DTexture(location, value)
+        return (value: WebGLBaseTexture[]) => this.setSampler2DTexture(value)
 
       case gl.BOOL_VEC2:
       case gl.INT_VEC2:
-        return (location, value: Int32Array[]) => gl.uniform2iv(location, flatten(value))
+        return (value: Int32Array[]) => gl.uniform2iv(location, flatten(value))
       case gl.BOOL_VEC3:
       case gl.INT_VEC3:
-        return (location, value: Int32Array[]) => gl.uniform3iv(location, flatten(value))
+        return (value: Int32Array[]) => gl.uniform3iv(location, flatten(value))
       case gl.BOOL_VEC4:
       case gl.INT_VEC4:
-        return (location, value: Int32Array[]) => gl.uniform4iv(location, flatten(value))
+        return (value: Int32Array[]) => gl.uniform4iv(location, flatten(value))
 
       case gl.FLOAT_MAT2:
-        return (location, value: Float32Array[]) => gl.uniformMatrix2fv(location, false, flatten(value))
+        return (value: Float32Array[]) => gl.uniformMatrix2fv(location, false, flatten(value))
       case gl.FLOAT_MAT3:
-        return (location, value: Float32Array[]) => gl.uniformMatrix3fv(location, false, flatten(value))
+        return (value: Float32Array[]) => gl.uniformMatrix3fv(location, false, flatten(value))
       case gl.FLOAT_MAT4:
-        return (location, value: Float32Array[]) => gl.uniformMatrix4fv(location, false, flatten(value))
+        return (value: Float32Array[]) => gl.uniformMatrix4fv(location, false, flatten(value))
 
       default:
         throw new Error(`Unsupported type ${type}.`)
     }
   }
 
-  private setSampler2DTexture(location: WebGLUniformLocation, value: WebGLBaseTexture[]): void {
+  private setSampler2DTexture(value: WebGLBaseTexture[]): void {
     const firstUnit = this.state.getCurrentTextureUnit() + 1
     value.forEach((texture, i) => {
       const textureUnit = firstUnit + i
       this.state.setCurrentTextureUnit(textureUnit)
       bindTexture(this.gl, texture.texture, textureUnit)
     })
-    this.gl.uniform1iv(location, range(firstUnit, this.state.getCurrentTextureUnit() + 1))
+    this.gl.uniform1iv(this.location, range(firstUnit, this.state.getCurrentTextureUnit() + 1))
   }
 }
 
