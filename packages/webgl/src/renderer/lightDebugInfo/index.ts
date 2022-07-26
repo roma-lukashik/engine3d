@@ -1,5 +1,4 @@
 import { LightDebugInfoProgram } from "@webgl/program/lightDebugInfo"
-import { Geometry } from "@core/geometry"
 import { WebglVertexAttribute } from "@webgl/utils/attribute"
 import { BufferAttribute } from "@core/bufferAttribute"
 import { BufferViewTarget } from "@core/loaders/types"
@@ -11,7 +10,7 @@ import { WebglRenderState } from "@webgl/utils/renderState"
 export class LightDebugInfoRenderer {
   private readonly gl: WebGLRenderingContext
   private readonly program: LightDebugInfoProgram
-  private readonly attributes: Partial<Record<keyof Geometry, WebglVertexAttribute>>
+  private readonly attributes: Record<"position" | "index", WebglVertexAttribute>
 
   public constructor(
     gl: WebGLRenderingContext,
@@ -50,7 +49,7 @@ export class LightDebugInfoRenderer {
   }
 
   private drawBuffer(): void {
-    const index = this.attributes.index!
+    const index = this.attributes.index
     this.gl.drawElements(this.gl.LINES, index.count, index.type, index.offset)
   }
 }
