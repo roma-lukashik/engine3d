@@ -25,7 +25,8 @@ export class CameraControl {
     rotationSpeed = 1,
   }: Props) {
     Object.assign(this, { camera, element, rotationSpeed })
-    this.element.addEventListener("mousedown", this.onMouseDown, false)
+    this.element.addEventListener("mousedown", this.onMouseDown)
+    this.element.addEventListener("wheel", this.onScroll, { passive: false })
   }
 
   private onMouseDown = (event: MouseEvent) => {
@@ -39,12 +40,12 @@ export class CameraControl {
     }
 
     const mouseUp = () => {
-      window.removeEventListener("mousemove", mouseMove, false)
-      window.removeEventListener("mouseup", mouseUp, false)
+      window.removeEventListener("mousemove", mouseMove)
+      window.removeEventListener("mouseup", mouseUp)
     }
 
-    window.addEventListener("mousemove", mouseMove, false)
-    window.addEventListener("mouseup", mouseUp, false)
+    window.addEventListener("mousemove", mouseMove)
+    window.addEventListener("mouseup", mouseUp)
   }
 
   private rotate({ theta, phi, radius }: SphericalCoordinate, v: Vector2, width: number, height: number) {
@@ -55,6 +56,17 @@ export class CameraControl {
         radius,
       }),
     )
+  }
+
+  private onScroll = (event: WheelEvent) => {
+    const position = this.camera.target
+      .clone()
+      .subtract(this.camera.position)
+      .normalize()
+      .multiply(event.deltaY)
+      .add(this.camera.position)
+    this.camera.setPosition(position)
+    event.preventDefault()
   }
 
   private getElementSize(): { width: number; height: number; } {
