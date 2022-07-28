@@ -39,6 +39,7 @@ type AmbientLight = {
 type DirectionalLight = {
   color: Vector4Array
   direction: Vector3Array
+  bias: number
 }
 
 type Material = {

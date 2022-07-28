@@ -10,6 +10,7 @@ export class SingleUniform<T> implements Uniform<T> {
   private readonly state: WebglRenderState
   private readonly location: WebGLUniformLocation
   private readonly uniformSetter: UniformSetter
+  // @ts-ignore
   private value: T
 
   public constructor(

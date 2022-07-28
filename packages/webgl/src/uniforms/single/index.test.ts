@@ -25,4 +25,28 @@ describe("SingleUniform", () => {
     uniform.setValue(new Float32Array([0, 1, 2]))
     expect(gl.getUniform(program, location)).toEqual(new Float32Array([0, 1, 2]))
   })
+
+  it("handles FLOAT_VEC4", () => {
+    const uniform = new SingleUniform(gl, state, name, new Float32Array([0, 0, 0, 0]), location, gl.FLOAT_VEC4)
+    uniform.setValue(new Float32Array([0, 1, 2, 3]))
+    expect(gl.getUniform(program, location)).toEqual(new Float32Array([0, 1, 2, 3]))
+  })
+
+  it("handles FLOAT", () => {
+    const uniform = new SingleUniform(gl, state, name, 0, location, gl.FLOAT)
+    uniform.setValue(1.5)
+    expect(gl.getUniform(program, location)).toEqual(1.5)
+  })
+
+  it("handles INT", () => {
+    const uniform = new SingleUniform(gl, state, name, 0, location, gl.INT)
+    uniform.setValue(1)
+    expect(gl.getUniform(program, location)).toEqual(1)
+  })
+
+  it("handles BOOL", () => {
+    const uniform = new SingleUniform(gl, state, name, true, location, gl.BOOL)
+    uniform.setValue(false)
+    expect(gl.getUniform(program, location)).toEqual(false)
+  })
 })

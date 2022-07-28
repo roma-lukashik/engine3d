@@ -15,6 +15,8 @@ type Props = {
   // The flag to enable or disable dynamic shadows.
   // Default if false (shadow is disabled).
   castShadow?: boolean
+
+  bias?: number
 }
 
 export class DirectionalLight implements LightWithShadow {
@@ -25,6 +27,7 @@ export class DirectionalLight implements LightWithShadow {
   public direction: Vector3
   public color: Vector3
   public intensity: number
+  public bias: number
 
   public get projectionMatrix(): Matrix4 {
     return this.camera.projectionMatrix
@@ -34,11 +37,13 @@ export class DirectionalLight implements LightWithShadow {
     castShadow = false,
     intensity = 1,
     color = 0xFFFFFF,
+    bias = 0.001,
   }: Props = {}) {
     this.type = LightType.Directional
     this.color = new Color(color).rgb
     this.castShadow = castShadow
     this.intensity = clamp(intensity, 0, 1)
+    this.bias = bias
     this.camera = new OrthographicCamera({
       left: -2000,
       right: 2000,

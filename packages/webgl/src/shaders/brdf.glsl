@@ -45,6 +45,6 @@ vec3 BRDF(vec3 baseColor, vec3 lightDirection) {
   vec3 diffuse = (1.0 - F) * (diffuseColor / PI);
   vec3 specular = F * G * D / (4.0 * NdV * NdL);
 
-  // TODO fix ten times multiplier.
-  return 10.0 * (diffuse + specular);
+  // TODO fix 5 times multiplier.
+  return 5.0 * (diffuse + specular);
 }

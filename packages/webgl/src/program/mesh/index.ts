@@ -211,16 +211,17 @@ const defaultFragment = `
     struct DirectionalLight {
       vec3 direction;
       vec3 color;
+      float bias;
     };
 
     uniform DirectionalLight directionalLights[${DIRECTIONAL_LIGHTS_AMOUNT}];
 
-    vec3 calcDirectionalLight(vec3 normal, vec3 tex, sampler2D textures[${SHADOWS_AMOUNT}]) {
+    vec3 calcDirectionalLight(vec3 normal, vec3 tex, sampler2D shadowMaps[${SHADOWS_AMOUNT}]) {
       vec3 diffuseColor = vec3(0.0);
       for(int i = 0; i < ${DIRECTIONAL_LIGHTS_AMOUNT}; i++) {
         vec3 color = tex;
         ${ifdef(USE_SHADOW, `
-          color *= getShadow(textures[i], 0.001, textureMatrices[i] * vec4(vPosition, 1.0));
+          color *= getShadow(shadowMaps[i], directionalLights[i].bias, textureMatrices[i] * vec4(vPosition, 1.0));
         `)}
         vec3 diffuse = BRDF(color, directionalLights[i].direction);
         float NdL = saturate(dot(normal, directionalLights[i].direction));

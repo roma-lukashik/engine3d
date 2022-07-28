@@ -71,8 +71,8 @@ export class MeshRenderer {
           penumbraCos,
         }
       }),
-      directionalLights: scene.directionalLights.map(({ color, intensity, direction }) => {
-        return { color: color.clone().multiply(intensity).toArray(), direction: direction.toArray() }
+      directionalLights: scene.directionalLights.map(({ color, intensity, direction, bias }) => {
+        return { color: color.clone().multiply(intensity).toArray(), direction: direction.toArray(), bias }
       }),
       shadowTextures: scene.shadowLights.map((light) => {
         return this.shadowRenderer.texturesStore.getOrCreate(light)

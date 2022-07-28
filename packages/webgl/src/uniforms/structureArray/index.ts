@@ -12,7 +12,7 @@ export class StructureArrayUniform<T extends Record<string, unknown>> implements
     gl: WebGLRenderingContext,
     state: WebglRenderState,
     name: string,
-    value: T[],
+    value: T[keyof T],
     location: WebGLUniformLocation,
     type: number,
     structProperty: keyof T,
@@ -20,7 +20,7 @@ export class StructureArrayUniform<T extends Record<string, unknown>> implements
   ) {
     this.name = name
     this.arrayIndex = arrayIndex
-    this.uniform = new StructureUniform(gl, state, name, value[arrayIndex], location, type, structProperty)
+    this.uniform = new StructureUniform(gl, state, name, value, location, type, structProperty)
   }
 
   public setValue(value: T[]): void {
