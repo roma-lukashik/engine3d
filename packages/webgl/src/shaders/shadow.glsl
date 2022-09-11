@@ -59,7 +59,7 @@ float PCF_Soft(sampler2D shadowMap, vec2 shadowMapSize, vec4 coord) {
 }
 
 bool frustumTest(vec4 coord) {
-  bvec4 inFrustumVec = bvec4 (coord.x >= 0.0, coord.x <= 1.0, coord.y >= 0.0, coord.y <= 1.0);
+  bvec4 inFrustumVec = bvec4(coord.x >= 0.0, coord.x <= 1.0, coord.y >= 0.0, coord.y <= 1.0);
   bool inFrustum = all(inFrustumVec);
   bvec2 frustumTestVec = bvec2(inFrustum, coord.z <= 1.0);
   return all(frustumTestVec);

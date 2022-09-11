@@ -30,7 +30,7 @@ mat4 getWorldSkinMatrix() {
     getBoneMatrix(skinIndex.z) * skinWeight.z +
     getBoneMatrix(skinIndex.w) * skinWeight.w;
 
-    worldSkinMatrix = worldMatrix * skinMatrix;
+    worldSkinMatrix *= skinMatrix;
   #endif
 
   return worldSkinMatrix;

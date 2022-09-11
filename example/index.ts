@@ -40,9 +40,9 @@ directionalLight.setPosition(new Vector3(500, 500, 500))
 const directionalLight2 = new DirectionalLight({
   intensity: 0.7,
   castShadow: true,
-  bias: 0.002,
+  bias: 0.001,
 })
-directionalLight2.setPosition(new Vector3(-500, 500, 500))
+directionalLight2.setPosition(new Vector3(-500, 1500, 500))
 
 const ambientLight = new AmbientLight({
   intensity: 0.2,
@@ -57,7 +57,6 @@ const scene = new Scene({ gl })
 scene.addLight(
   directionalLight,
   directionalLight2,
-  // spotLight,
   ambientLight,
 )
 
@@ -72,11 +71,9 @@ scene.addMesh(astronaut)
 surface.updateWorldMatrix(Matrix4.translation(0, -3907.5, 0))
 astronaut.localMatrix = Matrix4.scaling(100, 100, 100)
 
-let i = 0
-
-const update = (_t: DOMHighResTimeStamp) => {
+const update = (t: DOMHighResTimeStamp) => {
   requestAnimationFrame(update)
-  animations[22].update(i += 0.02)
+  animations[22].update(t / 1000)
   astronaut.updateWorldMatrix()
   astronaut.traverse((node) => {
     if (node instanceof Mesh) {

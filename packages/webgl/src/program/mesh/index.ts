@@ -127,7 +127,7 @@ const defaultVertex = `
 `
 
 const defaultFragment = `
-  precision highp float;
+  precision mediump float;
 
   #ifdef USE_COLOR_TEXTURE
     struct Material {
@@ -177,7 +177,7 @@ const defaultFragment = `
 
     float getDistanceAttenuation(float lightDistance, float cutoffDistance) {
       if (cutoffDistance > 0.0) {
-        return pow(clamp(1.0 - lightDistance / cutoffDistance, 0.0, 1.0), 1.0);
+        return pow(saturate(1.0 - lightDistance / cutoffDistance), 1.0);
       }
       return 1.0;
     }
@@ -216,19 +216,31 @@ const defaultFragment = `
 
     uniform DirectionalLight directionalLights[${DIRECTIONAL_LIGHTS_AMOUNT}];
 
+    #ifdef USE_SHADOW
     vec3 calcDirectionalLight(vec3 normal, vec3 tex, sampler2D shadowMaps[${SHADOWS_AMOUNT}]) {
       vec3 diffuseColor = vec3(0.0);
       for(int i = 0; i < ${DIRECTIONAL_LIGHTS_AMOUNT}; i++) {
-        vec3 color = tex;
-        ${ifdef(USE_SHADOW, `
-          color *= getShadow(shadowMaps[i], directionalLights[i].bias, textureMatrices[i] * vec4(vPosition, 1.0));
-        `)}
-        vec3 diffuse = BRDF(color, directionalLights[i].direction);
-        float NdL = saturate(dot(normal, directionalLights[i].direction));
-        diffuseColor += NdL * directionalLights[i].color * diffuse;
+        DirectionalLight light = directionalLights[i];
+        vec3 color = tex * getShadow(shadowMaps[i], light.bias, textureMatrices[i] * vec4(vPosition, 1.0));
+        vec3 diffuse = BRDF(color, light.direction);
+        float NdL = saturate(dot(normal, light.direction));
+        diffuseColor += NdL * light.color * diffuse;
       }
       return diffuseColor;
     }
+    #else
+    vec3 calcDirectionalLight(vec3 normal, vec3 tex) {
+      vec3 diffuseColor = vec3(0.0);
+      vec3 color = tex;
+      for(int i = 0; i < ${DIRECTIONAL_LIGHTS_AMOUNT}; i++) {
+        DirectionalLight light = directionalLights[i];
+        vec3 diffuse = BRDF(color, light.direction);
+        float NdL = saturate(dot(normal, light.direction));
+        diffuseColor += NdL * light.color * diffuse;
+      }
+      return diffuseColor;
+    }
+    #endif
   `)}
 
   void main() {
@@ -251,9 +263,14 @@ const defaultFragment = `
     `)}
 
     ${ifdef(USE_DIRECTIONAL_LIGHT, `
+      #ifdef USE_SHADOW
       directionalLight = calcDirectionalLight(vNormal, tex, shadowTextures);
+      #else
+      directionalLight = calcDirectionalLight(vNormal, tex);
+      #endif
     `)}
 
-    gl_FragColor = vec4(ambientLight + spotLight + directionalLight, 1.0);
+    vec3 s = ambientLight + directionalLight;
+    gl_FragColor = vec4(s, 1.0);
   }
 `

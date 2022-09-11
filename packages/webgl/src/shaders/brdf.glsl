@@ -32,8 +32,9 @@ vec3 BRDF(vec3 baseColor, vec3 lightDirection) {
   vec3 L = lightDirection;
   vec3 H = normalize(L + V);
 
-  float NdL = saturate(dot(N, L));
-  float NdV = saturate(dot(N, V));
+  // To not divide by zero.
+  float NdL = clamp(dot(N, L), 0.001, 1.0);
+  float NdV = clamp(dot(N, V), 0.001, 1.0);
   float NdH = saturate(dot(N, H));
   float LdH = saturate(dot(L, H));
   float VdH = saturate(dot(V, H));
@@ -45,6 +46,6 @@ vec3 BRDF(vec3 baseColor, vec3 lightDirection) {
   vec3 diffuse = (1.0 - F) * (diffuseColor / PI);
   vec3 specular = F * G * D / (4.0 * NdV * NdL);
 
-  // TODO fix 5 times multiplier.
-  return 5.0 * (diffuse + specular);
+  // TODO fix 4 times multiplier.
+  return 4.0 * (diffuse + specular);
 }
