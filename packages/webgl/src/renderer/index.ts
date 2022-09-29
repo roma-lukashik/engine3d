@@ -47,7 +47,7 @@ export class Renderer {
     this.shadowRenderer.render(scene.shadowLights, scene.meshes)
     this.meshRenderer.render(scene, camera)
     this.lightDebugInfoRenderer.render(scene.shadowLights, camera)
-    // this.lightDebugInfoRenderer.render([...scene.meshes.values()], camera)
+    // this.meshDebugInfoRenderer.render([...scene.meshes.values()], camera)
   }
 
   public resize(width: number, height: number): void {

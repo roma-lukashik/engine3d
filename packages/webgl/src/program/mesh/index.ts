@@ -163,45 +163,6 @@ const defaultFragment = `
     }
   `)}
 
-  ${ifdef(USE_SPOT_LIGHT, `
-    struct SpotLight {
-      vec3 position;
-      vec3 target;
-      vec3 color;
-      float coneCos;
-      float penumbraCos;
-      float distance;
-    };
-
-    uniform SpotLight spotLights[${SPOT_LIGHTS_AMOUNT}];
-
-    float getDistanceAttenuation(float lightDistance, float cutoffDistance) {
-      if (cutoffDistance > 0.0) {
-        return pow(saturate(1.0 - lightDistance / cutoffDistance), 1.0);
-      }
-      return 1.0;
-    }
-
-    vec3 calcSpotLight(vec3 normal, vec3 tex) {
-      vec3 color = vec3(0.0);
-
-      for(int i = 0; i < ${SPOT_LIGHTS_AMOUNT}; i++) {
-        vec3 spotLightDirection = normalize(spotLights[i].position - spotLights[i].target);
-        vec3 surfaceToSpotLightDirection = spotLights[i].position - vPosition;
-        vec3 surfaceToSpotLightNormal = normalize(surfaceToSpotLightDirection);
-        float angleCos = dot(surfaceToSpotLightNormal, spotLightDirection);
-        float attenuation = smoothstep(spotLights[i].coneCos, spotLights[i].penumbraCos, angleCos);
-
-        if (attenuation > 0.0) {
-          float lightDistance = length(surfaceToSpotLightDirection);
-          float distanceAttenuation = getDistanceAttenuation(lightDistance, spotLights[i].distance);
-          color += spotLights[i].color * attenuation * distanceAttenuation;
-        }
-      }
-      return tex * color;
-    }
-  `)}
-
   ${ifdef(USE_SHADOW, `
     uniform sampler2D shadowTextures[${SHADOWS_AMOUNT}];
     uniform mat4 textureMatrices[${SHADOWS_AMOUNT}];
@@ -216,31 +177,17 @@ const defaultFragment = `
 
     uniform DirectionalLight directionalLights[${DIRECTIONAL_LIGHTS_AMOUNT}];
 
-    #ifdef USE_SHADOW
-    vec3 calcDirectionalLight(vec3 normal, vec3 tex, sampler2D shadowMaps[${SHADOWS_AMOUNT}]) {
-      vec3 diffuseColor = vec3(0.0);
-      for(int i = 0; i < ${DIRECTIONAL_LIGHTS_AMOUNT}; i++) {
-        DirectionalLight light = directionalLights[i];
-        vec3 color = tex * getShadow(shadowMaps[i], light.bias, textureMatrices[i] * vec4(vPosition, 1.0));
-        vec3 diffuse = BRDF(color, light.direction);
-        float NdL = saturate(dot(normal, light.direction));
-        diffuseColor += NdL * light.color * diffuse;
-      }
-      return diffuseColor;
-    }
-    #else
     vec3 calcDirectionalLight(vec3 normal, vec3 tex) {
       vec3 diffuseColor = vec3(0.0);
-      vec3 color = tex;
       for(int i = 0; i < ${DIRECTIONAL_LIGHTS_AMOUNT}; i++) {
         DirectionalLight light = directionalLights[i];
+        vec3 color = tex * getShadow(shadowTextures[i], light.bias, textureMatrices[i] * vec4(vPosition, 1.0));
         vec3 diffuse = BRDF(color, light.direction);
         float NdL = saturate(dot(normal, light.direction));
         diffuseColor += NdL * light.color * diffuse;
       }
       return diffuseColor;
     }
-    #endif
   `)}
 
   void main() {
@@ -263,11 +210,7 @@ const defaultFragment = `
     `)}
 
     ${ifdef(USE_DIRECTIONAL_LIGHT, `
-      #ifdef USE_SHADOW
-      directionalLight = calcDirectionalLight(vNormal, tex, shadowTextures);
-      #else
       directionalLight = calcDirectionalLight(vNormal, tex);
-      #endif
     `)}
 
     vec3 s = ambientLight + directionalLight;
