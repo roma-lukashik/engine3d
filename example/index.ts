@@ -13,7 +13,7 @@ import { Matrix4 } from "@math/matrix4"
 
 const camera = new PerspectiveCamera({
   aspect: window.innerWidth / window.innerHeight,
-  fovy: toRadian(90),
+  fovy: toRadian(45),
   far: 8000,
 })
 camera.setPosition(new Vector3(150, 1800, 1300))
@@ -22,7 +22,7 @@ camera.setPosition(new Vector3(150, 1800, 1300))
 new CameraControl({ camera })
 
 const spotLight = new SpotLight({
-  intensity: 0.3,
+  intensity: 0.6,
   penumbra: 0.5,
   distance: 2000,
   angle: Math.PI / 6,
@@ -31,7 +31,7 @@ const spotLight = new SpotLight({
 spotLight.setPosition(new Vector3(1000, 1000, 500))
 
 const directionalLight = new DirectionalLight({
-  intensity: 0.4,
+  intensity: 0.8,
   castShadow: true,
   bias: 0.002,
 })
@@ -60,22 +60,58 @@ scene.addLight(
   ambientLight,
 )
 
-const loadModel = async (url: string) => parseGltf(await (await fetch(url)).arrayBuffer())
+type AstronautAnimations =
+  | "CharacterArmature|Death"
+  | "CharacterArmature|Gun_Shoot"
+  | "CharacterArmature|HitRecieve"
+  | "CharacterArmature|HitRecieve_2"
+  | "CharacterArmature|Idle"
+  | "CharacterArmature|Idle_Gun"
+  | "CharacterArmature|Idle_Gun_Pointing"
+  | "CharacterArmature|Idle_Neutral"
+  | "CharacterArmature|Idle_Sword"
+  | "CharacterArmature|Interact"
+  | "CharacterArmature|Kick_Left"
+  | "CharacterArmature|Kick_Right"
+  | "CharacterArmature|Punch_Left"
+  | "CharacterArmature|Punch_Right"
+  | "CharacterArmature|Roll"
+  | "CharacterArmature|Run"
+  | "CharacterArmature|Run_Back"
+  | "CharacterArmature|Run_Left"
+  | "CharacterArmature|Run_Right"
+  | "CharacterArmature|Run_Shoot"
+  | "CharacterArmature|Sword_Slash"
+  | "CharacterArmature|Walk"
+  | "CharacterArmature|Wave"
 
-const { scene: astronaut, animations } = await loadModel("models/astronaut.glb")
-const { scene: surface } = await loadModel("models/surface.glb")
+const loadModel = async (url: string) => parseGltf<AstronautAnimations>(await (await fetch(url)).arrayBuffer())
 
-scene.addMesh(surface)
-scene.addMesh(astronaut)
+const astronaut = await loadModel("models/astronaut.glb")
+const surface = await loadModel("models/surface.glb")
+const box = await loadModel("models/box.glb")
+const hh = await loadModel("models/hh.glb")
 
-surface.updateWorldMatrix(Matrix4.translation(0, -3907.5, 0))
-astronaut.localMatrix = Matrix4.scaling(100, 100, 100)
+console.log(hh)
+
+scene.addMesh(surface.node)
+scene.addMesh(box.node)
+scene.addMesh(astronaut.node)
+
+surface.node.updateWorldMatrix(Matrix4.scaling(100, 100, 100).translate(0, -0.1, 0))
+box.node.updateWorldMatrix(Matrix4.scaling(100, 100, 100).translate(3, 1, -3))
+astronaut.node.localMatrix = Matrix4.scaling(100, 100, 100)
+
+let keyPressed = false
 
 const update = (t: DOMHighResTimeStamp) => {
   requestAnimationFrame(update)
-  animations[22].update(t / 1000)
-  astronaut.updateWorldMatrix()
-  astronaut.traverse((node) => {
+  if (keyPressed) {
+    astronaut.node.localMatrix.translate(0, 0, 0.02)
+    astronaut.getAnimation("CharacterArmature|Run")?.update(t / 1000)
+  }
+  astronaut.node.updateWorldMatrix()
+  astronaut.node.traverse((node) => {
     if (node instanceof Mesh) {
       node.updateSkeleton()
     }
@@ -90,3 +126,23 @@ window.addEventListener("resize", () => {
   renderer.resize(window.innerWidth, window.innerHeight)
   camera.setOptions({ aspect: window.innerWidth / window.innerHeight })
 })
+
+window.addEventListener("keypress", (e) => {
+  const step = 0.02
+  if (e.key.toLowerCase() === "w") {
+    keyPressed = true
+    // astronaut.localMatrix.translate(0, 0, step)
+  }
+  if (e.key.toLowerCase() === "s") {
+    keyPressed = true
+    astronaut.node.localMatrix.translate(0, 0, -step)
+  }
+  if (e.key.toLowerCase() === "a") {
+    astronaut.node.localMatrix.rotateY(-0.3)
+  }
+  if (e.key.toLowerCase() === "d") {
+    astronaut.node.localMatrix.rotateY(0.3)
+  }
+})
+
+window.addEventListener("keyup", () => keyPressed = false)

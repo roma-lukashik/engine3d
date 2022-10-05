@@ -2,12 +2,12 @@ import {
   AccessorType,
   AnimationChannelPath,
   AnimationInterpolationType,
-  Gltf,
+  GltfRaw,
 } from "@core/loaders/types"
 
 const base64ToUInt8Array = (base64: string): ArrayBuffer => new Uint8Array(Buffer.from(base64, "base64")).buffer
 
-export const receivedGltf: Gltf = {
+export const receivedGltf: GltfRaw = {
   scene: 0,
   scenes: [
     {

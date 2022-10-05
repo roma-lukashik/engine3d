@@ -1,32 +1,30 @@
 import { parseGltf } from "@core/loaders/gltf"
 import { receivedGltf } from "@core/loaders/gltf/__test__/received"
 import { expectedAnimation, expectedGltf } from "@core/loaders/gltf/__test__/expected"
-import { Gltf } from "@core/loaders/types"
-import { Object3d } from "@core/object3d"
-import { Animation } from "@core/animation"
+import { GltfRaw } from "@core/loaders/types"
+import { Gltf } from "@core/gltf"
+
+type AnimationKeys = "animation_0"
 
 describe("parseGltf", () => {
   describe("advanced GLTF", () => {
-    let scene: Object3d
-    let animations: Animation[]
+    let gltf: Gltf<AnimationKeys>
     beforeAll(async () => {
-      const gltf = await parseGltf(receivedGltf)
-      scene = gltf.scene
-      animations = gltf.animations
+      gltf = await parseGltf<"animation_0">(receivedGltf)
     })
 
     it("builds scene hierarchy correctly", () => {
-      expect(scene).toEqual(expectedGltf())
+      expect(gltf.node).toEqual(expectedGltf())
     })
 
     it("build animations correctly", () => {
-      expect(animations).toEqual([expectedAnimation()])
+      expect(gltf.getAnimation("animation_0")).toEqual(expectedAnimation())
     })
   })
 
   describe("errors handling", () => {
     it("throws an error if version is lower than 2", () => {
-      const gltf: Gltf = {
+      const gltf: GltfRaw = {
         ...receivedGltf,
         asset: {
           version: "1",

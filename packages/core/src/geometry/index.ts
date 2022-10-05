@@ -3,7 +3,7 @@ import { BufferAttribute } from "@core/bufferAttribute"
 import { forEachKey } from "@utils/object"
 
 export class Geometry {
-  public position?: BufferAttribute
+  public position: BufferAttribute
   public normal?: BufferAttribute
   public tangent?: BufferAttribute
   public uv?: BufferAttribute
