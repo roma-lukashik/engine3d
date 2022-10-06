@@ -18,9 +18,9 @@ type Props = {
 export class WebGLMesh {
   public readonly colorTexture: WebGLImageTexture
   public projectionMatrix: Matrix4
+  public readonly mesh: Mesh
 
   private readonly gl: WebGLRenderingContext
-  private readonly mesh: Mesh
   private readonly attributes: Partial<Record<keyof Geometry, WebglVertexAttribute>>
   private boneTexture: WebGLDataTexture<Float32Array>
   private boneTextureSize: number

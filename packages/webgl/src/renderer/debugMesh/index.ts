@@ -1,17 +1,20 @@
-import { indexes, positions } from "@webgl/renderer/meshDebugInfo/data"
+import { indexes, positions } from "@webgl/renderer/debugMesh/data"
 import { WebglRenderState } from "@webgl/utils/renderState"
-import { DebugBoxRenderer } from "@webgl/renderer/debugBoxRenderer"
+import { DebugBoxRenderer } from "@webgl/renderer/debugBox"
 import { WebGLMesh } from "@webgl/mesh"
 import { Matrix4 } from "@math/matrix4"
 
-export class MeshDebugInfoRenderer extends DebugBoxRenderer {
+export class DebugMeshRenderer extends DebugBoxRenderer {
   public constructor(
     gl: WebGLRenderingContext,
     state: WebglRenderState,
     mesh: WebGLMesh,
   ) {
     const aabb = mesh.computeBoundingBox()
-    const scale = aabb.max.transformMatrix4(mesh.projectionMatrix).subtract(aabb.min.transformMatrix4(mesh.projectionMatrix)).divide(2)
+    const scale = aabb.max
+      .transformMatrix4(mesh.projectionMatrix)
+      .subtract(aabb.min.transformMatrix4(mesh.projectionMatrix))
+      .divide(2)
     const translate = aabb.center.transformMatrix4(mesh.projectionMatrix)
 
     const transform = Matrix4.translation(translate.x, translate.y, translate.z)

@@ -1,4 +1,4 @@
-import { LightDebugInfoProgram } from "@webgl/program/lightDebugInfo"
+import { DebugBoxProgram } from "@webgl/program/debugBox"
 import { WebglVertexAttribute } from "@webgl/utils/attribute"
 import { BufferAttribute } from "@core/bufferAttribute"
 import { BufferViewTarget } from "@core/loaders/types"
@@ -12,7 +12,7 @@ type ObjectWithProjection = {
 
 export class DebugBoxRenderer {
   private readonly gl: WebGLRenderingContext
-  private readonly program: LightDebugInfoProgram
+  private readonly program: DebugBoxProgram
   private readonly attributes: Record<"position" | "index", WebglVertexAttribute>
 
   public constructor(
@@ -22,7 +22,7 @@ export class DebugBoxRenderer {
     indexes: Uint16Array,
   ) {
     this.gl = gl
-    this.program = new LightDebugInfoProgram(gl, state)
+    this.program = new DebugBoxProgram(gl, state)
     this.attributes = {
       position: new WebglVertexAttribute(gl, new BufferAttribute({
         array: positions,

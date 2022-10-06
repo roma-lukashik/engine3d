@@ -2,9 +2,10 @@ import { Scene } from "@webgl/scene"
 import { Camera } from "@core/camera"
 import { ShadowRenderer } from "@webgl/renderer/shadow"
 import { MeshRenderer } from "@webgl/renderer/mesh"
-import { LightDebugInfoRenderer } from "@webgl/renderer/lightDebugInfo"
+import { DebugLightRenderer } from "@webgl/renderer/debugLight"
 import { WebglRenderState } from "@webgl/utils/renderState"
-import { MeshDebugInfoRenderer } from "@webgl/renderer/meshDebugInfo";
+import { DebugMeshRenderer } from "@webgl/renderer/debugMesh"
+import { DebugSkeletonRenderer } from "@webgl/renderer/debugSkeleton"
 
 type Props = {
   canvas?: HTMLCanvasElement
@@ -18,7 +19,7 @@ export class Renderer {
   private readonly state: WebglRenderState
   private readonly shadowRenderer: ShadowRenderer
   private readonly meshRenderer: MeshRenderer
-  private readonly lightDebugInfoRenderer: LightDebugInfoRenderer
+  private readonly debugLightRenderer: DebugLightRenderer
 
   constructor({
     canvas = document.createElement("canvas"),
@@ -39,7 +40,7 @@ export class Renderer {
     this.state = new WebglRenderState(this.gl)
     this.shadowRenderer = new ShadowRenderer(this.gl, this.state)
     this.meshRenderer = new MeshRenderer(this.gl, this.state, this.shadowRenderer)
-    this.lightDebugInfoRenderer = new LightDebugInfoRenderer(this.gl, this.state)
+    this.debugLightRenderer = new DebugLightRenderer(this.gl, this.state)
     this.resize(width, height)
     this.gl.clearColor(0, 0, 0, 1)
   }
@@ -47,10 +48,14 @@ export class Renderer {
   public render(scene: Scene, camera: Camera): void {
     this.shadowRenderer.render(scene.shadowLights, scene.meshes)
     this.meshRenderer.render(scene, camera)
-    this.lightDebugInfoRenderer.render(scene.shadowLights, camera)
+
+    this.debugLightRenderer.render(scene.shadowLights, camera)
 
     scene.meshes.forEach((mesh) => {
-      new MeshDebugInfoRenderer(this.gl, this.state, mesh).render([mesh], camera)
+      new DebugMeshRenderer(this.gl, this.state, mesh).render([mesh], camera)
+      if (mesh.mesh.skeleton) {
+        new DebugSkeletonRenderer(this.gl, this.state).render(mesh.mesh.skeleton, camera)
+      }
     })
   }
 
