@@ -22,8 +22,7 @@ export class Animation {
   }
 
   public update(elapsed: number): void {
-    elapsed = elapsed % this.duration
-    elapsed = Math.min(elapsed, this.duration - EPS) + this.startTime
+    elapsed = Math.min(elapsed % this.duration, this.duration - EPS) + this.startTime
 
     this.samples.forEach(({ node, transform, times, values }) => {
       const prevIndex = Math.max(1, times.findIndex((t) => t > elapsed)) - 1
