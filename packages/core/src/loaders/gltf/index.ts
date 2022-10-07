@@ -49,15 +49,15 @@ export const parseGltf = async <K extends string>(raw: ArrayBufferLike | string 
 }
 
 const parseNodes = (data: GltfRaw): Object3d[] => {
-  return mapOption(data.nodes, ({ translation, rotation, scale, matrix, name }) => {
-    return new Object3d({
+  return mapOption(data.nodes, ({ translation, rotation, scale, matrix, name }) =>
+    new Object3d({
       position: translation && Vector3.fromArray(translation),
       rotation: rotation && Quaternion.fromArray(rotation),
       scale: scale && Vector3.fromArray(scale),
       matrix: matrix && Matrix4.fromArray(matrix),
       name,
-    })
-  })
+    }),
+  )
 }
 
 const parseScene = async (data: GltfRaw, nodes: Object3d[]): Promise<Object3d>=> {
@@ -187,15 +187,21 @@ const parseAttributeAccessor = (
   const TypedArray = TypedArrayByComponentType[accessor.componentType]
   const byteOffset = accessor.byteOffset ?? 0
   const normalized = accessor.normalized === true
-  // const elementBytes = TypedArray.BYTES_PER_ELEMENT
-  // const itemBytes = elementBytes * itemSize
+  const elementBytes = TypedArray.BYTES_PER_ELEMENT
+  const itemBytes = elementBytes * itemSize
   const bufferView = nthOption(data.bufferViews, accessor.bufferView)
-  const stride = bufferView?.byteStride
   const target = customTarget ?? bufferView?.target
-  const arraySize = accessor.count * itemSize
   const arrayBuffer = parseBufferView(data, bufferView)
-  const array = arrayBuffer ? new TypedArray(arrayBuffer, byteOffset, arraySize) : new TypedArray(arraySize)
-  return new BufferAttribute({ array, itemSize, normalized, stride, target })
+  const stride = bufferView?.byteStride
+  if (stride && stride !== itemBytes) {
+    const ibSlice = Math.floor(byteOffset / stride)
+    const array = new TypedArray(arrayBuffer!, ibSlice * stride, accessor.count * stride / elementBytes)
+    return new BufferAttribute({ array, itemSize, normalized, stride, target, offset: byteOffset % stride / elementBytes })
+  } else {
+    const arraySize = accessor.count * itemSize
+    const array = arrayBuffer ? new TypedArray(arrayBuffer, byteOffset, arraySize) : new TypedArray(arraySize)
+    return new BufferAttribute({ array, itemSize, normalized, stride, target })
+  }
 }
 
 const AccessorTypeSizes = {

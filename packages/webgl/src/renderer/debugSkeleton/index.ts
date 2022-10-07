@@ -26,7 +26,9 @@ export class DebugSkeletonRenderer {
       projectionMatrix: camera.projectionMatrix.toArray(),
     })
 
-    const positions = skeleton.bones.flatMap((bone) => {
+    // TODO why the first is not needed?
+    const [, ...rest] = skeleton.bones
+    const positions = rest.flatMap((bone) => {
       const start = bone.worldMatrix.translationVector()
       const end = bone.parent!.worldMatrix.translationVector()
       return [...start.toArray(), ...end.toArray()]

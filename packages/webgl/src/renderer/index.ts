@@ -4,6 +4,7 @@ import { ShadowRenderer } from "@webgl/renderer/shadow"
 import { MeshRenderer } from "@webgl/renderer/mesh"
 import { DebugLightRenderer } from "@webgl/renderer/debugLight"
 import { WebglRenderState } from "@webgl/utils/renderState"
+// @ts-ignore
 import { DebugMeshRenderer } from "@webgl/renderer/debugMesh"
 import { DebugSkeletonRenderer } from "@webgl/renderer/debugSkeleton"
 
@@ -52,7 +53,7 @@ export class Renderer {
     this.debugLightRenderer.render(scene.shadowLights, camera)
 
     scene.meshes.forEach((mesh) => {
-      new DebugMeshRenderer(this.gl, this.state, mesh).render([mesh], camera)
+      // new DebugMeshRenderer(this.gl, this.state, mesh).render([mesh], camera)
       if (mesh.mesh.skeleton) {
         new DebugSkeletonRenderer(this.gl, this.state).render(mesh.mesh.skeleton, camera)
       }

@@ -114,15 +114,20 @@ export type MeshPrimitive = {
   extras?: any
 }
 
+type Digits = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
 export type MeshPrimitiveAttributes = {
+  [K in `TEXCOORD_${Digits}`]?: ResourceId
+} & {
+  [K in `COLOR_${Digits}`]?: ResourceId
+} & {
+  [K in `WEIGHTS_${Digits}`]?: ResourceId
+} & {
+  [K in `JOINTS_${Digits}`]?: ResourceId
+} & {
   POSITION?: ResourceId
   NORMAL?: ResourceId
   TANGENT?: ResourceId
-  TEXCOORD_0?: ResourceId
-  TEXCOORD_1?: ResourceId
-  COLOR_0?: ResourceId
-  WEIGHTS_0?: ResourceId
-  JOINTS_0?: ResourceId
 }
 
 export type GltfNode = {
