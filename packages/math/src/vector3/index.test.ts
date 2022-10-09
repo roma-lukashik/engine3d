@@ -1,5 +1,7 @@
 import { Matrix4 } from "@math/matrix4"
 import { Vector3 } from "@math/vector3"
+import { Quaternion } from "@math/quaternion"
+import { PI } from "@math/constants"
 
 describe("Vector3", () => {
   const a = new Vector3()
@@ -139,6 +141,11 @@ describe("Vector3", () => {
       8, 7, 6, 5,
     ])
     expect(a.transformMatrix4(m)).toValueEqual([0.914, 0.943, 0.971])
+  })
+
+  it("rotateByQuaternion", () => {
+    const q = Quaternion.fromAxisAngle(Vector3.one(), PI / 4)
+    expect(a.rotateByQuaternion(q)).toValueEqual([2.586, 0.586, 2.828])
   })
 
   it("toArray", () => {

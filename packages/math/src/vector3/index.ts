@@ -1,5 +1,6 @@
 import { eq } from "@math/operators"
 import type { Matrix4 } from "@math/matrix4"
+import type { Quaternion } from "@math/quaternion"
 
 export type Vector3Tuple = [x: number, y: number, z: number]
 
@@ -145,6 +146,13 @@ export class Vector3 {
       (m[1] * x + m[5] * y + m[9] * z + m[13]) / w,
       (m[2] * x + m[6] * y + m[10] * z + m[14]) / w,
     )
+  }
+
+  public rotateByQuaternion(q: Quaternion): this {
+    const v = new Vector3(q.x, q.y, q.z)
+    const u = v.clone().cross(this)
+    const uu = v.cross(u).multiply(2)
+    return this.add(u.multiply(q.w * 2)).add(uu)
   }
 
   public equal(v: Vector3): boolean {

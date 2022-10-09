@@ -1,6 +1,6 @@
 import { lt } from "@math/operators"
 import type { Matrix4 } from "@math/matrix4"
-import { Vector3 } from "@math/vector3"
+import type { Vector3 } from "@math/vector3"
 
 export type QuaternionTuple = [x: number, y: number, z: number, w: number]
 
