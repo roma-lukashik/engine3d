@@ -3,6 +3,7 @@ import { PerspectiveCamera } from "@core/camera"
 import { Mesh } from "@core/mesh"
 import { CameraControl } from "@core/cameraControl"
 import { parseGltf } from "@core/loaders/gltf"
+import { Object3d } from "@core/object3d"
 
 import { Renderer } from "@webgl/renderer"
 import { Scene } from "@webgl/scene"
@@ -13,11 +14,9 @@ import { Matrix4 } from "@math/matrix4"
 
 const camera = new PerspectiveCamera({
   aspect: window.innerWidth / window.innerHeight,
-  fovy: toRadian(45),
+  fovy: toRadian(60),
   far: 8000,
 })
-camera.setPosition(new Vector3(150, 1800, 1300))
-// camera.lookAt(v3.vector3(50, 500, 800))
 
 new CameraControl({ camera })
 
@@ -51,6 +50,11 @@ scene.addLight(
   ambientLight,
 )
 
+const followObject = (object: Object3d): void => {
+  camera.setPosition(object.worldMatrix.translationVector().add(new Vector3(0, 300, 400)))
+  camera.lookAt(object.worldMatrix.translationVector().add(new Vector3(0, 150, 0)))
+}
+
 type HeroAnimations =
   | "Idle"
   | "Run"
@@ -62,29 +66,41 @@ const loadModel = async <T extends string>(url: string) => parseGltf<T>(await (a
 const hero = await loadModel<HeroAnimations>("models/soldier.glb")
 const surface = await loadModel("models/surface.glb")
 const box = await loadModel("models/box.glb")
+const box2 = await loadModel("models/box.glb")
+const box3 = await loadModel("models/box.glb")
 
 scene.addMesh(surface.node)
 scene.addMesh(box.node)
+scene.addMesh(box2.node)
+scene.addMesh(box3.node)
 scene.addMesh(hero.node)
 
 surface.node.updateWorldMatrix(Matrix4.scaling(100, 100, 100).translate(0, -0.1, 0))
 box.node.updateWorldMatrix(Matrix4.scaling(100, 100, 100).translate(3, 1, -3))
+box2.node.updateWorldMatrix(Matrix4.scaling(100, 200, 100).translate(-3, 1, -3))
+box3.node.updateWorldMatrix(Matrix4.scaling(50, 50, 50).translate(4, 5, -8))
 hero.node.localMatrix = Matrix4.scaling(100, 100, 100)
+hero.node.updateWorldMatrix()
+followObject(hero.node)
 
 let keyPressed = false
+let i = 0
 
-const update = (_t: DOMHighResTimeStamp) => {
+const update = () => {
   requestAnimationFrame(update)
   if (keyPressed) {
-    hero.node.localMatrix.translate(0, 0, -0.02)
-    hero.getAnimation("Walk").update(_t / 1000)
+    hero.node.localMatrix.translate(0, 0, -0.03)
+    hero.getAnimation("Walk").update(i += 0.02)
+    hero.node.traverse((node) => {
+      if (node instanceof Mesh) {
+        node.updateSkeleton()
+      }
+    })
+    hero.node.updateWorldMatrix()
+    followObject(hero.node)
+  } else {
+    hero.node.updateWorldMatrix()
   }
-  hero.node.updateWorldMatrix()
-  hero.node.traverse((node) => {
-    if (node instanceof Mesh) {
-      node.updateSkeleton()
-    }
-  })
   renderer.render(scene, camera)
 }
 
@@ -97,14 +113,13 @@ window.addEventListener("resize", () => {
 })
 
 window.addEventListener("keypress", (e) => {
-  const step = 0.02
+  e.preventDefault()
   if (e.key.toLowerCase() === "w") {
     keyPressed = true
     // astronaut.localMatrix.translate(0, 0, step)
   }
   if (e.key.toLowerCase() === "s") {
     keyPressed = true
-    hero.node.localMatrix.translate(0, 0, -step)
   }
   if (e.key.toLowerCase() === "a") {
     hero.node.localMatrix.rotateY(-0.3)
