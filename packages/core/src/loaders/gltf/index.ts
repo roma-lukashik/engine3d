@@ -193,15 +193,15 @@ const parseAttributeAccessor = (
   const target = customTarget ?? bufferView?.target
   const arrayBuffer = parseBufferView(data, bufferView)
   const stride = bufferView?.byteStride
-  if (stride && stride !== itemBytes) {
-    const ibSlice = Math.floor(byteOffset / stride)
-    const array = new TypedArray(arrayBuffer!, ibSlice * stride, accessor.count * stride / elementBytes)
-    return new BufferAttribute({ array, itemSize, normalized, stride, target, offset: byteOffset % stride / elementBytes })
-  } else {
-    const arraySize = accessor.count * itemSize
-    const array = arrayBuffer ? new TypedArray(arrayBuffer, byteOffset, arraySize) : new TypedArray(arraySize)
-    return new BufferAttribute({ array, itemSize, normalized, stride, target })
-  }
+  const isInterleaved = !!stride && stride !== itemBytes
+  const offset = isInterleaved ? byteOffset % stride / elementBytes : 0
+  const arraySize = isInterleaved ? accessor.count * stride / elementBytes : accessor.count * itemSize
+  const array = arrayBuffer
+    ? isInterleaved
+      ? new TypedArray(arrayBuffer, Math.floor(byteOffset / stride) * stride, arraySize)
+      : new TypedArray(arrayBuffer, byteOffset, arraySize)
+        : new TypedArray(arraySize)
+  return new BufferAttribute({ array, itemSize, normalized, stride, target, offset })
 }
 
 const AccessorTypeSizes = {
