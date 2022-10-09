@@ -54,7 +54,9 @@ export class CameraControl {
         theta: theta - PI2 * v.x / width,
         phi: clamp(phi - PI2 * v.y / height, EPS, PI / 2),
         radius,
-      }),
+      }).add(
+        this.camera.target,
+      ),
     )
   }
 
