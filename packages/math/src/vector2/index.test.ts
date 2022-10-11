@@ -43,6 +43,10 @@ describe("Vector2", () => {
     expect(a.clone()).not.toBe(a)
   })
 
+  it("copy", () => {
+    expect(a.copy(b)).toValueEqual([3, 4])
+  })
+
   it("set(0, 1)", () => {
     expect(a.set(0, 1)).toValueEqual([0, 1])
   })

@@ -63,6 +63,10 @@ describe("Quaternion", () => {
     expect(q.clone()).not.toBe(q)
   })
 
+  it("copy", () => {
+    expect(q.copy(new Quaternion(0.1, 0.3, 0.5, 0.7))).toValueEqual([0.1, 0.3, 0.5, 0.7])
+  })
+
   it("set", () => {
     const q = new Quaternion()
     q.set(0.1, 0.2, 0.3, 0.5)

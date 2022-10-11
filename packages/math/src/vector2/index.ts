@@ -51,6 +51,10 @@ export class Vector2 {
     return new Vector2(this.x, this.y)
   }
 
+  public copy(v: Vector2): this {
+    return this.set(v.x, v.y)
+  }
+
   public add(v: Vector2): this {
     this.array[0] += v.x
     this.array[1] += v.y

@@ -54,7 +54,7 @@ export class PerspectiveCamera implements Camera {
       this.projectionMatrix = Matrix4.identity()
     } else {
       const viewMatrix = Matrix4.lookAt(this.position, this.target, this.up).invert()
-      this.projectionMatrix = this.perspectiveMatrix.clone().multiply(viewMatrix)
+      this.projectionMatrix.copy(this.perspectiveMatrix).multiply(viewMatrix)
     }
   }
 

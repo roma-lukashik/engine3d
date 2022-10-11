@@ -65,6 +65,10 @@ describe("Vector3", () => {
     expect(a.clone()).not.toBe(a)
   })
 
+  it("copy", () => {
+    expect(a.copy(b)).toValueEqual([2, 3, 1])
+  })
+
   it("set(0, 1, 2)", () => {
     expect(a.set(0, 1, 2)).toValueEqual([0, 1, 2])
   })

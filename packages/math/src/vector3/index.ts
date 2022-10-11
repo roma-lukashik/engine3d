@@ -70,6 +70,10 @@ export class Vector3 {
     return new Vector3(this.x, this.y, this.z)
   }
 
+  public copy(v: Vector3): this {
+    return this.set(v.x, v.y, v.z)
+  }
+
   public add(v: Vector3): this {
     this.array[0] += v.x
     this.array[1] += v.y

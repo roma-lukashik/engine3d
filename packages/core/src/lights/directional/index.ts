@@ -24,7 +24,7 @@ export class DirectionalLight implements LightWithShadow {
 
   public readonly type: LightType
   public readonly castShadow: boolean
-  public direction: Vector3
+  public direction: Vector3 = Vector3.zero()
   public color: Vector3
   public intensity: number
   public bias: number
@@ -66,6 +66,6 @@ export class DirectionalLight implements LightWithShadow {
   }
 
   private updateDirection(): void {
-    this.direction = this.camera.position.clone().subtract(this.camera.target).normalize()
+    this.direction.copy(this.camera.position).subtract(this.camera.target).normalize()
   }
 }

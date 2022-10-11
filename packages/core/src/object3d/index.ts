@@ -53,7 +53,7 @@ export class Object3d {
   }
 
   public updateWorldMatrix(matrix: Matrix4 = Matrix4.identity()): void {
-    this.worldMatrix = matrix.clone().multiply(this.localMatrix)
+    this.worldMatrix.copy(matrix).multiply(this.localMatrix)
     this.children.forEach((child) => child.updateWorldMatrix(this.worldMatrix))
   }
 }

@@ -167,7 +167,7 @@ export class Matrix4 {
     return new Matrix4(elements)
   }
 
-  public set(elements: Matrix4Tuple): this {
+  public set(elements: Matrix4Tuple | Matrix4Array): this {
     elements.forEach((x, i) => this.array[i] = x)
     return this
   }
@@ -179,6 +179,10 @@ export class Matrix4 {
       this.array[8], this.array[9], this.array[10], this.array[11],
       this.array[12], this.array[13], this.array[14], this.array[15],
     ])
+  }
+
+  public copy(m: Matrix4): this {
+    return this.set(m.toArray())
   }
 
   public det(): number {

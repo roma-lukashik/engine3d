@@ -176,6 +176,15 @@ describe("Matrix4", () => {
     expect(a.clone()).not.toBe(a)
   })
 
+  it("copy", () => {
+    expect(a.copy(b)).toValueEqual([
+      1, 4,	4, 3,
+      2, 1,	3, 2,
+      3, 3,	2, 4,
+      4, 2,	1, 1,
+    ])
+  })
+
   it("set", () => {
     const m = new Matrix4()
     m.set([

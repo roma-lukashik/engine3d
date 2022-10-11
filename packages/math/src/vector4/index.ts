@@ -61,6 +61,10 @@ export class Vector4 {
     return new Vector4(this.x, this.y, this.z, this.w)
   }
 
+  public copy(v: Vector4): this {
+    return this.set(v.x, v.y, v.z, v.w)
+  }
+
   public add(v: Vector4): this {
     this.array[0] += v.x
     this.array[1] += v.y

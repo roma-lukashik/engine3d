@@ -109,6 +109,10 @@ export class Quaternion {
     return new Quaternion(this.x, this.y, this.z, this.w)
   }
 
+  public copy(q: Quaternion): this {
+    return this.set(q.x, q.y, q.z, q.w)
+  }
+
   public slerp(q: Quaternion, t: number): this {
     const dot = this.dot(q)
     const dotAbs = Math.abs(dot)
