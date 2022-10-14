@@ -111,8 +111,8 @@ describe("Vector2", () => {
     expect(a.angleTo(b)).toBeCloseTo(-0.18)
   })
 
-  it("toArray", () => {
-    expect(a.toArray()).toValueEqual([1, 2])
+  it("elements", () => {
+    expect(a.elements).toValueEqual([1, 2])
   })
 
   it("equal", () => {

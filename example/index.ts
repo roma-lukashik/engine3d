@@ -1,6 +1,5 @@
 import { AmbientLight, DirectionalLight } from "@core/lights"
 import { PerspectiveCamera } from "@core/camera"
-import { Mesh } from "@core/mesh"
 import { CameraControl } from "@core/cameraControl"
 import { parseGltf } from "@core/loaders/gltf"
 import { Object3d } from "@core/object3d"
@@ -51,8 +50,16 @@ scene.addLight(
 )
 
 const followObject = (object: Object3d): void => {
-  camera.setPosition(object.worldMatrix.translationVector().add(new Vector3(0, 300, 400)))
-  camera.lookAt(object.worldMatrix.translationVector().add(new Vector3(0, 150, 0)))
+  const objectPosition = object.worldMatrix.translationVector()
+  const objectRotation = object.worldMatrix.rotationVector()
+  const from = new Vector3(0, 300, 400)
+  const up = new Vector3(0, 150, 0)
+  camera.setPosition(from.rotateByQuaternion(objectRotation).add(objectPosition))
+  camera.lookAt(up.add(objectPosition))
+}
+
+const move = (object: Object3d, translationVector: Vector3, _colliders: Object3d[] = []) => {
+  object.localMatrix.translate(translationVector.x, translationVector.y, translationVector.z)
 }
 
 type HeroAnimations =
@@ -69,11 +76,11 @@ const box = await loadModel("models/box.glb")
 const box2 = await loadModel("models/box.glb")
 const box3 = await loadModel("models/box.glb")
 
-scene.addMesh(surface.node)
-scene.addMesh(box.node)
-scene.addMesh(box2.node)
-scene.addMesh(box3.node)
-scene.addMesh(hero.node)
+scene.addMesh(surface)
+scene.addMesh(box)
+scene.addMesh(box2)
+scene.addMesh(box3)
+scene.addMesh(hero)
 
 surface.node.updateWorldMatrix(Matrix4.scaling(100, 100, 100).translate(0, -0.1, 0))
 box.node.updateWorldMatrix(Matrix4.scaling(100, 100, 100).translate(3, 1, -3))
@@ -83,25 +90,29 @@ hero.node.localMatrix = Matrix4.scaling(100, 100, 100)
 hero.node.updateWorldMatrix()
 followObject(hero.node)
 
-let keyPressed = false
+let wPressed = false
+let sPressed = false
+let aPressed = false
+let dPressed = false
+let shiftPressed = false
 let i = 0
 
 const update = () => {
-  requestAnimationFrame(update)
-  if (keyPressed) {
-    hero.node.localMatrix.translate(0, 0, -0.03)
-    hero.getAnimation("Walk").update(i += 0.02)
-    hero.node.traverse((node) => {
-      if (node instanceof Mesh) {
-        node.updateSkeleton()
-      }
-    })
-    hero.node.updateWorldMatrix()
+  if (wPressed || sPressed) {
+    hero.run(shiftPressed ? "Run" : "Walk", i += 0.02)
     followObject(hero.node)
   } else {
     hero.node.updateWorldMatrix()
   }
+
+  const step = 0.03
+  if (wPressed) move(hero.node, new Vector3(0, 0, (shiftPressed ? 3 : 1) * -step), [box.node, box2.node, box3.node])
+  if (sPressed) move(hero.node, new Vector3(0, 0, (shiftPressed ? 3 : 1) * step), [box.node, box2.node, box3.node])
+  if (aPressed) hero.node.localMatrix.rotateY(-0.03)
+  if (dPressed) hero.node.localMatrix.rotateY(0.03)
+
   renderer.render(scene, camera)
+  requestAnimationFrame(update)
 }
 
 requestAnimationFrame(update)
@@ -115,18 +126,37 @@ window.addEventListener("resize", () => {
 window.addEventListener("keypress", (e) => {
   e.preventDefault()
   if (e.key.toLowerCase() === "w") {
-    keyPressed = true
-    // astronaut.localMatrix.translate(0, 0, step)
+    wPressed = true
   }
   if (e.key.toLowerCase() === "s") {
-    keyPressed = true
+    sPressed = true
   }
   if (e.key.toLowerCase() === "a") {
-    hero.node.localMatrix.rotateY(-0.3)
+    aPressed = true
   }
   if (e.key.toLowerCase() === "d") {
-    hero.node.localMatrix.rotateY(0.3)
+    dPressed = true
+  }
+  if (e.shiftKey) {
+    shiftPressed = true
   }
 })
 
-window.addEventListener("keyup", () => keyPressed = false)
+window.addEventListener("keyup", (e) => {
+  e.preventDefault()
+  if (e.key.toLowerCase() === "w") {
+    wPressed = false
+  }
+  if (e.key.toLowerCase() === "s") {
+    sPressed = false
+  }
+  if (e.key.toLowerCase() === "a") {
+    aPressed = false
+  }
+  if (e.key.toLowerCase() === "d") {
+    dPressed = false
+  }
+  if (!e.shiftKey) {
+    shiftPressed = false
+  }
+})

@@ -39,7 +39,7 @@ export class DebugBoxRenderer {
   public render(objects: ObjectWithProjection[], camera: Camera): void {
     this.program.use()
     this.program.uniforms.setValues({
-      projectionMatrix: camera.projectionMatrix.toArray(),
+      projectionMatrix: camera.projectionMatrix.elements,
     })
     this.program.attributes.update(this.attributes)
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null)
@@ -47,7 +47,7 @@ export class DebugBoxRenderer {
 
     objects.forEach((object) => {
       this.program.uniforms.setValues({
-        worldMatrix: object.projectionMatrix.clone().invert().toArray(),
+        worldMatrix: object.projectionMatrix.clone().invert().elements,
       })
       this.drawBuffer()
     })

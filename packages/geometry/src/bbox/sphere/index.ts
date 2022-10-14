@@ -4,8 +4,8 @@ import { lte } from "@math/operators"
 import { EPS_SQRT } from "@math/constants"
 
 export class Sphere {
-  public center: Vector3
-  public radius: number
+  public center: Vector3 = Vector3.zero()
+  public radius: number = 0
 
   public constructor(center: Vector3, radius: number)
   public constructor(points: ArrayLike<number>)
@@ -29,7 +29,7 @@ export class Sphere {
 
   private fromPoints(points: ArrayLike<number>): void {
     const aabb = new AABB(points)
-    this.center = aabb.center
-    this.radius = aabb.center.distance(aabb.max)
+    this.center.set(0, 0, 0).add(aabb.max).add(aabb.min).divide(2)
+    this.radius = this.center.distance(aabb.max)
   }
 }

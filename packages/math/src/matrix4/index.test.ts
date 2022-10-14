@@ -329,8 +329,8 @@ describe("Matrix4", () => {
     expect(m.translationVector()).toValueEqual([2, 2, 2])
   })
 
-  it("toArray", () => {
-    expect(a.toArray()).toValueEqual([
+  it("elements", () => {
+    expect(a.elements).toValueEqual([
       1, 2,	3, 4,
       4, 1,	3, 2,
       4, 3,	2, 1,

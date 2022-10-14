@@ -31,10 +31,6 @@ describe("AABB", () => {
     expect(aabb.max).toValueEqual([2, 1, 4])
   })
 
-  it("center", () => {
-    expect(aabb.center).toValueEqual([0.5, 0.5, 2])
-  })
-
   it("clone", () => {
     const aabb = new AABB([0, 0, 0, 2, 2, 2])
     const clone = aabb.clone()

@@ -23,7 +23,7 @@ export class DebugSkeletonRenderer {
   public render(skeleton: Skeleton, camera: Camera): void {
     this.program.use()
     this.program.uniforms.setValues({
-      projectionMatrix: camera.projectionMatrix.toArray(),
+      projectionMatrix: camera.projectionMatrix.elements,
     })
 
     // TODO why the first is not needed?
@@ -31,7 +31,7 @@ export class DebugSkeletonRenderer {
     const positions = rest.flatMap((bone) => {
       const start = bone.worldMatrix.translationVector()
       const end = bone.parent!.worldMatrix.translationVector()
-      return [...start.toArray(), ...end.toArray()]
+      return [...start.elements, ...end.elements]
     })
 
     const attr = {
@@ -52,7 +52,7 @@ export class DebugSkeletonRenderer {
     this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height)
 
     this.program.uniforms.setValues({
-      worldMatrix: Matrix4.identity().toArray(),
+      worldMatrix: Matrix4.identity().elements,
     })
 
     this.gl.drawElements(this.gl.LINES, attr.index.count, attr.index.type, attr.index.offset)

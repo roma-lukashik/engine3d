@@ -25,6 +25,10 @@ export class Matrix4Array extends Float32Array {
 export class Matrix4 {
   public static readonly size = 16
 
+  public get elements(): Readonly<Matrix4Array> {
+    return this.array
+  }
+
   private readonly array: Matrix4Array = new Matrix4Array()
 
   public constructor()
@@ -182,7 +186,7 @@ export class Matrix4 {
   }
 
   public copy(m: Matrix4): this {
-    return this.set(m.toArray())
+    return this.set(m.elements)
   }
 
   public det(): number {
@@ -271,13 +275,13 @@ export class Matrix4 {
   }
 
   public add(m: Matrix4): this {
-    const arr = m.toArray()
+    const arr = m.elements
     this.array.forEach((x, i) => this.array[i] = x + arr[i])
     return this
   }
 
   public subtract(m: Matrix4): this {
-    const arr = m.toArray()
+    const arr = m.elements
     this.array.forEach((x, i) => this.array[i] = x - arr[i])
     return this
   }
@@ -299,7 +303,7 @@ export class Matrix4 {
       b10, b11, b12, b13,
       b20, b21, b22, b23,
       b30, b31, b32, b33,
-    ] = m.toArray()
+    ] = m.elements
 
     return this.set([
       b00 * a00 + b01 * a10 + b02 * a20 + b03 * a30,
@@ -346,7 +350,7 @@ export class Matrix4 {
   }
 
   public rotationVector(): Quaternion {
-    const [sx, sy, sz] = this.scalingVector().toArray()
+    const [sx, sy, sz] = this.scalingVector().elements
 
     return Quaternion.fromRotationMatrix(
       new Matrix4([
@@ -369,9 +373,5 @@ export class Matrix4 {
       Math.hypot(m21, m22, m23),
       Math.hypot(m31, m32, m33),
     )
-  }
-
-  public toArray(): Readonly<Matrix4Array> {
-    return this.array
   }
 }

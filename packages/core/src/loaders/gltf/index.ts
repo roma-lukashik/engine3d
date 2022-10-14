@@ -38,12 +38,6 @@ export const parseGltf = async <K extends string>(raw: ArrayBufferLike | string 
   }
   const nodes = parseNodes(data)
   const scene = await parseScene(data, nodes)
-  scene.updateWorldMatrix()
-  scene.traverse((node) => {
-    if (node instanceof Mesh) {
-      node.updateSkeleton()
-    }
-  })
   const animations = parseAnimations<K>(data, nodes)
   return new Gltf(scene, animations)
 }

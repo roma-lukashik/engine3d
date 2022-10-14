@@ -54,27 +54,27 @@ export class MeshRenderer {
   private updateUniforms(program: MeshProgram, scene: Scene, camera: Camera): void {
     program.use()
     program.uniforms.setValues({
-      projectionMatrix: camera.projectionMatrix.toArray(),
+      projectionMatrix: camera.projectionMatrix.elements,
       textureMatrices: scene.shadowLights.map((light) => {
-        return bias.clone().multiply(light.projectionMatrix).toArray()
+        return bias.clone().multiply(light.projectionMatrix).elements
       }),
       ambientLights: scene.ambientLights.map(({ color, intensity }) => {
-        return { color: color.clone().multiply(intensity).toArray() }
+        return { color: color.clone().multiply(intensity).elements }
       }),
       spotLights: scene.spotLights.map(({ color, intensity, position, target, distance, coneCos, penumbraCos }) => {
         return {
-          color: color.clone().multiply(intensity).toArray(),
-          position: position.toArray(),
+          color: color.clone().multiply(intensity).elements,
+          position: position.elements,
           distance,
-          target: target.toArray(),
+          target: target.elements,
           coneCos,
           penumbraCos,
         }
       }),
       directionalLights: scene.directionalLights.map(({ color, intensity, direction, bias, castShadow }) => {
         return {
-          color: color.clone().multiply(intensity).toArray(),
-          direction: direction.toArray(),
+          color: color.clone().multiply(intensity).elements,
+          direction: direction.elements,
           bias,
           castShadow,
         }
@@ -82,7 +82,7 @@ export class MeshRenderer {
       shadowTextures: scene.shadowLights.map((light) => {
         return this.shadowRenderer.texturesStore.getOrCreate(light)
       }),
-      cameraPosition: camera.position.toArray(),
+      cameraPosition: camera.position.elements,
     })
   }
 }

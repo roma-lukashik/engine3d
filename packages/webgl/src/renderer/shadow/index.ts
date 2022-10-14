@@ -39,7 +39,7 @@ export class ShadowRenderer {
         }
         const program = this.programs.get(mesh)!
         program.use()
-        program.uniforms.setValues({ projectionMatrix: light.projectionMatrix.toArray() })
+        program.uniforms.setValues({ projectionMatrix: light.projectionMatrix.elements })
         mesh.render(program)
       })
     })

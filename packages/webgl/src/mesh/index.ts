@@ -7,7 +7,6 @@ import { ceilPowerOfTwo } from "@math/operators"
 import { transform } from "@utils/object"
 import { Skeleton } from "@core/skeleton"
 import { WebGLImageTexture } from "@webgl/textures/image"
-import { AABB } from "@geometry/bbox/aabb"
 import { Matrix4 } from "@math/matrix4"
 
 type Props = {
@@ -47,22 +46,18 @@ export class WebGLMesh {
     }
     this.projectionMatrix = this.mesh.worldMatrix
     program.uniforms.setValues({
-      worldMatrix: this.mesh.worldMatrix.toArray(),
+      worldMatrix: this.mesh.worldMatrix.elements,
       boneTexture: this.boneTexture,
       boneTextureSize: this.boneTextureSize,
       material: {
         metalness: this.mesh.material.metalness,
         roughness: this.mesh.material.roughness,
-        color: this.mesh.material.color.toArray(),
+        color: this.mesh.material.color.elements,
         colorTexture: this.colorTexture,
       },
     })
     program.attributes.update(this.attributes)
     this.drawBuffer()
-  }
-
-  public computeBoundingBox(): AABB {
-    return new AABB(this.mesh.geometry.position.array)
   }
 
   private computeAttributes() {

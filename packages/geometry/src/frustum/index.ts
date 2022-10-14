@@ -1,6 +1,6 @@
 import { Plane } from "@geometry/plane"
-import { Matrix4 } from "@math/matrix4"
 import { Sphere } from "@geometry/bbox/sphere"
+import { Matrix4 } from "@math/matrix4"
 import { gte } from "@math/operators"
 
 export class Frustum {
@@ -47,7 +47,7 @@ export class Frustum {
       a10, a11, a12, a13,
       a20, a21, a22, a23,
       a30, a31, a32, a33,
-    ] = matrix.toArray()
+    ] = matrix.elements
     return new Frustum(
       Plane.fromComponents(a03 + a00, a13 + a10, a23 + a20, a33 + a30).normalize(),
       Plane.fromComponents(a03 - a00, a13 - a10, a23 - a20, a33 - a30).normalize(),
@@ -64,7 +64,7 @@ export class Frustum {
       a10, a11, a12, a13,
       a20, a21, a22, a23,
       a30, a31, a32, a33,
-    ] = matrix.toArray()
+    ] = matrix.elements
     this.left.setComponents(a03 + a00, a13 + a10, a23 + a20, a33 + a30).normalize()
     this.right.setComponents(a03 - a00, a13 - a10, a23 - a20, a33 - a30).normalize()
     this.bottom.setComponents(a03 + a01, a13 + a11, a23 + a21, a33 + a31).normalize()

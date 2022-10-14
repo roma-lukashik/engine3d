@@ -105,7 +105,7 @@ describe("Quaternion", () => {
     expect(start.slerp(end, t)).toValueEqual(result)
   })
 
-  it("toArray", () => {
-    expect(q.toArray()).toValueEqual([0.1, 0.2, 0.3, 0.5])
+  it("elements", () => {
+    expect(q.elements).toValueEqual([0.1, 0.2, 0.3, 0.5])
   })
 })

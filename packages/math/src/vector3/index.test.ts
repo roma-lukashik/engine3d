@@ -152,8 +152,8 @@ describe("Vector3", () => {
     expect(a.rotateByQuaternion(q)).toValueEqual([2.586, 0.586, 2.828])
   })
 
-  it("toArray", () => {
-    expect(a.toArray()).toValueEqual([1, 2, 3])
+  it("elements", () => {
+    expect(a.elements).toValueEqual([1, 2, 3])
   })
 
   it("equal", () => {

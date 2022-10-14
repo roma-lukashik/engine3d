@@ -107,8 +107,8 @@ describe("Vector4", () => {
     expect(a.negate()).toValueEqual([-1, -2, -3, -4])
   })
 
-  it("toArray", () => {
-    expect(a.toArray()).toValueEqual([1, 2, 3, 4])
+  it("elements", () => {
+    expect(a.elements).toValueEqual([1, 2, 3, 4])
   })
 
   it("equal", () => {

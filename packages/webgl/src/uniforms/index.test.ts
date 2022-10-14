@@ -64,7 +64,7 @@ describe("Uniforms", () => {
 
   it("updates uniforms", () => {
     uniforms.setValues({
-      worldMatrix: Matrix4.identity().toArray(),
+      worldMatrix: Matrix4.identity().elements,
       boneTextureSize: 16,
       boneTexture: {} as WebGLDataTexture<Float32Array>, // Stub
       shadowTextures: [
@@ -72,8 +72,8 @@ describe("Uniforms", () => {
         {} as WebGLDepthTexture, // Stub
       ],
       textureMatrices: [
-        Matrix4.translation(0.5, 0.5, 0.5).scale(0.5, 0.5, 0.5).toArray(),
-        Matrix4.identity().toArray(),
+        Matrix4.translation(0.5, 0.5, 0.5).scale(0.5, 0.5, 0.5).elements,
+        Matrix4.identity().elements,
       ],
     })
 

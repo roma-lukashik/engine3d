@@ -13,6 +13,10 @@ export class QuaternionArray extends Float32Array {
 export class Quaternion {
   public static readonly size = 4
 
+  public get elements(): Readonly<QuaternionArray> {
+    return this.array
+  }
+
   private readonly array: QuaternionArray = new QuaternionArray()
 
   constructor()
@@ -54,7 +58,7 @@ export class Quaternion {
       a11, a12, a13, ,
       a21, a22, a23, ,
       a31, a32, a33, ,
-    ] = m.toArray()
+    ] = m.elements
 
     const trace = a11 + a22 + a33
 
@@ -131,10 +135,6 @@ export class Quaternion {
     }
 
     return this.multiply(scale0).add(q.clone().multiply(scale1 * Math.sign(dot)))
-  }
-
-  public toArray(): Readonly<QuaternionArray> {
-    return this.array
   }
 
   private add(q: Quaternion): this {
