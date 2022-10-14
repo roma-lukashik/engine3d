@@ -7,6 +7,7 @@ import { ceilPowerOfTwo } from "@math/operators"
 import { transform } from "@utils/object"
 import { Skeleton } from "@core/skeleton"
 import { WebGLImageTexture } from "@webgl/textures/image"
+import { Matrix4 } from "@math/matrix4"
 
 type Props = {
   gl: WebGLRenderingContext
@@ -15,9 +16,10 @@ type Props = {
 
 export class WebGLMesh {
   public readonly colorTexture: WebGLImageTexture
+  public projectionMatrix: Matrix4
+  public readonly mesh: Mesh
 
   private readonly gl: WebGLRenderingContext
-  private readonly mesh: Mesh
   private readonly attributes: Partial<Record<keyof Geometry, WebglVertexAttribute>>
   private boneTexture: WebGLDataTexture<Float32Array>
   private boneTextureSize: number
@@ -32,6 +34,7 @@ export class WebGLMesh {
     if (this.mesh.skeleton) {
       this.computeBoneTexture(this.mesh.skeleton)
     }
+    this.projectionMatrix = mesh.worldMatrix
     if (this.mesh.material.colorTexture) {
       this.colorTexture = new WebGLImageTexture({ gl, image: this.mesh.material.colorTexture.source })
     }
@@ -41,19 +44,18 @@ export class WebGLMesh {
     if (this.mesh.skeleton) {
       this.boneTexture.updateTexture(this.mesh.skeleton.boneMatrices, this.boneTextureSize)
     }
-    program.use()
+    this.projectionMatrix = this.mesh.worldMatrix
     program.uniforms.setValues({
-      worldMatrix: this.mesh.worldMatrix.toArray(),
+      worldMatrix: this.mesh.worldMatrix.elements,
       boneTexture: this.boneTexture,
       boneTextureSize: this.boneTextureSize,
       material: {
         metalness: this.mesh.material.metalness,
         roughness: this.mesh.material.roughness,
-        color: this.mesh.material.color.toArray(),
+        color: this.mesh.material.color.elements,
         colorTexture: this.colorTexture,
       },
     })
-    program.uniforms.update()
     program.attributes.update(this.attributes)
     this.drawBuffer()
   }

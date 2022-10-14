@@ -11,6 +11,10 @@ export class Vector4Array extends Float32Array {
 export class Vector4 {
   public static readonly size = 4
 
+  public get elements(): Readonly<Vector4Array> {
+    return this.array
+  }
+
   private readonly array: Vector4Array = new Vector4Array()
 
   public constructor()
@@ -59,6 +63,10 @@ export class Vector4 {
 
   public clone(): Vector4 {
     return new Vector4(this.x, this.y, this.z, this.w)
+  }
+
+  public copy(v: Vector4): this {
+    return this.set(v.x, v.y, v.z, v.w)
   }
 
   public add(v: Vector4): this {
@@ -123,9 +131,5 @@ export class Vector4 {
 
   public equal(v: Vector4): boolean {
     return eq(this.x, v.x) && eq(this.y, v.y) && eq(this.z, v.z) && eq(this.w, v.w)
-  }
-
-  public toArray(): Readonly<Vector4Array> {
-    return this.array
   }
 }

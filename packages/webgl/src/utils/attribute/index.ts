@@ -31,19 +31,19 @@ export class WebglVertexAttribute {
   }
 
   public bindBufferToVertexAttribute(location: number): void {
-    const numLoc = this.bufferSize
-    const size = this.itemSize / numLoc
-    const stride = numLoc === 1 ? 0 : numLoc ** 3
-    const offset = numLoc === 1 ? 0 : numLoc ** 2
+    const locationSize = this.bufferSize
+    const size = this.itemSize / locationSize
+    const stride = locationSize === 1 ? 0 : locationSize ** 3
 
-    for (let i = 0; i < numLoc; i++) {
+    for (let i = 0; i < locationSize; i++) {
       this.gl.vertexAttribPointer(
         location + i,
         size,
         this.type,
         this.normalized,
         this.stride + stride,
-        this.offset + i * offset,
+        // TODO check for stride=0
+        (this.offset + (size / locationSize) * i) * this.array.BYTES_PER_ELEMENT,
       )
       this.gl.enableVertexAttribArray(location + i)
     }
@@ -59,13 +59,10 @@ export class WebglVertexAttribute {
   }
 
   private getType(): number {
-    if (this.array.constructor === Float32Array) {
-      return this.gl.FLOAT
-    }
-    if (this.array.constructor === Uint16Array) {
-      return this.gl.UNSIGNED_SHORT
-    }
-    return this.gl.UNSIGNED_INT
+    if (this.array instanceof Float32Array) return this.gl.FLOAT
+    if (this.array instanceof Uint32Array) return this.gl.UNSIGNED_INT
+    if (this.array instanceof Uint16Array) return this.gl.UNSIGNED_SHORT
+    return this.gl.UNSIGNED_BYTE
   }
 
   private assignBufferData(): void {

@@ -1,6 +1,6 @@
 import { lt } from "@math/operators"
 import type { Matrix4 } from "@math/matrix4"
-import { Vector3 } from "@math/vector3"
+import type { Vector3 } from "@math/vector3"
 
 export type QuaternionTuple = [x: number, y: number, z: number, w: number]
 
@@ -12,6 +12,10 @@ export class QuaternionArray extends Float32Array {
 
 export class Quaternion {
   public static readonly size = 4
+
+  public get elements(): Readonly<QuaternionArray> {
+    return this.array
+  }
 
   private readonly array: QuaternionArray = new QuaternionArray()
 
@@ -54,7 +58,7 @@ export class Quaternion {
       a11, a12, a13, ,
       a21, a22, a23, ,
       a31, a32, a33, ,
-    ] = m.toArray()
+    ] = m.elements
 
     const trace = a11 + a22 + a33
 
@@ -109,6 +113,10 @@ export class Quaternion {
     return new Quaternion(this.x, this.y, this.z, this.w)
   }
 
+  public copy(q: Quaternion): this {
+    return this.set(q.x, q.y, q.z, q.w)
+  }
+
   public slerp(q: Quaternion, t: number): this {
     const dot = this.dot(q)
     const dotAbs = Math.abs(dot)
@@ -127,10 +135,6 @@ export class Quaternion {
     }
 
     return this.multiply(scale0).add(q.clone().multiply(scale1 * Math.sign(dot)))
-  }
-
-  public toArray(): Readonly<QuaternionArray> {
-    return this.array
   }
 
   private add(q: Quaternion): this {

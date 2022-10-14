@@ -7,8 +7,8 @@ export const createTexture2D = (gl: WebGLRenderingContext): WebGLTexture => {
   return texture
 }
 
-export const bindTexture = (gl: WebGLRenderingContext, texture: WebGLTexture, register: number): void => {
-  gl.activeTexture(gl.TEXTURE0 + register)
+export const bindTexture = (gl: WebGLRenderingContext, texture: WebGLTexture, textureUnit: number): void => {
+  gl.activeTexture(gl.TEXTURE0 + textureUnit)
   gl.bindTexture(gl.TEXTURE_2D, texture)
 }
 

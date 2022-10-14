@@ -1,5 +1,7 @@
 import { Matrix4 } from "@math/matrix4"
 import { Vector3 } from "@math/vector3"
+import { Quaternion } from "@math/quaternion"
+import { PI } from "@math/constants"
 
 describe("Vector3", () => {
   const a = new Vector3()
@@ -61,6 +63,10 @@ describe("Vector3", () => {
   it("clone", () => {
     expect(a.clone()).toValueEqual([1, 2, 3])
     expect(a.clone()).not.toBe(a)
+  })
+
+  it("copy", () => {
+    expect(a.copy(b)).toValueEqual([2, 3, 1])
   })
 
   it("set(0, 1, 2)", () => {
@@ -141,8 +147,13 @@ describe("Vector3", () => {
     expect(a.transformMatrix4(m)).toValueEqual([0.914, 0.943, 0.971])
   })
 
-  it("toArray", () => {
-    expect(a.toArray()).toValueEqual([1, 2, 3])
+  it("rotateByQuaternion", () => {
+    const q = Quaternion.fromAxisAngle(Vector3.one(), PI / 4)
+    expect(a.rotateByQuaternion(q)).toValueEqual([2.586, 0.586, 2.828])
+  })
+
+  it("elements", () => {
+    expect(a.elements).toValueEqual([1, 2, 3])
   })
 
   it("equal", () => {

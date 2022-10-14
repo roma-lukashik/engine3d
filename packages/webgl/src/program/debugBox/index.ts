@@ -1,18 +1,18 @@
 import { Matrix4Array } from "@math/matrix4"
 import { Program } from "@webgl/program"
+import { WebglRenderState } from "@webgl/utils/renderState"
 
-type LightDebugInfoUniforms = {
+type DebugProgramUniforms = {
   projectionMatrix: Matrix4Array
   worldMatrix: Matrix4Array
 }
 
-type Props = {
-  gl: WebGLRenderingContext
-}
-
-export class LightDebugInfoProgram extends Program<LightDebugInfoUniforms> {
-  public constructor({ gl }: Props) {
-    super({ gl, vertex, fragment })
+export class DebugBoxProgram extends Program<DebugProgramUniforms> {
+  public constructor(
+    gl: WebGLRenderingContext,
+    state: WebglRenderState,
+  ) {
+    super(gl, state, vertex, fragment)
   }
 }
 
@@ -28,9 +28,9 @@ void main() {
 `
 
 const fragment = `
-precision mediump float;
+precision lowp float;
 
 void main() {
-  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+  gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
 }
 `

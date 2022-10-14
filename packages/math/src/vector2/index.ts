@@ -11,6 +11,10 @@ export class Vector2Array extends Float32Array {
 export class Vector2 {
   public static readonly size = 2
 
+  public get elements(): Readonly<Vector2Array> {
+    return this.array
+  }
+
   private readonly array: Vector2Array = new Vector2Array()
 
   public constructor()
@@ -49,6 +53,10 @@ export class Vector2 {
 
   public clone(): Vector2 {
     return new Vector2(this.x, this.y)
+  }
+
+  public copy(v: Vector2): this {
+    return this.set(v.x, v.y)
   }
 
   public add(v: Vector2): this {
@@ -117,9 +125,5 @@ export class Vector2 {
 
   public equal(v: Vector2): boolean {
     return eq(this.x, v.x) && eq(this.y, v.y)
-  }
-
-  public toArray(): Readonly<Vector2Array> {
-    return this.array
   }
 }

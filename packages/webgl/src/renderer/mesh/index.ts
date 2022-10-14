@@ -4,19 +4,23 @@ import { Scene } from "@webgl/scene"
 import { Camera } from "@core/camera"
 import { Matrix4 } from "@math/matrix4"
 import { ShadowRenderer } from "@webgl/renderer/shadow"
+import { WebglRenderState } from "@webgl/utils/renderState"
 
-type Props = {
-  gl: WebGLRenderingContext
-  shadowRenderer: ShadowRenderer
-}
+const bias = Matrix4.translation(0.5, 0.5, 0.5).scale(0.5, 0.5, 0.5)
 
 export class MeshRenderer {
   private readonly gl: WebGLRenderingContext
+  private readonly state: WebglRenderState
   private readonly meshPrograms: WeakMap<WebGLMesh, MeshProgram> = new WeakMap()
   private readonly shadowRenderer: ShadowRenderer
 
-  public constructor({ gl, shadowRenderer }: Props) {
+  public constructor(
+    gl: WebGLRenderingContext,
+    state: WebglRenderState,
+    shadowRenderer: ShadowRenderer,
+  ) {
     this.gl = gl
+    this.state = state
     this.shadowRenderer = shadowRenderer
   }
 
@@ -31,8 +35,7 @@ export class MeshRenderer {
 
     scene.meshes.forEach((mesh, key) => {
       if (!this.meshPrograms.has(mesh)) {
-        this.meshPrograms.set(mesh, new MeshProgram({
-          gl: this.gl,
+        this.meshPrograms.set(mesh, new MeshProgram(this.gl, this.state, {
           ambientLightsAmount: scene.ambientLights.length,
           pointLightsAmount: scene.pointLights.length,
           spotLightsAmount: scene.spotLights.length,
@@ -49,33 +52,37 @@ export class MeshRenderer {
   }
 
   private updateUniforms(program: MeshProgram, scene: Scene, camera: Camera): void {
-    const bias = Matrix4.translation(0.5, 0.5, 0.5).scale(0.5, 0.5, 0.5)
-
+    program.use()
     program.uniforms.setValues({
-      projectionMatrix: camera.projectionMatrix.toArray(),
+      projectionMatrix: camera.projectionMatrix.elements,
       textureMatrices: scene.shadowLights.map((light) => {
-        return bias.clone().multiply(light.projectionMatrix).toArray()
+        return bias.clone().multiply(light.projectionMatrix).elements
       }),
       ambientLights: scene.ambientLights.map(({ color, intensity }) => {
-        return { color: color.clone().multiply(intensity).toArray() }
+        return { color: color.clone().multiply(intensity).elements }
       }),
       spotLights: scene.spotLights.map(({ color, intensity, position, target, distance, coneCos, penumbraCos }) => {
         return {
-          color: color.clone().multiply(intensity).toArray(),
-          position: position.toArray(),
+          color: color.clone().multiply(intensity).elements,
+          position: position.elements,
           distance,
-          target: target.toArray(),
+          target: target.elements,
           coneCos,
           penumbraCos,
         }
       }),
-      directionalLights: scene.directionalLights.map(({ color, intensity, direction }) => {
-        return { color: color.clone().multiply(intensity).toArray(), direction: direction.toArray() }
+      directionalLights: scene.directionalLights.map(({ color, intensity, direction, bias, castShadow }) => {
+        return {
+          color: color.clone().multiply(intensity).elements,
+          direction: direction.elements,
+          bias,
+          castShadow,
+        }
       }),
       shadowTextures: scene.shadowLights.map((light) => {
         return this.shadowRenderer.texturesStore.getOrCreate(light)
       }),
-      cameraPosition: camera.position.toArray(),
+      cameraPosition: camera.position.elements,
     })
   }
 }

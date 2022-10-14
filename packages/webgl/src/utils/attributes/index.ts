@@ -39,7 +39,7 @@ export class Attributes {
         continue
       }
       const location = this.gl.getAttribLocation(this.program, info.name)
-      if (location === null) {
+      if (location === -1) {
         continue
       }
       this.data.push({ location, name: info.name as keyof Geometry })

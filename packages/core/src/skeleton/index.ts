@@ -21,7 +21,7 @@ export class Skeleton {
     const globalWorldInverse = node.worldMatrix.clone().invert()
     this.bones.forEach((bone, i) => {
       const boneMatrix = globalWorldInverse.clone().multiply(bone.worldMatrix).multiply(this.boneInverses[i])
-      this.boneMatrices.set(boneMatrix.toArray(), i * Matrix4.size)
+      this.boneMatrices.set(boneMatrix.elements, i * Matrix4.size)
     })
   }
 }

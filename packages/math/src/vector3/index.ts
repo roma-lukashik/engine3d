@@ -1,5 +1,6 @@
 import { eq } from "@math/operators"
 import type { Matrix4 } from "@math/matrix4"
+import type { Quaternion } from "@math/quaternion"
 
 export type Vector3Tuple = [x: number, y: number, z: number]
 
@@ -11,6 +12,10 @@ export class Vector3Array extends Float32Array {
 
 export class Vector3 {
   public static readonly size = 3
+
+  public get elements(): Readonly<Vector3Array> {
+    return this.array
+  }
 
   private readonly array: Vector3Array = new Vector3Array()
 
@@ -67,6 +72,10 @@ export class Vector3 {
 
   public clone(): Vector3 {
     return new Vector3(this.x, this.y, this.z)
+  }
+
+  public copy(v: Vector3): this {
+    return this.set(v.x, v.y, v.z)
   }
 
   public add(v: Vector3): this {
@@ -138,7 +147,7 @@ export class Vector3 {
 
   public transformMatrix4(matrix: Matrix4): this {
     const x = this.x, y = this.y, z = this.z
-    const m = matrix.toArray()
+    const m = matrix.elements
     const w = (m[3] * x + m[7] * y + m[11] * z + m[15]) || 1
     return this.set(
       (m[0] * x + m[4] * y + m[8] * z + m[12]) / w,
@@ -147,11 +156,31 @@ export class Vector3 {
     )
   }
 
-  public equal(v: Vector3): boolean {
-    return eq(this.x, v.x) && eq(this.y, v.y) && eq(this.z, v.z)
+  public rotateByQuaternion(q: Quaternion): this {
+    const v = new Vector3(q.x, q.y, q.z)
+    const u = v.clone().cross(this)
+    const uu = v.cross(u).multiply(2)
+    return this.add(u.multiply(q.w * 2)).add(uu)
   }
 
-  public toArray(): Readonly<Vector3Array> {
-    return this.array
+  // TODO tests
+  public min(v: Vector3): this {
+    return this.set(
+      Math.min(this.x, v.x),
+      Math.min(this.y, v.y),
+      Math.min(this.z, v.z),
+    )
+  }
+
+  public max(v: Vector3): this {
+    return this.set(
+      Math.max(this.x, v.x),
+      Math.max(this.y, v.y),
+      Math.max(this.z, v.z),
+    )
+  }
+
+  public equal(v: Vector3): boolean {
+    return eq(this.x, v.x) && eq(this.y, v.y) && eq(this.z, v.z)
   }
 }

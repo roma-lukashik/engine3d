@@ -2,7 +2,7 @@ import { diff } from "jest-diff"
 import { matcherHint } from "jest-matcher-utils"
 
 type Value = {
-  toArray(): ArrayLike<number>
+  elements: ArrayLike<number>
 }
 
 export const toValueEqual: jest.CustomMatcher = <T extends Value>(
@@ -11,8 +11,8 @@ export const toValueEqual: jest.CustomMatcher = <T extends Value>(
   precision = 3,
 ) => {
   const eps = Math.pow(10, -precision)
-  const receivedArray = "toArray" in received ? received.toArray() : received
-  const expectedArray = "toArray" in expected ? expected.toArray() : expected
+  const receivedArray = "elements" in received ? received.elements : received
+  const expectedArray = "elements" in expected ? expected.elements : expected
   const pass = expectedArray.length === receivedArray.length
     && every(expectedArray, (x, i) => eq(x, receivedArray[i], eps))
 

@@ -18,6 +18,7 @@ export class Object3d {
   public scale: Vector3
   public rotation: Quaternion
   public children: Object3d[] = []
+  public parent?: Object3d
 
   constructor({
     name,
@@ -43,6 +44,7 @@ export class Object3d {
 
   public add(objects: Object3d[]): void {
     this.children.push(...objects)
+    objects.forEach((object) => object.parent = this)
   }
 
   public traverse(fn: (object: Object3d) => void): void {
@@ -51,7 +53,7 @@ export class Object3d {
   }
 
   public updateWorldMatrix(matrix: Matrix4 = Matrix4.identity()): void {
-    this.worldMatrix = matrix.clone().multiply(this.localMatrix)
+    this.worldMatrix.copy(matrix).multiply(this.localMatrix)
     this.children.forEach((child) => child.updateWorldMatrix(this.worldMatrix))
   }
 }

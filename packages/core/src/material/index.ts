@@ -45,7 +45,7 @@ export class Material {
     occlusionTexture,
     emissiveTexture,
   }: Props = {}) {
-    const [r, g, b, a] = color?.toArray()
+    const [r, g, b, a] = color?.elements
     this.color = new Vector3(r, g, b)
     this.opacity = a
     this.metalness = metallic

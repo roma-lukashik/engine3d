@@ -3,19 +3,21 @@ import { ShadowProgram } from "@webgl/program/shadow"
 import { LightWithShadow } from "@core/lights"
 import { Mesh } from "@core/mesh"
 import { TexturesStore } from "@webgl/renderer/shadow/texturesStore"
-
-type Props = {
-  gl: WebGLRenderingContext
-}
+import { WebglRenderState } from "@webgl/utils/renderState"
 
 export class ShadowRenderer {
   private readonly gl: WebGLRenderingContext
+  private readonly state: WebglRenderState
   private readonly programs: WeakMap<WebGLMesh, ShadowProgram> = new WeakMap()
 
   public readonly texturesStore: TexturesStore<LightWithShadow>
 
-  constructor({ gl }: Props) {
+  public constructor(
+    gl: WebGLRenderingContext,
+    state: WebglRenderState,
+  ) {
     this.gl = gl
+    this.state = state
     this.texturesStore = new TexturesStore(gl)
   }
 
@@ -31,13 +33,13 @@ export class ShadowRenderer {
 
       meshes.forEach((mesh, key) => {
         if (!this.programs.has(mesh)) {
-          this.programs.set(mesh, new ShadowProgram({
-            gl: this.gl,
+          this.programs.set(mesh, new ShadowProgram(this.gl, this.state, {
             useSkinning: !!key.skeleton,
           }))
         }
         const program = this.programs.get(mesh)!
-        program.uniforms.setValues({ projectionMatrix: light.projectionMatrix.toArray() })
+        program.use()
+        program.uniforms.setValues({ projectionMatrix: light.projectionMatrix.elements })
         mesh.render(program)
       })
     })

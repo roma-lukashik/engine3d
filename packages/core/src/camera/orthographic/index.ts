@@ -60,7 +60,7 @@ export class OrthographicCamera implements Camera {
       this.projectionMatrix = Matrix4.identity()
     } else {
       const viewMatrix = Matrix4.lookAt(this.position, this.target, this.up).invert()
-      this.projectionMatrix = this.orthographicMatrix.clone().multiply(viewMatrix)
+      this.projectionMatrix.copy(this.orthographicMatrix).multiply(viewMatrix)
     }
   }
 

@@ -1,25 +1,23 @@
-import { UniformValues, Uniforms } from "@webgl/utils/uniforms"
+import { UniformValues, Uniforms } from "@webgl/uniforms"
 import { Attributes } from "@webgl/utils/attributes"
-
-type Props = {
-  gl: WebGLRenderingContext
-  vertex: string
-  fragment: string
-}
+import { WebglRenderState } from "@webgl/utils/renderState"
 
 export class Program<U extends UniformValues = UniformValues> {
   private readonly gl: WebGLRenderingContext
+  private readonly state: WebglRenderState
   private readonly program: WebGLProgram
 
   public readonly uniforms: Uniforms<U>
   public readonly attributes: Attributes
 
-  constructor({
-    gl,
-    vertex,
-    fragment,
-  }: Props) {
+  public constructor(
+    gl: WebGLRenderingContext,
+    state: WebglRenderState,
+    vertex: string,
+    fragment: string,
+  ) {
     this.gl = gl
+    this.state = state
 
     const vertexShader = this.compileShader(vertex, gl.VERTEX_SHADER)
     const fragmentShader = this.compileShader(fragment, gl.FRAGMENT_SHADER)
@@ -36,11 +34,12 @@ export class Program<U extends UniformValues = UniformValues> {
     gl.deleteShader(fragmentShader)
 
     this.program = program
-    this.uniforms = new Uniforms({ gl, program })
+    this.uniforms = new Uniforms(gl, state, program)
     this.attributes = new Attributes({ gl, program })
   }
 
   public use(): void {
+    this.state.resetTextureUnit()
     this.gl.useProgram(this.program)
   }
 

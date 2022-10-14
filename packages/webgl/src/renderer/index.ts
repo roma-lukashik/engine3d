@@ -2,7 +2,9 @@ import { Scene } from "@webgl/scene"
 import { Camera } from "@core/camera"
 import { ShadowRenderer } from "@webgl/renderer/shadow"
 import { MeshRenderer } from "@webgl/renderer/mesh"
-import { LightDebugInfoRenderer } from "@webgl/renderer/lightDebugInfo"
+import { DebugLightRenderer } from "@webgl/renderer/debugLight"
+import { WebglRenderState } from "@webgl/utils/renderState"
+import { DebugSkeletonRenderer } from "@webgl/renderer/debugSkeleton"
 
 type Props = {
   canvas?: HTMLCanvasElement
@@ -13,9 +15,11 @@ type Props = {
 export class Renderer {
   public readonly gl: WebGLRenderingContext
 
+  private readonly state: WebglRenderState
   private readonly shadowRenderer: ShadowRenderer
   private readonly meshRenderer: MeshRenderer
-  private readonly lightDebugInfoRenderer: LightDebugInfoRenderer
+  private readonly debugLightRenderer: DebugLightRenderer
+  private readonly debugSkeletonRenderer: DebugSkeletonRenderer
 
   constructor({
     canvas = document.createElement("canvas"),
@@ -33,9 +37,11 @@ export class Renderer {
       throw new Error("Your browser cannot support uint index element")
     }
     this.gl = gl
-    this.shadowRenderer = new ShadowRenderer({ gl })
-    this.meshRenderer = new MeshRenderer({ gl, shadowRenderer: this.shadowRenderer })
-    this.lightDebugInfoRenderer = new LightDebugInfoRenderer({ gl })
+    this.state = new WebglRenderState(this.gl)
+    this.shadowRenderer = new ShadowRenderer(this.gl, this.state)
+    this.meshRenderer = new MeshRenderer(this.gl, this.state, this.shadowRenderer)
+    this.debugLightRenderer = new DebugLightRenderer(this.gl, this.state)
+    this.debugSkeletonRenderer = new DebugSkeletonRenderer(this.gl, this.state)
     this.resize(width, height)
     this.gl.clearColor(0, 0, 0, 1)
   }
@@ -43,7 +49,14 @@ export class Renderer {
   public render(scene: Scene, camera: Camera): void {
     this.shadowRenderer.render(scene.shadowLights, scene.meshes)
     this.meshRenderer.render(scene, camera)
-    this.lightDebugInfoRenderer.render(scene.shadowLights, camera)
+
+    this.debugLightRenderer.render(scene.shadowLights, camera)
+
+    scene.objects.forEach((object) => {
+      object.skeletons.forEach((skeleton) => {
+        this.debugSkeletonRenderer.render(skeleton, camera)
+      })
+    })
   }
 
   public resize(width: number, height: number): void {

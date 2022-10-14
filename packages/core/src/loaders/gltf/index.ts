@@ -4,7 +4,7 @@ import {
   AnimationChannelPath,
   BufferViewTarget,
   ComponentType,
-  Gltf,
+  GltfRaw,
   GltfAnimation,
   GltfBufferView,
   MeshPrimitive,
@@ -28,38 +28,33 @@ import { Vector3 } from "@math/vector3"
 import { Quaternion } from "@math/quaternion"
 import { Vector4 } from "@math/vector4"
 import { AnimationSample } from "@core/animationSample"
+import { Gltf } from "@core/gltf"
 
-export const parseGltf = async (raw: ArrayBufferLike | string | Gltf) => {
-  const data = typeof raw === "string" ? JSON.parse(raw) as Gltf : "byteLength" in raw ? parseGlb(raw) : raw
+export const parseGltf = async <K extends string>(raw: ArrayBufferLike | string | GltfRaw): Promise<Gltf<K>> => {
+  const data = typeof raw === "string" ? JSON.parse(raw) as GltfRaw : "byteLength" in raw ? parseGlb(raw) : raw
   const version = Number(data.asset?.version ?? 0)
   if (version < 2) {
     throw new Error("Unsupported *.gltf file. Version should be >= 2.0.")
   }
   const nodes = parseNodes(data)
   const scene = await parseScene(data, nodes)
-  scene.updateWorldMatrix()
-  scene.traverse((node) => {
-    if (node instanceof Mesh) {
-      node.updateSkeleton()
-    }
-  })
-  const animations = parseAnimations(data, nodes)
-  return { scene, animations }
+  const animations = parseAnimations<K>(data, nodes)
+  return new Gltf(scene, animations)
 }
 
-const parseNodes = (data: Gltf): Object3d[] => {
-  return mapOption(data.nodes, ({ translation, rotation, scale, matrix, name }) => {
-    return new Object3d({
+const parseNodes = (data: GltfRaw): Object3d[] => {
+  return mapOption(data.nodes, ({ translation, rotation, scale, matrix, name }) =>
+    new Object3d({
       position: translation && Vector3.fromArray(translation),
       rotation: rotation && Quaternion.fromArray(rotation),
       scale: scale && Vector3.fromArray(scale),
       matrix: matrix && Matrix4.fromArray(matrix),
       name,
-    })
-  })
+    }),
+  )
 }
 
-const parseScene = async (data: Gltf, nodes: Object3d[]): Promise<Object3d>=> {
+const parseScene = async (data: GltfRaw, nodes: Object3d[]): Promise<Object3d>=> {
   const scene = new Object3d({ name: "Scene" })
   const gltfScene = nthOption(data.scenes, data.scene ?? 0)
   const children = await mapOptionAsync(gltfScene?.nodes, (nodeId) => parseNode(data, nodes, nodeId))
@@ -67,7 +62,7 @@ const parseScene = async (data: Gltf, nodes: Object3d[]): Promise<Object3d>=> {
   return scene
 }
 
-const parseNode = async (data: Gltf, nodes: Object3d[], nodeId: number): Promise<Option<Object3d>> => {
+const parseNode = async (data: GltfRaw, nodes: Object3d[], nodeId: number): Promise<Option<Object3d>> => {
   const gltfNode = nthOption(data.nodes, nodeId)
   const node = nthOption(nodes, nodeId)
   const meshes = await parseMesh(data, gltfNode?.mesh) ?? []
@@ -81,12 +76,12 @@ const parseNode = async (data: Gltf, nodes: Object3d[], nodeId: number): Promise
   return node
 }
 
-const parseMesh = async (data: Gltf, meshIndex: Option<number>): Promise<Option<Mesh[]>> => {
+const parseMesh = async (data: GltfRaw, meshIndex: Option<number>): Promise<Option<Mesh[]>> => {
   const gltfMesh = nthOption(data.meshes, meshIndex)
   return mapOptionAsync(gltfMesh?.primitives, (primitive) => parsePrimitive(data, primitive))
 }
 
-const parsePrimitive = async (data: Gltf, primitive: MeshPrimitive): Promise<Mesh> => {
+const parsePrimitive = async (data: GltfRaw, primitive: MeshPrimitive): Promise<Mesh> => {
   const geometryData = transform(primitive.attributes, (accessorIndex) => {
     return parseAttributeAccessor(data, accessorIndex)
   })
@@ -157,7 +152,7 @@ const createMesh = (geometry: Geometry, material: Material, mode?: MeshPrimitive
   }
 }
 
-const parseTexture = async (data: Gltf, textureIndex: Option<number>): Promise<Option<Texture>> => {
+const parseTexture = async (data: GltfRaw, textureIndex: Option<number>): Promise<Option<Texture>> => {
   const texture = nthOption(data.textures, textureIndex)
   const image = nthOption(data.images, texture?.source)
   if (image?.uri) {
@@ -174,7 +169,7 @@ const parseTexture = async (data: Gltf, textureIndex: Option<number>): Promise<O
 
 // Handling sparse has not been implemented yet.
 const parseAttributeAccessor = (
-  data: Gltf,
+  data: GltfRaw,
   accessorIndex: Option<number>,
   customTarget?: BufferViewTarget,
 ): Option<BufferAttribute> => {
@@ -186,15 +181,21 @@ const parseAttributeAccessor = (
   const TypedArray = TypedArrayByComponentType[accessor.componentType]
   const byteOffset = accessor.byteOffset ?? 0
   const normalized = accessor.normalized === true
-  // const elementBytes = TypedArray.BYTES_PER_ELEMENT
-  // const itemBytes = elementBytes * itemSize
+  const elementBytes = TypedArray.BYTES_PER_ELEMENT
+  const itemBytes = elementBytes * itemSize
   const bufferView = nthOption(data.bufferViews, accessor.bufferView)
-  const stride = bufferView?.byteStride
   const target = customTarget ?? bufferView?.target
-  const arraySize = accessor.count * itemSize
   const arrayBuffer = parseBufferView(data, bufferView)
-  const array = arrayBuffer ? new TypedArray(arrayBuffer, byteOffset, arraySize) : new TypedArray(arraySize)
-  return new BufferAttribute({ array, itemSize, normalized, stride, target })
+  const stride = bufferView?.byteStride
+  const isInterleaved = !!stride && stride !== itemBytes
+  const offset = isInterleaved ? byteOffset % stride / elementBytes : 0
+  const arraySize = isInterleaved ? accessor.count * stride / elementBytes : accessor.count * itemSize
+  const array = arrayBuffer
+    ? isInterleaved
+      ? new TypedArray(arrayBuffer, Math.floor(byteOffset / stride) * stride, arraySize)
+      : new TypedArray(arrayBuffer, byteOffset, arraySize)
+        : new TypedArray(arraySize)
+  return new BufferAttribute({ array, itemSize, normalized, stride, target, offset })
 }
 
 const AccessorTypeSizes = {
@@ -216,13 +217,13 @@ const TypedArrayByComponentType = {
   [ComponentType.Float32]: Float32Array,
 }
 
-const parseBufferView = (data: Gltf, bufferView: Option<GltfBufferView>): Option<ArrayBuffer> => {
+const parseBufferView = (data: GltfRaw, bufferView: Option<GltfBufferView>): Option<ArrayBuffer> => {
   const { buffer, byteOffset = 0, byteLength = 0 } = bufferView ?? {}
   const arrayBuffer = parseBuffer(data, buffer)
   return arrayBuffer?.slice(byteOffset, byteOffset + byteLength)
 }
 
-const parseBuffer = (data: Gltf, bufferIndex: Option<number>): Option<ArrayBuffer> => {
+const parseBuffer = (data: GltfRaw, bufferIndex: Option<number>): Option<ArrayBuffer> => {
   const buffer = nthOption(data.buffers, bufferIndex)
   if (!buffer) {
     return
@@ -233,7 +234,7 @@ const parseBuffer = (data: Gltf, bufferIndex: Option<number>): Option<ArrayBuffe
   throw new Error("Getting buffer from URI is not supported yet.")
 }
 
-const parseSkin = (data: Gltf, nodes: Object3d[], skinIndex: Option<number>) => {
+const parseSkin = (data: GltfRaw, nodes: Object3d[], skinIndex: Option<number>) => {
   const skin = nthOption(data.skins, skinIndex)
   const inverseMatrices = parseAttributeAccessor(data, skin?.inverseBindMatrices)
   if (!skin || !inverseMatrices) {
@@ -246,20 +247,21 @@ const parseSkin = (data: Gltf, nodes: Object3d[], skinIndex: Option<number>) => 
   return new Skeleton({ bones, boneInverses })
 }
 
-const parseAnimations = (data: Gltf, nodes: Object3d[]): Animation[] => {
-  return mapOption(data.animations, (animation, index) => {
+const parseAnimations = <K extends string>(data: GltfRaw, nodes: Object3d[]): Record<K, Animation> => {
+  const array = mapOption(data.animations, (animation, index) => {
     return new Animation(animation.name ?? `animation_${index}`, parseAnimation(data, nodes, animation))
   })
+  return Object.fromEntries(array.map((x) => [x.name, x])) as Record<K, Animation>
 }
 
-const parseAnimation = (data: Gltf, nodes: Object3d[], animation: GltfAnimation) => {
+const parseAnimation = (data: GltfRaw, nodes: Object3d[], animation: GltfAnimation) => {
   return mapOption(animation.channels, (channel) => {
     return parseAnimationSample(data, nodes, animation, channel)
   })
 }
 
 const parseAnimationSample = (
-  data: Gltf,
+  data: GltfRaw,
   nodes: Object3d[],
   animation: GltfAnimation,
   channel: AnimationChannel,

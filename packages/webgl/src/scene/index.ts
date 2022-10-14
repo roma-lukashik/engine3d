@@ -1,6 +1,5 @@
 import { WebGLMesh } from "@webgl/mesh"
 import { Mesh } from "@core/mesh"
-import { Object3d } from "@core/object3d"
 import {
   AmbientLight,
   DirectionalLight,
@@ -14,6 +13,7 @@ import {
   PointLight,
   SpotLight,
 } from "@core/lights"
+import { Gltf } from "@core/gltf"
 
 type Props = {
   gl: WebGLRenderingContext
@@ -23,6 +23,7 @@ export class Scene {
   private readonly gl: WebGLRenderingContext
 
   public meshes: Map<Mesh, WebGLMesh> = new Map()
+  public objects: Set<Gltf<any>> = new Set()
   public lights: Light[] = []
 
   public get pointLights(): PointLight[] {
@@ -45,12 +46,13 @@ export class Scene {
     return this.lights.filter(isShadowLight)
   }
 
-  constructor({ gl }: Props) {
+  public constructor({ gl }: Props) {
     this.gl = gl
   }
 
-  public addMesh(object: Object3d): void {
-    object.traverse((node) => {
+  public addMesh(object: Gltf<any>): void {
+    this.objects.add(object)
+    object.node.traverse((node) => {
       if (node instanceof Mesh) {
         this.meshes.set(node, new WebGLMesh({ gl: this.gl, mesh: node }))
       }

@@ -1,0 +1,40 @@
+{
+  "include": ["./index.ts"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@webgl/*": ["../packages/webgl/src/*"],
+      "@core/*": ["../packages/core/src/*"],
+      "@math/*": ["../packages/math/src/*"],
+      "@geometry/*": ["../packages/geometry/src/*"],
+      "@utils/*": ["../packages/utils/src/*"]
+    },
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "strictNullChecks": true,
+    "sourceMap": false,
+    "skipLibCheck": true,
+    "experimentalDecorators": false,
+    "downlevelIteration": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "importHelpers": false,
+    "declaration": true,
+    "typeRoots": [
+      "node_modules/@types",
+    ],
+    "target": "ES2017",
+    "lib": [
+      "es2019",
+      "dom"
+    ]
+  }
+}

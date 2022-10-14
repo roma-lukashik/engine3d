@@ -51,6 +51,10 @@ describe("Vector4", () => {
     expect(a.clone()).not.toBe(a)
   })
 
+  it("copy", () => {
+    expect(a.copy(b)).toValueEqual([5, 6, 7, 8])
+  })
+
   it("set(0, 1, 2, 3)", () => {
     expect(a.set(0, 1, 2, 3)).toValueEqual([0, 1, 2, 3])
   })
@@ -103,8 +107,8 @@ describe("Vector4", () => {
     expect(a.negate()).toValueEqual([-1, -2, -3, -4])
   })
 
-  it("toArray", () => {
-    expect(a.toArray()).toValueEqual([1, 2, 3, 4])
+  it("elements", () => {
+    expect(a.elements).toValueEqual([1, 2, 3, 4])
   })
 
   it("equal", () => {
