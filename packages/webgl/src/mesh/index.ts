@@ -7,7 +7,6 @@ import { ceilPowerOfTwo } from "@math/operators"
 import { transform } from "@utils/object"
 import { Skeleton } from "@core/skeleton"
 import { WebGLImageTexture } from "@webgl/textures/image"
-import { Matrix4 } from "@math/matrix4"
 
 type Props = {
   gl: WebGLRenderingContext
@@ -16,7 +15,6 @@ type Props = {
 
 export class WebGLMesh {
   public readonly colorTexture: WebGLImageTexture
-  public projectionMatrix: Matrix4
   public readonly mesh: Mesh
 
   private readonly gl: WebGLRenderingContext
@@ -34,17 +32,15 @@ export class WebGLMesh {
     if (this.mesh.skeleton) {
       this.computeBoneTexture(this.mesh.skeleton)
     }
-    this.projectionMatrix = mesh.worldMatrix
     if (this.mesh.material.colorTexture) {
       this.colorTexture = new WebGLImageTexture({ gl, image: this.mesh.material.colorTexture.source })
     }
   }
 
-  public render(program: Program): void {
+  public render(program: Program<any, any>): void {
     if (this.mesh.skeleton) {
       this.boneTexture.updateTexture(this.mesh.skeleton.boneMatrices, this.boneTextureSize)
     }
-    this.projectionMatrix = this.mesh.worldMatrix
     program.uniforms.setValues({
       worldMatrix: this.mesh.worldMatrix.elements,
       boneTexture: this.boneTexture,

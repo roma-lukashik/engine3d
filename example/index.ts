@@ -10,6 +10,7 @@ import { Scene } from "@webgl/scene"
 import { toRadian } from "@math/angle"
 import { Vector3 } from "@math/vector3"
 import { Matrix4 } from "@math/matrix4"
+import { Gltf } from "@core/gltf"
 
 const camera = new PerspectiveCamera({
   aspect: window.innerWidth / window.innerHeight,
@@ -58,8 +59,11 @@ const followObject = (object: Object3d): void => {
   camera.lookAt(up.add(objectPosition))
 }
 
-const move = (object: Object3d, translationVector: Vector3, _colliders: Object3d[] = []) => {
-  object.localMatrix.translate(translationVector.x, translationVector.y, translationVector.z)
+const move = (object: Gltf<any>, translationVector: Vector3, colliders: Gltf<any>[] = []) => {
+  const collide = colliders.some((collider) => collider.aabb.collide(object.aabb))
+  if (!collide) {
+    object.node.localMatrix.translate(translationVector.x, translationVector.y, translationVector.z)
+  }
 }
 
 type HeroAnimations =
@@ -83,11 +87,20 @@ scene.addMesh(box3)
 scene.addMesh(hero)
 
 surface.node.updateWorldMatrix(Matrix4.scaling(100, 100, 100).translate(0, -0.1, 0))
+surface.updateAABB()
+
 box.node.updateWorldMatrix(Matrix4.scaling(100, 100, 100).translate(3, 1, -3))
+box.updateAABB()
+
 box2.node.updateWorldMatrix(Matrix4.scaling(100, 200, 100).translate(-3, 1, -3))
+box2.updateAABB()
+
 box3.node.updateWorldMatrix(Matrix4.scaling(50, 50, 50).translate(4, 5, -8))
+box3.updateAABB()
+
 hero.node.localMatrix = Matrix4.scaling(100, 100, 100)
 hero.node.updateWorldMatrix()
+hero.updateAABB()
 followObject(hero.node)
 
 let wPressed = false
@@ -106,8 +119,8 @@ const update = () => {
   }
 
   const step = 0.03
-  if (wPressed) move(hero.node, new Vector3(0, 0, (shiftPressed ? 3 : 1) * -step), [box.node, box2.node, box3.node])
-  if (sPressed) move(hero.node, new Vector3(0, 0, (shiftPressed ? 3 : 1) * step), [box.node, box2.node, box3.node])
+  if (wPressed) move(hero, new Vector3(0, 0, (shiftPressed ? 3 : 1) * -step), [box, box2, box3])
+  if (sPressed) move(hero, new Vector3(0, 0, (shiftPressed ? 3 : 1) * step), [box, box2, box3])
   if (aPressed) hero.node.localMatrix.rotateY(-0.03)
   if (dPressed) hero.node.localMatrix.rotateY(0.03)
 

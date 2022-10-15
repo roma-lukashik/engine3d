@@ -12,14 +12,13 @@ export class StructureUniform<T extends Record<string, unknown>> implements Unif
     gl: WebGLRenderingContext,
     state: WebglRenderState,
     name: string,
-    value: T[keyof T],
     location: WebGLUniformLocation,
     type: number,
     structProperty: keyof T,
   ) {
     this.name = name
     this.structProperty = structProperty
-    this.uniform = new SingleUniform(gl, state, name, value, location, type)
+    this.uniform = new SingleUniform(gl, state, name, location, type)
   }
 
   public setValue(value: T): void {

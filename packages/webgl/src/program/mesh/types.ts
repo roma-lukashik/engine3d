@@ -2,8 +2,9 @@ import { Matrix4Array } from "@math/matrix4"
 import { Vector3Array } from "@math/vector3"
 import { WebGLBaseTexture } from "@webgl/textures/types"
 import { Vector4Array } from "@math/vector4"
+import { WebglVertexAttribute } from "@webgl/utils/attribute"
 
-export type MeshUniformValues = {
+export type MeshUniforms = {
   worldMatrix?: Matrix4Array
   cameraPosition?: Vector3Array
   textureMatrices?: Matrix4Array[]
@@ -16,6 +17,14 @@ export type MeshUniformValues = {
   shadowTextures?: WebGLBaseTexture[]
   boneTexture?: WebGLBaseTexture
   boneTextureSize?: number
+}
+
+export type MeshAttributes = {
+  position: WebglVertexAttribute
+  normal: WebglVertexAttribute
+  skinIndex?: WebglVertexAttribute
+  skinWeight?: WebglVertexAttribute
+  uv: WebglVertexAttribute
 }
 
 type PointLight = {

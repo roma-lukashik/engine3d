@@ -5,6 +5,7 @@ import { MeshRenderer } from "@webgl/renderer/mesh"
 import { DebugLightRenderer } from "@webgl/renderer/debugLight"
 import { WebglRenderState } from "@webgl/utils/renderState"
 import { DebugSkeletonRenderer } from "@webgl/renderer/debugSkeleton"
+import { DebugMeshRenderer } from "@webgl/renderer/debugMesh"
 
 type Props = {
   canvas?: HTMLCanvasElement
@@ -20,6 +21,7 @@ export class Renderer {
   private readonly meshRenderer: MeshRenderer
   private readonly debugLightRenderer: DebugLightRenderer
   private readonly debugSkeletonRenderer: DebugSkeletonRenderer
+  private readonly debugMeshRenderer: DebugMeshRenderer
 
   constructor({
     canvas = document.createElement("canvas"),
@@ -42,6 +44,7 @@ export class Renderer {
     this.meshRenderer = new MeshRenderer(this.gl, this.state, this.shadowRenderer)
     this.debugLightRenderer = new DebugLightRenderer(this.gl, this.state)
     this.debugSkeletonRenderer = new DebugSkeletonRenderer(this.gl, this.state)
+    this.debugMeshRenderer = new DebugMeshRenderer(this.gl, this.state)
     this.resize(width, height)
     this.gl.clearColor(0, 0, 0, 1)
   }
@@ -53,9 +56,8 @@ export class Renderer {
     this.debugLightRenderer.render(scene.shadowLights, camera)
 
     scene.objects.forEach((object) => {
-      object.skeletons.forEach((skeleton) => {
-        this.debugSkeletonRenderer.render(skeleton, camera)
-      })
+      this.debugSkeletonRenderer.render(object, camera)
+      this.debugMeshRenderer.render(object, camera)
     })
   }
 

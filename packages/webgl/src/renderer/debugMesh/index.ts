@@ -1,36 +1,69 @@
-import { indexes, positions } from "@webgl/renderer/debugMesh/data"
+import { DebugLinesProgram } from "@webgl/program/debugLines"
 import { WebglRenderState } from "@webgl/utils/renderState"
-import { DebugBoxRenderer } from "@webgl/renderer/debugBox"
-import { WebGLMesh } from "@webgl/mesh"
+import { Camera } from "@core/camera"
+import { WebglVertexAttribute } from "@webgl/utils/attribute"
+import { BufferAttribute } from "@core/bufferAttribute"
 import { Matrix4 } from "@math/matrix4"
+import { BufferViewTarget } from "@core/loaders/types"
+import { Vector3 } from "@math/vector3"
+import { indexes, positions } from "@webgl/renderer/debugMesh/data"
+import { Gltf } from "@core/gltf"
 
-export class DebugMeshRenderer extends DebugBoxRenderer {
+export class DebugMeshRenderer {
+  private readonly gl: WebGLRenderingContext
+  private readonly program: DebugLinesProgram
+  private readonly color: Vector3
+  private readonly positionAttribute: WebglVertexAttribute
+  private readonly indexAttribute: WebglVertexAttribute
+
   public constructor(
     gl: WebGLRenderingContext,
     state: WebglRenderState,
-    mesh: WebGLMesh,
+    color: Vector3 = new Vector3(0.8, 0, 0.1),
   ) {
-    const aabb = mesh.computeBoundingBox()
-    const scale = aabb.max
-      .transformMatrix4(mesh.projectionMatrix)
-      .subtract(aabb.min.transformMatrix4(mesh.projectionMatrix))
-      .divide(2)
-    const translate = aabb.center.transformMatrix4(mesh.projectionMatrix)
+    this.gl = gl
+    this.color = color
+    this.program = new DebugLinesProgram(gl, state)
+    this.positionAttribute = new WebglVertexAttribute(this.gl, new BufferAttribute({
+      array: positions,
+      itemSize: 3,
+    }))
+    this.indexAttribute = new WebglVertexAttribute(this.gl, new BufferAttribute({
+      array: indexes,
+      itemSize: 1,
+      target: BufferViewTarget.ElementArrayBuffer,
+    }))
+  }
 
-    const transform = Matrix4.translation(translate.x, translate.y, translate.z)
+  public render(object: Gltf<any>, camera: Camera): void {
+    const min = object.aabb.min
+    const max = object.aabb.max
+
+    const center = max.clone().add(min).divide(2)
+    const scale = max.clone().subtract(min).divide(2)
+    const transformMatrix = Matrix4.translation(center.x, center.y, center.z)
       .scale(scale.x, scale.y, scale.z)
 
-    const p = positions.map((v) => v.clone().transformMatrix4(transform).transformMatrix4(mesh.projectionMatrix))
-    const points = new Float32Array([
-      p[0].x, p[0].y, p[0].z,
-      p[1].x, p[1].y, p[1].z,
-      p[2].x, p[2].y, p[2].z,
-      p[3].x, p[3].y, p[3].z,
-      p[4].x, p[4].y, p[4].z,
-      p[5].x, p[5].y, p[5].z,
-      p[6].x, p[6].y, p[6].z,
-      p[7].x, p[7].y, p[7].z,
-    ])
-    super(gl, state, points, indexes)
+    this.program.use()
+    this.program.attributes.update({
+      position: this.positionAttribute,
+      index: this.indexAttribute,
+    })
+    this.gl.disable(this.gl.DEPTH_TEST)
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null)
+    this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height)
+
+    this.program.uniforms.setValues({
+      worldMatrix: transformMatrix.elements,
+      projectionMatrix: camera.projectionMatrix.elements,
+      color: this.color.elements,
+    })
+
+    this.gl.drawElements(
+      this.gl.LINES,
+      this.indexAttribute.count,
+      this.indexAttribute.type,
+      this.indexAttribute.offset,
+    )
   }
 }

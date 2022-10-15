@@ -10,27 +10,22 @@ export class SingleUniform<T> implements Uniform<T> {
   private readonly state: WebglRenderState
   private readonly location: WebGLUniformLocation
   private readonly uniformSetter: UniformSetter
-  // @ts-ignore
-  private value: T
 
   public constructor(
     gl: WebGLRenderingContext,
     state: WebglRenderState,
     name: string,
-    value: T,
     location: WebGLUniformLocation,
     type: number,
   ) {
     this.gl = gl
     this.state = state
     this.name = name
-    this.value = value
     this.location = location
     this.uniformSetter = this.getUniformSetter(type)
   }
 
   public setValue(value: T): void {
-    this.value = value
     this.uniformSetter(value)
   }
 

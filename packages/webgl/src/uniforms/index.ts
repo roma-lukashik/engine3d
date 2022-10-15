@@ -57,14 +57,14 @@ export class Uniforms<U extends UniformValues> {
 
   private parseUniform(split: string[], location: WebGLUniformLocation, type: number, value: any): Uniform<U[keyof U]> {
     if (split.length === 3) {
-      return new StructureArrayUniform(this.gl, this.state, split[0], value, location, type, split[2], Number(split[1]))
+      return new StructureArrayUniform(this.gl, this.state, split[0], location, type, split[2], Number(split[1]))
     }
     if (split.length === 2 && isNaN(Number(split[1]))) {
-      return new StructureUniform(this.gl, this.state, split[0], value, location, type, split[1])
+      return new StructureUniform(this.gl, this.state, split[0], location, type, split[1])
     }
     if (split.length === 2) {
       return new ArrayUniform(this.gl, this.state, split[0], value, location, type)
     }
-    return new SingleUniform(this.gl, this.state, split[0], value, location, type)
+    return new SingleUniform(this.gl, this.state, split[0], location, type)
   }
 }

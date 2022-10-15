@@ -16,7 +16,7 @@ import {
   USE_SKINNING,
   USE_SPOT_LIGHT,
 } from "@webgl/utils/glsl"
-import { MeshUniformValues } from "@webgl/program/mesh/types"
+import { MeshAttributes, MeshUniforms } from "@webgl/program/mesh/types"
 import { WebglRenderState } from "@webgl/utils/renderState"
 
 // @ts-ignore
@@ -38,7 +38,7 @@ type Options = {
   useColorTexture?: boolean
 }
 
-export class MeshProgram extends Program<MeshUniformValues> {
+export class MeshProgram extends Program<MeshUniforms, MeshAttributes> {
   public constructor(
     gl: WebGLRenderingContext,
     state: WebglRenderState,

@@ -1,9 +1,8 @@
 import { WebglVertexAttribute } from "@webgl/utils/attribute"
-import { Geometry } from "@core/geometry"
 
-type Attribute = {
+type Attribute<T extends AttributeValues> = {
   location: number
-  name: keyof Geometry
+  name: keyof T
 }
 
 type Props = {
@@ -11,10 +10,12 @@ type Props = {
   program: WebGLProgram
 }
 
-export class Attributes {
+export type AttributeValues = Record<string, WebglVertexAttribute>
+
+export class Attributes<A extends AttributeValues> {
   private readonly gl: WebGLRenderingContext
   private readonly program: WebGLProgram
-  private readonly data: Attribute[] = []
+  private readonly data: Attribute<A>[] = []
 
   constructor({ gl, program }: Props) {
     this.gl = gl
@@ -22,7 +23,7 @@ export class Attributes {
     this.extractAttributes()
   }
 
-  public update(attributes: Partial<Record<keyof Geometry, WebglVertexAttribute>>): void {
+  public update(attributes: Partial<A & { index: WebglVertexAttribute; }>): void {
     this.data.forEach(({ location, name }) => {
       const attribute = attributes[name]
       attribute?.bindBuffer()
@@ -42,7 +43,7 @@ export class Attributes {
       if (location === -1) {
         continue
       }
-      this.data.push({ location, name: info.name as keyof Geometry })
+      this.data.push({ location, name: info.name })
     }
   }
 }

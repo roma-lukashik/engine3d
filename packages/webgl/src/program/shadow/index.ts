@@ -3,6 +3,7 @@ import { Program } from "@webgl/program"
 import { WebGLBaseTexture } from "@webgl/textures/types"
 import { define, USE_SKINNING } from "@webgl/utils/glsl"
 import { WebglRenderState } from "@webgl/utils/renderState"
+import { WebglVertexAttribute } from "@webgl/utils/attribute"
 
 // @ts-ignore
 import skeleton from "@webgl/shaders/skeleton.glsl"
@@ -14,11 +15,17 @@ type ShadowUniforms = {
   boneTextureSize?: number
 }
 
+type ShadowAttributes = {
+  position: WebglVertexAttribute
+  skinIndex?: WebglVertexAttribute
+  skinWeight?: WebglVertexAttribute
+}
+
 type Options = {
   useSkinning?: boolean
 }
 
-export class ShadowProgram extends Program<ShadowUniforms> {
+export class ShadowProgram extends Program<ShadowUniforms, ShadowAttributes> {
   public constructor(
     gl: WebGLRenderingContext,
     state: WebglRenderState,

@@ -1,14 +1,14 @@
 import { UniformValues, Uniforms } from "@webgl/uniforms"
-import { Attributes } from "@webgl/utils/attributes"
+import { Attributes, AttributeValues } from "@webgl/utils/attributes"
 import { WebglRenderState } from "@webgl/utils/renderState"
 
-export class Program<U extends UniformValues = UniformValues> {
+export class Program<U extends UniformValues, A extends AttributeValues> {
   private readonly gl: WebGLRenderingContext
   private readonly state: WebglRenderState
   private readonly program: WebGLProgram
 
   public readonly uniforms: Uniforms<U>
-  public readonly attributes: Attributes
+  public readonly attributes: Attributes<A>
 
   public constructor(
     gl: WebGLRenderingContext,
