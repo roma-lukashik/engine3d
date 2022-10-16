@@ -86,21 +86,13 @@ scene.addMesh(box2)
 scene.addMesh(box3)
 scene.addMesh(hero)
 
-surface.node.updateWorldMatrix(Matrix4.scaling(100, 100, 100).translate(0, -0.1, 0))
-surface.updateAABB()
-
-box.node.updateWorldMatrix(Matrix4.scaling(100, 100, 100).translate(3, 1, -3))
-box.updateAABB()
-
-box2.node.updateWorldMatrix(Matrix4.scaling(100, 200, 100).translate(-3, 1, -3))
-box2.updateAABB()
-
-box3.node.updateWorldMatrix(Matrix4.scaling(50, 50, 50).translate(4, 5, -8))
-box3.updateAABB()
+surface.updateWorldMatrix(Matrix4.scaling(100, 100, 100).translate(0, -0.1, 0))
+box.updateWorldMatrix(Matrix4.scaling(100, 100, 100).translate(3, 1, -3))
+box2.updateWorldMatrix(Matrix4.scaling(100, 200, 100).translate(-3, 1, -3))
+box3.updateWorldMatrix(Matrix4.scaling(50, 50, 50).translate(4, 5, -8))
 
 hero.node.localMatrix = Matrix4.scaling(100, 100, 100)
-hero.node.updateWorldMatrix()
-hero.updateAABB()
+hero.updateWorldMatrix()
 followObject(hero.node)
 
 let wPressed = false

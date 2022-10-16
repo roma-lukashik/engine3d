@@ -29,7 +29,7 @@ export class DebugLightRenderer {
     this.program = new DebugLinesProgram(gl, state)
     this.positionAttribute = new WebglVertexAttribute(gl, new BufferAttribute({
       array: positions,
-      itemSize: 3,
+      itemSize: Vector3.size,
     }))
     this.indexAttribute = new WebglVertexAttribute(gl, new BufferAttribute({
       array: indexes,
@@ -38,7 +38,7 @@ export class DebugLightRenderer {
     }))
   }
 
-  public render(objects: ObjectWithProjection[], camera: Camera): void {
+  public render(lights: ObjectWithProjection[], camera: Camera): void {
     this.program.use()
     this.program.uniforms.setValues({
       projectionMatrix: camera.projectionMatrix.elements,
@@ -51,7 +51,7 @@ export class DebugLightRenderer {
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null)
     this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height)
 
-    objects.forEach((object) => {
+    lights.forEach((object) => {
       this.program.uniforms.setValues({
         worldMatrix: object.projectionMatrix.clone().invert().elements,
       })

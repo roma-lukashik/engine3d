@@ -4,6 +4,7 @@ import { Mesh } from "@core/mesh"
 import { Skeleton } from "@core/skeleton"
 import { AABB } from "@geometry/bbox/aabb"
 import { Vector3 } from "@math/vector3"
+import { Matrix4 } from "@math/matrix4"
 
 export class Gltf<AnimationKeys extends string> {
   public readonly node: Object3d
@@ -35,11 +36,15 @@ export class Gltf<AnimationKeys extends string> {
   public run(key: AnimationKeys, time: number): void {
     this.animations[key].update(time)
     this.meshes.forEach((mesh) => mesh.updateSkeleton())
-    this.node.updateWorldMatrix()
+    this.updateWorldMatrix()
+  }
+
+  public updateWorldMatrix(matrix: Matrix4 = Matrix4.identity()): void {
+    this.node.updateWorldMatrix(matrix)
     this.updateAABB()
   }
 
-  public updateAABB(): void {
+  private updateAABB(): void {
     this.resetAABB()
 
     if (this.skeletons.length) {

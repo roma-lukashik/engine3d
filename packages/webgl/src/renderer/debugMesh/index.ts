@@ -26,7 +26,7 @@ export class DebugMeshRenderer {
     this.program = new DebugLinesProgram(gl, state)
     this.positionAttribute = new WebglVertexAttribute(this.gl, new BufferAttribute({
       array: positions,
-      itemSize: 3,
+      itemSize: Vector3.size,
     }))
     this.indexAttribute = new WebglVertexAttribute(this.gl, new BufferAttribute({
       array: indexes,
@@ -45,10 +45,6 @@ export class DebugMeshRenderer {
       .scale(scale.x, scale.y, scale.z)
 
     this.program.use()
-    this.program.attributes.update({
-      position: this.positionAttribute,
-      index: this.indexAttribute,
-    })
     this.gl.disable(this.gl.DEPTH_TEST)
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null)
     this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height)
@@ -57,6 +53,11 @@ export class DebugMeshRenderer {
       worldMatrix: transformMatrix.elements,
       projectionMatrix: camera.projectionMatrix.elements,
       color: this.color.elements,
+    })
+
+    this.program.attributes.update({
+      position: this.positionAttribute,
+      index: this.indexAttribute,
     })
 
     this.gl.drawElements(

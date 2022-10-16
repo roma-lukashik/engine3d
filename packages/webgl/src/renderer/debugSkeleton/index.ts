@@ -9,6 +9,8 @@ import { range } from "@utils/array"
 import { Vector3 } from "@math/vector3"
 import { Gltf } from "@core/gltf"
 
+const identity = Matrix4.identity()
+
 export class DebugSkeletonRenderer {
   private readonly gl: WebGLRenderingContext
   private readonly program: DebugLinesProgram
@@ -28,25 +30,10 @@ export class DebugSkeletonRenderer {
     if (!object.skeletons.length) {
       return
     }
-    const pointsAmount = object.skeletons.reduce((amount, skeleton) => {
-      return amount + (skeleton.bones.length - 1) * Vector3.size * 2
-    }, 0)
-    const positions = new Float32Array(pointsAmount)
-
-    let i = 0
-    object.skeletons.map((skeleton) => {
-      skeleton.bones.slice(1).forEach((bone) => {
-        const start = bone.worldMatrix.translationVector()
-        const end = bone.parent!.worldMatrix.translationVector()
-        positions.set(start.elements, i)
-        positions.set(end.elements, i + 3)
-        i += 6
-      })
-    })
-
+    const positions = this.getSkeletonPoints(object)
     const positionAttribute = new WebglVertexAttribute(this.gl, new BufferAttribute({
       array: positions,
-      itemSize: 3,
+      itemSize: Vector3.size,
     }))
     const indexAttribute = new WebglVertexAttribute(this.gl, new BufferAttribute({
       array: new Uint16Array(range(0, positions.length / Vector3.size)),
@@ -55,20 +42,44 @@ export class DebugSkeletonRenderer {
     }))
 
     this.program.use()
-    this.program.attributes.update({
-      position: positionAttribute,
-      index: indexAttribute,
-    })
     this.gl.disable(this.gl.DEPTH_TEST)
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null)
     this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height)
 
+    this.program.attributes.update({
+      position: positionAttribute,
+      index: indexAttribute,
+    })
+
     this.program.uniforms.setValues({
-      worldMatrix: Matrix4.identity().elements,
+      worldMatrix: identity.elements,
       projectionMatrix: camera.projectionMatrix.elements,
       color: this.color.elements,
     })
 
     this.gl.drawElements(this.gl.LINES, indexAttribute.count, indexAttribute.type, indexAttribute.offset)
+  }
+
+  // TODO move to somewhere
+  private getSkeletonPoints(object: Gltf<any>): Float32Array {
+    const doubledVectorSize = Vector3.size * 2
+    const pointsAmount = object.skeletons.reduce((amount, skeleton) => {
+      return amount + (skeleton.bones.length - 1) * doubledVectorSize
+    }, 0)
+    const points = new Float32Array(pointsAmount)
+
+    let offset = 0
+    object.skeletons.forEach((skeleton) => {
+      // Skip first (root) bone
+      for (let i = 1; i < skeleton.bones.length; i++) {
+        const bone = skeleton.bones[i]
+        const start = bone.worldMatrix.translationVector()
+        const end = bone.parent!.worldMatrix.translationVector()
+        points.set(start.elements, offset)
+        points.set(end.elements, offset + Vector3.size)
+        offset += doubledVectorSize
+      }
+    })
+    return points
   }
 }
