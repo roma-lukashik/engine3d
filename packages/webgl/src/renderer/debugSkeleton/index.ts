@@ -26,7 +26,7 @@ export class DebugSkeletonRenderer {
     this.program = new DebugLinesProgram(gl, state)
   }
 
-  public render(object: Gltf<any>, camera: Camera): void {
+  public render(object: Gltf, camera: Camera): void {
     if (!object.skeletons.length) {
       return
     }
@@ -61,7 +61,7 @@ export class DebugSkeletonRenderer {
   }
 
   // TODO move to somewhere
-  private getSkeletonPoints(object: Gltf<any>): Float32Array {
+  private getSkeletonPoints(object: Gltf): Float32Array {
     const doubledVectorSize = Vector3.size * 2
     const pointsAmount = object.skeletons.reduce((amount, skeleton) => {
       return amount + (skeleton.bones.length - 1) * doubledVectorSize
@@ -73,8 +73,8 @@ export class DebugSkeletonRenderer {
       // Skip first (root) bone
       for (let i = 1; i < skeleton.bones.length; i++) {
         const bone = skeleton.bones[i]
-        const start = bone.worldMatrix.translationVector()
-        const end = bone.parent!.worldMatrix.translationVector()
+        const start = bone.getWorldPosition()
+        const end = bone.parent!.getWorldPosition()
         points.set(start.elements, offset)
         points.set(end.elements, offset + Vector3.size)
         offset += doubledVectorSize

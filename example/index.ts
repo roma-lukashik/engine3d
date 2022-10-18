@@ -42,8 +42,7 @@ const renderer = new Renderer({
   width: window.innerWidth,
   height: window.innerHeight,
 })
-const gl = renderer.gl
-const scene = new Scene({ gl })
+const scene = new Scene()
 scene.addLight(
   directionalLight,
   directionalLight2,
@@ -51,15 +50,15 @@ scene.addLight(
 )
 
 const followObject = (object: Object3d): void => {
-  const objectPosition = object.worldMatrix.translationVector()
-  const objectRotation = object.worldMatrix.rotationVector()
+  const objectPosition = object.getWorldPosition()
+  const objectRotation = object.getWorldRotation()
   const from = new Vector3(0, 300, 400)
   const up = new Vector3(0, 150, 0)
   camera.setPosition(from.rotateByQuaternion(objectRotation).add(objectPosition))
   camera.lookAt(up.add(objectPosition))
 }
 
-const move = (object: Gltf<any>, translationVector: Vector3, colliders: Gltf<any>[] = []) => {
+const move = (object: Gltf, translationVector: Vector3, colliders: Gltf[] = []) => {
   const collide = colliders.some((collider) => collider.aabb.collide(object.aabb))
   if (!collide) {
     object.node.localMatrix.translate(translationVector.x, translationVector.y, translationVector.z)
@@ -80,16 +79,16 @@ const box = await loadModel("models/box.glb")
 const box2 = await loadModel("models/box.glb")
 const box3 = await loadModel("models/box.glb")
 
-scene.addMesh(surface)
-scene.addMesh(box)
-scene.addMesh(box2)
-scene.addMesh(box3)
-scene.addMesh(hero)
+scene.addObject(surface)
+scene.addObject(box)
+scene.addObject(box2)
+scene.addObject(box3)
+scene.addObject(hero)
 
 surface.updateWorldMatrix(Matrix4.scaling(100, 100, 100).translate(0, -0.1, 0))
-box.updateWorldMatrix(Matrix4.scaling(100, 100, 100).translate(3, 1, -3))
-box2.updateWorldMatrix(Matrix4.scaling(100, 200, 100).translate(-3, 1, -3))
-box3.updateWorldMatrix(Matrix4.scaling(50, 50, 50).translate(4, 5, -8))
+box.updateWorldMatrix(Matrix4.scaling(150, 200, 150).translate(3, 1, -3))
+box2.updateWorldMatrix(Matrix4.scaling(150, 200, 150).translate(-3, 1, -3))
+box3.updateWorldMatrix(Matrix4.scaling(150, 200, 150).translate(3, 1, 3))
 
 hero.node.localMatrix = Matrix4.scaling(100, 100, 100)
 hero.updateWorldMatrix()
@@ -104,7 +103,7 @@ let i = 0
 
 const update = () => {
   if (wPressed || sPressed) {
-    hero.run(shiftPressed ? "Run" : "Walk", i += 0.02)
+    hero.animate(shiftPressed ? "Run" : "Walk", i += 0.02)
     followObject(hero.node)
   } else {
     hero.node.updateWorldMatrix()
@@ -122,7 +121,7 @@ const update = () => {
 
 requestAnimationFrame(update)
 
-document.body.appendChild(gl.canvas)
+document.body.appendChild(renderer.gl.canvas)
 window.addEventListener("resize", () => {
   renderer.resize(window.innerWidth, window.innerHeight)
   camera.setOptions({ aspect: window.innerWidth / window.innerHeight })

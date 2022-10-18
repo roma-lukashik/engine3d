@@ -5,12 +5,8 @@ import { BufferAttribute } from "@core/bufferAttribute"
 import { BufferViewTarget } from "@core/loaders/types"
 import { Camera } from "@core/camera"
 import { WebglRenderState } from "@webgl/utils/renderState"
-import { Matrix4 } from "@math/matrix4"
 import { Vector3 } from "@math/vector3"
-
-type ObjectWithProjection = {
-  projectionMatrix: Matrix4
-}
+import { Scene } from "@webgl/scene"
 
 export class DebugLightRenderer {
   private readonly gl: WebGLRenderingContext
@@ -38,8 +34,11 @@ export class DebugLightRenderer {
     }))
   }
 
-  public render(lights: ObjectWithProjection[], camera: Camera): void {
+  public render(scene: Scene, camera: Camera): void {
     this.program.use()
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null)
+    this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height)
+
     this.program.uniforms.setValues({
       projectionMatrix: camera.projectionMatrix.elements,
       color: this.color.elements,
@@ -48,12 +47,10 @@ export class DebugLightRenderer {
       position: this.positionAttribute,
       index: this.indexAttribute,
     })
-    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null)
-    this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height)
 
-    lights.forEach((object) => {
+    scene.shadowLights.forEach((light) => {
       this.program.uniforms.setValues({
-        worldMatrix: object.projectionMatrix.clone().invert().elements,
+        worldMatrix: light.projectionMatrix.clone().invert().elements,
       })
       this.drawBuffer()
     })

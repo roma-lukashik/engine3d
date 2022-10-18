@@ -1,4 +1,3 @@
-import { Program } from "@webgl/program"
 import { WebglVertexAttribute } from "@webgl/utils/attribute"
 import { WebGLDataTexture } from "@webgl/textures/data"
 import { Mesh } from "@core/mesh"
@@ -8,24 +7,19 @@ import { transform } from "@utils/object"
 import { Skeleton } from "@core/skeleton"
 import { WebGLImageTexture } from "@webgl/textures/image"
 
-type Props = {
-  gl: WebGLRenderingContext
-  mesh: Mesh
-}
-
 export class WebGLMesh {
-  public readonly colorTexture: WebGLImageTexture
-  public readonly mesh: Mesh
+  public readonly attributes: Partial<Record<keyof Geometry, WebglVertexAttribute>>
+  public readonly colorTexture?: WebGLImageTexture
+  public boneTexture?: WebGLDataTexture<Float32Array>
+  public boneTextureSize?: number
 
   private readonly gl: WebGLRenderingContext
-  private readonly attributes: Partial<Record<keyof Geometry, WebglVertexAttribute>>
-  private boneTexture: WebGLDataTexture<Float32Array>
-  private boneTextureSize: number
+  private readonly mesh: Mesh
 
-  constructor({
-    gl,
-    mesh,
-  }: Props) {
+  public constructor(
+    gl: WebGLRenderingContext,
+    mesh: Mesh,
+  ) {
     this.gl = gl
     this.mesh = mesh
     this.attributes = this.computeAttributes()
@@ -37,22 +31,10 @@ export class WebGLMesh {
     }
   }
 
-  public render(program: Program<any, any>): void {
+  public render(): void {
     if (this.mesh.skeleton) {
-      this.boneTexture.updateTexture(this.mesh.skeleton.boneMatrices, this.boneTextureSize)
+      this.boneTexture?.updateTexture(this.mesh.skeleton.boneMatrices, this.boneTextureSize!)
     }
-    program.uniforms.setValues({
-      worldMatrix: this.mesh.worldMatrix.elements,
-      boneTexture: this.boneTexture,
-      boneTextureSize: this.boneTextureSize,
-      material: {
-        metalness: this.mesh.material.metalness,
-        roughness: this.mesh.material.roughness,
-        color: this.mesh.material.color.elements,
-        colorTexture: this.colorTexture,
-      },
-    })
-    program.attributes.update(this.attributes)
     this.drawBuffer()
   }
 

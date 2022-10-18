@@ -1,6 +1,6 @@
 import { parseGltf } from "@core/loaders/gltf"
 import { receivedGltf } from "@core/loaders/gltf/__test__/received"
-import { expectedAnimation, expectedGltf } from "@core/loaders/gltf/__test__/expected"
+import { expectedGltf } from "@core/loaders/gltf/__test__/expected"
 import { GltfRaw } from "@core/loaders/types"
 import { Gltf } from "@core/gltf"
 
@@ -17,9 +17,7 @@ describe("parseGltf", () => {
       expect(gltf.node).toEqual(expectedGltf())
     })
 
-    it("build animations correctly", () => {
-      expect(gltf.getAnimation("animation_0")).toEqual(expectedAnimation())
-    })
+    it.todo("animation")
   })
 
   describe("errors handling", () => {

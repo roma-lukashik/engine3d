@@ -6,13 +6,14 @@ import { AABB } from "@geometry/bbox/aabb"
 import { Vector3 } from "@math/vector3"
 import { Matrix4 } from "@math/matrix4"
 
-export class Gltf<AnimationKeys extends string> {
+// TODO Rename
+export class Gltf<AnimationKeys extends string = string> {
   public readonly node: Object3d
   public readonly skeletons: Skeleton[] = []
+  public readonly meshes: Set<Mesh> = new Set()
   public readonly aabb: AABB = new AABB(Vector3.zero().set(Infinity), Vector3.zero().set(-Infinity))
 
   private readonly animations: Record<AnimationKeys, Animation>
-  private readonly meshes: Set<Mesh> = new Set()
 
   public constructor(
     node: Object3d,
@@ -33,7 +34,7 @@ export class Gltf<AnimationKeys extends string> {
     this.updateAABB()
   }
 
-  public run(key: AnimationKeys, time: number): void {
+  public animate(key: AnimationKeys, time: number): void {
     this.animations[key].update(time)
     this.meshes.forEach((mesh) => mesh.updateSkeleton())
     this.updateWorldMatrix()
@@ -48,16 +49,8 @@ export class Gltf<AnimationKeys extends string> {
     this.resetAABB()
 
     if (this.skeletons.length) {
-      this.skeletons.forEach((skeleton) => {
-        const points = new Float32Array(skeleton.bones.length * 2 * Vector3.size)
-        skeleton.bones.forEach((bone, i) => {
-          const i2 = i * 2
-          const start = bone.worldMatrix.translationVector()
-          const end = bone.parent!.worldMatrix.translationVector()
-          points.set(start.elements, i2 * Vector3.size)
-          points.set(end.elements, (i2 + 1) * Vector3.size)
-        })
-        this.aabb.expandByAABB(new AABB(points))
+      this.node.traverse((object) => {
+        this.aabb.expandByPoint(object.getWorldPosition())
       })
     } else {
       this.meshes.forEach((mesh) => {

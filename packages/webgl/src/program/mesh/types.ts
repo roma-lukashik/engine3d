@@ -56,5 +56,5 @@ type Material = {
   metalness: number
   roughness: number
   color: Vector4Array
-  colorTexture?: number
+  colorTexture?: WebGLBaseTexture
 }

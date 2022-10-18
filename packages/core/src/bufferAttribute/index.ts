@@ -35,4 +35,10 @@ export class BufferAttribute {
     this.count = array.length / itemSize
     this.target = target
   }
+
+  public getBufferElement(index: number): TypedArray {
+    const start = this.offset + index * (this.stride ?? this.itemSize)
+    const end = start + this.itemSize
+    return this.array.slice(start, end)
+  }
 }

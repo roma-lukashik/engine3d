@@ -2,15 +2,16 @@ import { WebGLMesh } from "@webgl/mesh"
 import { ShadowProgram } from "@webgl/program/shadow"
 import { LightWithShadow } from "@core/lights"
 import { Mesh } from "@core/mesh"
-import { TexturesStore } from "@webgl/renderer/shadow/texturesStore"
 import { WebglRenderState } from "@webgl/utils/renderState"
+import { Scene } from "@webgl/scene"
+import { WebGLDepthTexture } from "@webgl/textures/depth"
 
-export class ShadowRenderer {
+export class ShadowMaps {
   private readonly gl: WebGLRenderingContext
   private readonly state: WebglRenderState
-  private readonly programs: WeakMap<WebGLMesh, ShadowProgram> = new WeakMap()
-
-  public readonly texturesStore: TexturesStore<LightWithShadow>
+  private readonly programs: WeakMap<Mesh, ShadowProgram> = new WeakMap()
+  private readonly meshes: WeakMap<Mesh, WebGLMesh> = new WeakMap()
+  private readonly textures: WeakMap<LightWithShadow, WebGLDepthTexture> = new WeakMap()
 
   public constructor(
     gl: WebGLRenderingContext,
@@ -18,32 +19,61 @@ export class ShadowRenderer {
   ) {
     this.gl = gl
     this.state = state
-    this.texturesStore = new TexturesStore(gl)
   }
 
-  public render(lights: LightWithShadow[], meshes: Map<Mesh, WebGLMesh>): void {
+  public create(scene: Scene): WebGLDepthTexture[] {
     this.gl.disable(this.gl.CULL_FACE)
     this.gl.cullFace(this.gl.FRONT)
 
-    lights.forEach((light) => {
-      const texture = this.texturesStore.getOrCreate(light)
+    return scene.shadowLights.map((light) => {
+      const texture = this.getTexture(light)
+
       this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, texture.frameBuffer)
       this.gl.viewport(0, 0, texture.width, texture.height)
       this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
 
-      meshes.forEach((mesh, key) => {
-        if (!this.programs.has(mesh)) {
-          this.programs.set(mesh, new ShadowProgram(this.gl, this.state, {
-            useSkinning: !!key.skeleton,
-          }))
-        }
-        const program = this.programs.get(mesh)!
-        program.use()
-        program.uniforms.setValues({
-          projectionMatrix: light.projectionMatrix.elements,
+      scene.objects.forEach((object) => {
+        object.meshes.forEach((mesh) => {
+          const program = this.getProgram(mesh)
+          program.use()
+
+          if (!this.meshes.get(mesh)) {
+            this.meshes.set(mesh, new WebGLMesh(this.gl, mesh))
+          }
+          const webglMesh = this.meshes.get(mesh)!
+
+          program.uniforms.setValues({
+            worldMatrix: mesh.worldMatrix.elements,
+            boneTexture: webglMesh.boneTexture,
+            boneTextureSize: webglMesh.boneTextureSize,
+            projectionMatrix: light.projectionMatrix.elements,
+          })
+          program.attributes.update({
+            position: webglMesh.attributes.position,
+            skinIndex: webglMesh.attributes.skinIndex,
+            skinWeight: webglMesh.attributes.skinWeight,
+            index: webglMesh.attributes.index,
+          })
+          webglMesh.render()
         })
-        mesh.render(program)
       })
+      return texture
     })
+  }
+
+  private getTexture(light: LightWithShadow): WebGLDepthTexture {
+    if (!this.textures.has(light)) {
+      this.textures.set(light, new WebGLDepthTexture({ gl: this.gl }))
+    }
+    return this.textures.get(light)!
+  }
+
+  private getProgram(mesh: Mesh): ShadowProgram {
+    if (!this.programs.has(mesh)) {
+      this.programs.set(mesh, new ShadowProgram(this.gl, this.state, {
+        useSkinning: !!mesh.skeleton,
+      }))
+    }
+    return this.programs.get(mesh)!
   }
 }

@@ -19,6 +19,7 @@ export class WebGLImageTexture implements WebGLBaseTexture {
     this.buffer = gl.createFramebuffer()
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffer)
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   }
 
   private createTexture(gl: WebGLRenderingContext, image: TexImageSource): WebGLTexture {

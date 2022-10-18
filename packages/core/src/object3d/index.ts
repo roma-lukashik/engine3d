@@ -42,6 +42,14 @@ export class Object3d {
     this.name = name
   }
 
+  public getWorldPosition(): Vector3 {
+    return this.worldMatrix.translationVector()
+  }
+
+  public getWorldRotation(): Quaternion {
+    return this.worldMatrix.rotationVector()
+  }
+
   public add(objects: Object3d[]): void {
     this.children.push(...objects)
     objects.forEach((object) => object.parent = this)
