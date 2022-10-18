@@ -2,20 +2,20 @@ import { Matrix4Array } from "@math/matrix4"
 import { Program } from "@webgl/program"
 import { WebGLBaseTexture } from "@webgl/textures/types"
 import { define, USE_SKINNING } from "@webgl/utils/glsl"
-import { WebglRenderState } from "@webgl/utils/renderState"
+import { RenderState } from "@webgl/utils/state"
 import { WebglVertexAttribute } from "@webgl/utils/attribute"
 
 // @ts-ignore
 import skeleton from "@webgl/shaders/skeleton.glsl"
 
-type ShadowUniforms = {
+export type ShadowUniforms = {
   projectionMatrix?: Matrix4Array
   worldMatrix?: Matrix4Array
   boneTexture?: WebGLBaseTexture
   boneTextureSize?: number
 }
 
-type ShadowAttributes = {
+export type ShadowAttributes = {
   position: WebglVertexAttribute
   skinIndex?: WebglVertexAttribute
   skinWeight?: WebglVertexAttribute
@@ -28,7 +28,7 @@ type Options = {
 export class ShadowProgram extends Program<ShadowUniforms, ShadowAttributes> {
   public constructor(
     gl: WebGLRenderingContext,
-    state: WebglRenderState,
+    state: RenderState,
     {
       useSkinning = false,
     }: Options = {},

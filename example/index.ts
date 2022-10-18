@@ -102,18 +102,18 @@ let shiftPressed = false
 let i = 0
 
 const update = () => {
-  if (wPressed || sPressed) {
-    hero.animate(shiftPressed ? "Run" : "Walk", i += 0.02)
-    followObject(hero.node)
-  } else {
-    hero.node.updateWorldMatrix()
-  }
-
   const step = 0.03
   if (wPressed) move(hero, new Vector3(0, 0, (shiftPressed ? 3 : 1) * -step), [box, box2, box3])
   if (sPressed) move(hero, new Vector3(0, 0, (shiftPressed ? 3 : 1) * step), [box, box2, box3])
   if (aPressed) hero.node.localMatrix.rotateY(-0.03)
   if (dPressed) hero.node.localMatrix.rotateY(0.03)
+
+  if (wPressed || sPressed) {
+    hero.animate(shiftPressed ? "Run" : "Walk", i += 0.02)
+    followObject(hero.node)
+  } else {
+    hero.updateWorldMatrix()
+  }
 
   renderer.render(scene, camera)
   requestAnimationFrame(update)

@@ -1,8 +1,8 @@
-export class WebglRenderState {
+export class RenderState {
   private readonly maxTextures: number
   private textureUnit: number = -1
 
-  constructor(gl: WebGLRenderingContext) {
+  public constructor(gl: WebGLRenderingContext) {
     this.maxTextures = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS)
   }
 

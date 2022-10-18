@@ -17,7 +17,7 @@ import {
   USE_SPOT_LIGHT,
 } from "@webgl/utils/glsl"
 import { MeshAttributes, MeshUniforms } from "@webgl/program/mesh/types"
-import { WebglRenderState } from "@webgl/utils/renderState"
+import { RenderState } from "@webgl/utils/state"
 
 // @ts-ignore
 import brdf from "@webgl/shaders/brdf.glsl"
@@ -41,7 +41,7 @@ type Options = {
 export class MeshProgram extends Program<MeshUniforms, MeshAttributes> {
   public constructor(
     gl: WebGLRenderingContext,
-    state: WebglRenderState,
+    state: RenderState,
     {
       ambientLightsAmount = 0,
       pointLightsAmount = 0,

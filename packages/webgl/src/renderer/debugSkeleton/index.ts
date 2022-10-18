@@ -1,5 +1,5 @@
 import { DebugLinesProgram } from "@webgl/program/debugLines"
-import { WebglRenderState } from "@webgl/utils/renderState"
+import { RenderState } from "@webgl/utils/state"
 import { Camera } from "@core/camera"
 import { WebglVertexAttribute } from "@webgl/utils/attribute"
 import { BufferAttribute } from "@core/bufferAttribute"
@@ -18,7 +18,7 @@ export class DebugSkeletonRenderer {
 
   public constructor(
     gl: WebGLRenderingContext,
-    state: WebglRenderState,
+    state: RenderState,
     color: Vector3 = new Vector3(0, 0.8, 0.1),
   ) {
     this.gl = gl

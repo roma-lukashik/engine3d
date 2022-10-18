@@ -1,19 +1,19 @@
 import { Uniform, UniformSetter } from "@webgl/uniforms/types"
 import { WebGLBaseTexture } from "@webgl/textures/types"
 import { bindTexture } from "@webgl/textures/utils"
-import { WebglRenderState } from "@webgl/utils/renderState"
+import { RenderState } from "@webgl/utils/state"
 
 export class SingleUniform<T> implements Uniform<T> {
   public readonly name: string
 
   private readonly gl: WebGLRenderingContext
-  private readonly state: WebglRenderState
+  private readonly state: RenderState
   private readonly location: WebGLUniformLocation
   private readonly uniformSetter: UniformSetter
 
   public constructor(
     gl: WebGLRenderingContext,
-    state: WebglRenderState,
+    state: RenderState,
     name: string,
     location: WebGLUniformLocation,
     type: number,

@@ -9,7 +9,7 @@ export const forEachKey = <T extends Record<string, any>>(
   })
 }
 
-export const transform = <T extends object, V>(
+export const mapObject = <T extends object, V>(
   obj: T,
   fn: (value: NonNullable<T[keyof T]>, key: keyof T, obj: T) => V,
 ): Record<keyof T, V> => {

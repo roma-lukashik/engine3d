@@ -2,8 +2,8 @@ import { Uniforms } from "@webgl/uniforms"
 import { Matrix4, Matrix4Array } from "@math/matrix4"
 import { WebGLBaseTexture } from "@webgl/textures/types"
 import { WebGLDataTexture } from "@webgl/textures/data"
-import { WebGLDepthTexture } from "@webgl/textures/depth"
-import { WebglRenderState } from "@webgl/utils/renderState"
+import { WebGLShadowTexture } from "@webgl/textures/shadow"
+import { RenderState } from "@webgl/utils/state"
 import { WebGLRenderingContextStub } from "../../../../tests/stubs/renderingContext"
 
 type TestUniforms = {
@@ -35,7 +35,7 @@ describe("Uniforms", () => {
     gl = new WebGLRenderingContextStub()
     program = gl.createProgram()!
 
-    const state = new WebglRenderState(gl)
+    const state = new RenderState(gl)
     const vertex = gl.createShader()!
 
     gl.shaderSource(vertex, vertexShader)
@@ -68,8 +68,8 @@ describe("Uniforms", () => {
       boneTextureSize: 16,
       boneTexture: {} as WebGLDataTexture<Float32Array>, // Stub
       shadowTextures: [
-        {} as WebGLDepthTexture, // Stub
-        {} as WebGLDepthTexture, // Stub
+        {} as WebGLShadowTexture, // Stub
+        {} as WebGLShadowTexture, // Stub
       ],
       textureMatrices: [
         Matrix4.translation(0.5, 0.5, 0.5).scale(0.5, 0.5, 0.5).elements,

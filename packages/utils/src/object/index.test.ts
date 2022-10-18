@@ -1,4 +1,4 @@
-import { forEachKey, transform } from "@utils/object"
+import { forEachKey, mapObject } from "@utils/object"
 
 describe("Object", () => {
   describe("#forEachKey", () => {
@@ -16,21 +16,21 @@ describe("Object", () => {
     })
   })
 
-  describe("#transform", () => {
+  describe("#mapObject", () => {
     it("returns a new object", () => {
       const obj = {
         key1: 1,
         key2: undefined,
         key3: 3,
       }
-      expect(transform(obj, (x) => x * x)).toEqual({
+      expect(mapObject(obj, (x) => x * x)).toEqual({
         key1: 1,
         key3: 9,
       })
     })
 
     it("returns an empty object", () => {
-      expect(transform({}, (x) => x * 2)).toEqual({})
+      expect(mapObject({}, (x) => x * 2)).toEqual({})
     })
   })
 })

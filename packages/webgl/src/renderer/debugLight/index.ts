@@ -4,7 +4,7 @@ import { WebglVertexAttribute } from "@webgl/utils/attribute"
 import { BufferAttribute } from "@core/bufferAttribute"
 import { BufferViewTarget } from "@core/loaders/types"
 import { Camera } from "@core/camera"
-import { WebglRenderState } from "@webgl/utils/renderState"
+import { RenderState } from "@webgl/utils/state"
 import { Vector3 } from "@math/vector3"
 import { Scene } from "@webgl/scene"
 
@@ -17,7 +17,7 @@ export class DebugLightRenderer {
 
   public constructor(
     gl: WebGLRenderingContext,
-    state: WebglRenderState,
+    state: RenderState,
     color: Vector3 = new Vector3(0.9, 0.9, 0.1),
   ) {
     this.gl = gl

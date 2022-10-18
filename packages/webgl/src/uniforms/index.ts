@@ -3,19 +3,19 @@ import { Uniform } from "@webgl/uniforms/types"
 import { ArrayUniform } from "@webgl/uniforms/array"
 import { StructureUniform } from "@webgl/uniforms/structure"
 import { StructureArrayUniform } from "@webgl/uniforms/structureArray"
-import { WebglRenderState } from "@webgl/utils/renderState"
+import { RenderState } from "@webgl/utils/state"
 
 export type UniformValues = Record<string, any>
 
 export class Uniforms<U extends UniformValues> {
   private readonly gl: WebGLRenderingContext
-  private readonly state: WebglRenderState
+  private readonly state: RenderState
   private readonly program: WebGLProgram
   private readonly uniforms: Uniform<U[keyof U]>[] = []
 
   public constructor(
     gl: WebGLRenderingContext,
-    state: WebglRenderState,
+    state: RenderState,
     program: WebGLProgram,
   ) {
     this.gl = gl

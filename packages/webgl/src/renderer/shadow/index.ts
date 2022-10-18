@@ -1,27 +1,30 @@
-import { WebGLMesh } from "@webgl/mesh"
-import { ShadowProgram } from "@webgl/program/shadow"
+import { ShadowAttributes, ShadowProgram } from "@webgl/program/shadow"
 import { LightWithShadow } from "@core/lights"
 import { Mesh } from "@core/mesh"
-import { WebglRenderState } from "@webgl/utils/renderState"
+import { RenderState } from "@webgl/utils/state"
 import { Scene } from "@webgl/scene"
-import { WebGLDepthTexture } from "@webgl/textures/depth"
+import { WebGLShadowTexture } from "@webgl/textures/shadow"
+import { RenderCache } from "@webgl/renderer/cache"
+import { WebglVertexAttribute } from "@webgl/utils/attribute"
 
 export class ShadowMaps {
   private readonly gl: WebGLRenderingContext
-  private readonly state: WebglRenderState
+  private readonly state: RenderState
+  private readonly cache: RenderCache
   private readonly programs: WeakMap<Mesh, ShadowProgram> = new WeakMap()
-  private readonly meshes: WeakMap<Mesh, WebGLMesh> = new WeakMap()
-  private readonly textures: WeakMap<LightWithShadow, WebGLDepthTexture> = new WeakMap()
+  private readonly textures: WeakMap<LightWithShadow, WebGLShadowTexture> = new WeakMap()
 
   public constructor(
     gl: WebGLRenderingContext,
-    state: WebglRenderState,
+    state: RenderState,
+    cache: RenderCache,
   ) {
     this.gl = gl
     this.state = state
+    this.cache = cache
   }
 
-  public create(scene: Scene): WebGLDepthTexture[] {
+  public create(scene: Scene): WebGLShadowTexture[] {
     this.gl.disable(this.gl.CULL_FACE)
     this.gl.cullFace(this.gl.FRONT)
 
@@ -34,36 +37,17 @@ export class ShadowMaps {
 
       scene.objects.forEach((object) => {
         object.meshes.forEach((mesh) => {
-          const program = this.getProgram(mesh)
-          program.use()
-
-          if (!this.meshes.get(mesh)) {
-            this.meshes.set(mesh, new WebGLMesh(this.gl, mesh))
-          }
-          const webglMesh = this.meshes.get(mesh)!
-
-          program.uniforms.setValues({
-            worldMatrix: mesh.worldMatrix.elements,
-            boneTexture: webglMesh.boneTexture,
-            boneTextureSize: webglMesh.boneTextureSize,
-            projectionMatrix: light.projectionMatrix.elements,
-          })
-          program.attributes.update({
-            position: webglMesh.attributes.position,
-            skinIndex: webglMesh.attributes.skinIndex,
-            skinWeight: webglMesh.attributes.skinWeight,
-            index: webglMesh.attributes.index,
-          })
-          webglMesh.render()
+          this.renderShadow(mesh, light)
         })
       })
+
       return texture
     })
   }
 
-  private getTexture(light: LightWithShadow): WebGLDepthTexture {
+  private getTexture(light: LightWithShadow): WebGLShadowTexture {
     if (!this.textures.has(light)) {
-      this.textures.set(light, new WebGLDepthTexture({ gl: this.gl }))
+      this.textures.set(light, new WebGLShadowTexture({ gl: this.gl }))
     }
     return this.textures.get(light)!
   }
@@ -75,5 +59,37 @@ export class ShadowMaps {
       }))
     }
     return this.programs.get(mesh)!
+  }
+
+  private renderShadow(mesh: Mesh, light: LightWithShadow): void {
+    const program = this.getProgram(mesh)
+    program.use()
+    const boneTexture = this.cache.getBoneTexture(mesh)
+    boneTexture?.update()
+
+    program.uniforms.setValues({
+      worldMatrix: mesh.worldMatrix.elements,
+      boneTexture: boneTexture?.texture,
+      boneTextureSize: boneTexture?.size,
+      projectionMatrix: light.projectionMatrix.elements,
+    })
+
+    const attributes = this.cache.getAttributes(mesh)
+    program.attributes.update({
+      position: attributes.position,
+      skinIndex: attributes.skinIndex,
+      skinWeight: attributes.skinWeight,
+      index: attributes.index,
+    })
+
+    this.drawBuffer(attributes)
+  }
+
+  private drawBuffer({ index, position }: Partial<ShadowAttributes> & { index?: WebglVertexAttribute; }): void {
+    if (index) {
+      this.gl.drawElements(this.gl.TRIANGLES, index.count, index.type, index.offset)
+    } else {
+      this.gl.drawArrays(this.gl.TRIANGLES, 0, position?.count ?? 0)
+    }
   }
 }

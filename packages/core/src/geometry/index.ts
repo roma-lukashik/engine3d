@@ -2,47 +2,57 @@ import { MeshPrimitiveAttributes } from "@core/loaders/types"
 import { BufferAttribute } from "@core/bufferAttribute"
 import { forEachKey } from "@utils/object"
 
-export class Geometry {
-  public position: BufferAttribute
-  public normal?: BufferAttribute
-  public tangent?: BufferAttribute
-  public uv?: BufferAttribute
-  public uv2?: BufferAttribute
-  public uv3?: BufferAttribute
-  public uv4?: BufferAttribute
-  public uv5?: BufferAttribute
-  public uv6?: BufferAttribute
-  public uv7?: BufferAttribute
-  public uv8?: BufferAttribute
-  public uv9?: BufferAttribute
-  public uv10?: BufferAttribute
-  public color?: BufferAttribute
-  public skinWeight?: BufferAttribute
-  public skinIndex?: BufferAttribute
-  public index?: BufferAttribute
-
+export class Geometry extends autoImplement<Attributes>() {
   public constructor(data: Partial<Record<keyof MeshPrimitiveAttributes | "index", BufferAttribute>> = {}) {
-    forEachKey(data, (key, bufferAttribute) => this[attributesMapping[key]] = bufferAttribute)
+    super()
+    forEachKey(data, (key, bufferAttribute) => {
+      const attributeKey = getAttributeKey(key)
+      if (attributeKey) {
+        this[attributeKey] = bufferAttribute
+      }
+    })
   }
 }
 
-// @ts-ignore
-const attributesMapping: Record<keyof MeshPrimitiveAttributes | "index", keyof Geometry> = {
-  POSITION: "position",
-  NORMAL: "normal",
-  TANGENT: "tangent",
-  TEXCOORD_0: "uv",
-  TEXCOORD_1: "uv2",
-  TEXCOORD_2: "uv3",
-  TEXCOORD_3: "uv4",
-  TEXCOORD_4: "uv5",
-  TEXCOORD_5: "uv6",
-  TEXCOORD_6: "uv7",
-  TEXCOORD_7: "uv8",
-  TEXCOORD_8: "uv9",
-  TEXCOORD_9: "uv10",
-  COLOR_0: "color",
-  WEIGHTS_0: "skinWeight",
-  JOINTS_0: "skinIndex",
-  index: "index",
+type Digits = "" | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
+
+type Attributes = {
+  position: BufferAttribute
+  normal?: BufferAttribute
+  tangent?: BufferAttribute
+  index?: BufferAttribute
+} & {
+  [K in `uv${Digits}`]?: BufferAttribute
+} & {
+  [K in `color${Digits}`]?: BufferAttribute
+} & {
+  [K in `skinWeight${Digits}`]?: BufferAttribute
+} & {
+  [K in `skinIndex${Digits}`]?: BufferAttribute
+}
+
+function autoImplement<T>(): new () => T {
+  return class { } as any
+}
+
+function getAttributeKey(key: keyof MeshPrimitiveAttributes | "index"): keyof Attributes | undefined {
+  if (key === "POSITION") return "position"
+  if (key === "NORMAL") return "normal"
+  if (key === "TANGENT") return "tangent"
+  if (key === "index") return "index"
+  const digit = getDigit(key)
+  if (digit === undefined) return
+  if (key.includes("TEXCOORD_")) return `uv${digit}`
+  if (key.includes("COLOR_")) return `color${digit}`
+  if (key.includes("WEIGHTS_")) return `skinWeight${digit}`
+  if (key.includes("JOINTS_")) return `skinIndex${digit}`
+  return
+}
+
+function getDigit(string: string): Digits | undefined {
+  const digit = Number(string[string.length - 1])
+  if (isNaN(digit)) {
+    return
+  }
+  return digit === 0 ? "" : digit + 1 as Digits
 }

@@ -1,10 +1,10 @@
 import { UniformValues, Uniforms } from "@webgl/uniforms"
 import { Attributes, AttributeValues } from "@webgl/utils/attributes"
-import { WebglRenderState } from "@webgl/utils/renderState"
+import { RenderState } from "@webgl/utils/state"
 
 export class Program<U extends UniformValues, A extends AttributeValues> {
   private readonly gl: WebGLRenderingContext
-  private readonly state: WebglRenderState
+  private readonly state: RenderState
   private readonly program: WebGLProgram
 
   public readonly uniforms: Uniforms<U>
@@ -12,7 +12,7 @@ export class Program<U extends UniformValues, A extends AttributeValues> {
 
   public constructor(
     gl: WebGLRenderingContext,
-    state: WebglRenderState,
+    state: RenderState,
     vertex: string,
     fragment: string,
   ) {

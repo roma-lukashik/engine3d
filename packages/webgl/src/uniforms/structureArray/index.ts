@@ -1,5 +1,5 @@
 import { Uniform } from "@webgl/uniforms/types"
-import { WebglRenderState } from "@webgl/utils/renderState"
+import { RenderState } from "@webgl/utils/state"
 import { StructureUniform } from "@webgl/uniforms/structure"
 
 export class StructureArrayUniform<T extends Record<string, unknown>> implements Uniform<T[]> {
@@ -10,7 +10,7 @@ export class StructureArrayUniform<T extends Record<string, unknown>> implements
 
   public constructor(
     gl: WebGLRenderingContext,
-    state: WebglRenderState,
+    state: RenderState,
     name: string,
     location: WebGLUniformLocation,
     type: number,

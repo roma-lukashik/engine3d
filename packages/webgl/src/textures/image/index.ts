@@ -1,20 +1,15 @@
 import { createTexture2D, supportMipmap } from "@webgl/textures/utils"
 import { WebGLBaseTexture } from "@webgl/textures/types"
 
-type Props = {
-  gl: WebGLRenderingContext
-  image: TexImageSource
-}
-
 export class WebGLImageTexture implements WebGLBaseTexture {
   public readonly texture: WebGLTexture
 
   private readonly buffer: WebGLBuffer | null
 
-  constructor({
-    gl,
-    image,
-  }: Props) {
+  public constructor(
+    gl: WebGLRenderingContext,
+    image: TexImageSource,
+  ) {
     this.texture = this.createTexture(gl, image)
     this.buffer = gl.createFramebuffer()
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffer)

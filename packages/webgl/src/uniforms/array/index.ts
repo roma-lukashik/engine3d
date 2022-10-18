@@ -1,6 +1,6 @@
 import { Uniform, UniformSetter } from "@webgl/uniforms/types"
 import { TypedArray } from "@core/types"
-import { WebglRenderState } from "@webgl/utils/renderState"
+import { RenderState } from "@webgl/utils/state"
 import { WebGLBaseTexture } from "@webgl/textures/types"
 import { bindTexture } from "@webgl/textures/utils"
 import { range } from "@utils/array"
@@ -9,14 +9,14 @@ export class ArrayUniform<T> implements Uniform<T[]> {
   public readonly name: string
 
   private readonly gl: WebGLRenderingContext
-  private readonly state: WebglRenderState
+  private readonly state: RenderState
   private readonly location: WebGLUniformLocation
   private readonly uniformSetter: UniformSetter
   private value: T[]
 
   public constructor(
     gl: WebGLRenderingContext,
-    state: WebglRenderState,
+    state: RenderState,
     name: string,
     value: T[],
     location: WebGLUniformLocation,

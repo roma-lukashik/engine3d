@@ -3,9 +3,10 @@ import { Camera } from "@core/camera"
 import { ShadowMaps } from "@webgl/renderer/shadow"
 import { MeshRenderer } from "@webgl/renderer/mesh"
 import { DebugLightRenderer } from "@webgl/renderer/debugLight"
-import { WebglRenderState } from "@webgl/utils/renderState"
+import { RenderState } from "@webgl/utils/state"
 import { DebugSkeletonRenderer } from "@webgl/renderer/debugSkeleton"
 import { DebugMeshRenderer } from "@webgl/renderer/debugMesh"
+import { RenderCache } from "@webgl/renderer/cache"
 
 type Props = {
   canvas?: HTMLCanvasElement
@@ -16,7 +17,8 @@ type Props = {
 export class Renderer {
   public readonly gl: WebGLRenderingContext
 
-  private readonly state: WebglRenderState
+  private readonly state: RenderState
+  private readonly cache: RenderCache
   private readonly shadowMaps: ShadowMaps
   private readonly meshRenderer: MeshRenderer
   private readonly debugLightRenderer: DebugLightRenderer
@@ -39,9 +41,10 @@ export class Renderer {
       throw new Error("Your browser cannot support uint index element")
     }
     this.gl = gl
-    this.state = new WebglRenderState(this.gl)
-    this.shadowMaps = new ShadowMaps(this.gl, this.state)
-    this.meshRenderer = new MeshRenderer(this.gl, this.state, this.shadowMaps)
+    this.state = new RenderState(this.gl)
+    this.cache = new RenderCache(this.gl)
+    this.shadowMaps = new ShadowMaps(this.gl, this.state, this.cache)
+    this.meshRenderer = new MeshRenderer(this.gl, this.state, this.cache, this.shadowMaps)
     this.debugLightRenderer = new DebugLightRenderer(this.gl, this.state)
     this.debugSkeletonRenderer = new DebugSkeletonRenderer(this.gl, this.state)
     this.debugMeshRenderer = new DebugMeshRenderer(this.gl, this.state)

@@ -7,7 +7,7 @@ type Props = {
   height?: number
 }
 
-export class WebGLDepthTexture implements WebGLBaseTexture {
+export class WebGLShadowTexture implements WebGLBaseTexture {
   public readonly width: number
   public readonly height: number
   public readonly texture: WebGLTexture

@@ -1,7 +1,7 @@
 import { Matrix4Array } from "@math/matrix4"
 import { Vector3Array } from "@math/vector3"
 import { Program } from "@webgl/program"
-import { WebglRenderState } from "@webgl/utils/renderState"
+import { RenderState } from "@webgl/utils/state"
 import { WebglVertexAttribute } from "@webgl/utils/attribute"
 
 type DebugLinesUniforms = {
@@ -17,7 +17,7 @@ type DebugLinesAttributes = {
 export class DebugLinesProgram extends Program<DebugLinesUniforms, DebugLinesAttributes> {
   public constructor(
     gl: WebGLRenderingContext,
-    state: WebglRenderState,
+    state: RenderState,
   ) {
     super(gl, state, vertex, fragment)
   }

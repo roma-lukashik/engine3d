@@ -1,34 +1,38 @@
-import { WebGLMesh } from "@webgl/mesh"
 import { MeshProgram } from "@webgl/program/mesh"
 import { Scene } from "@webgl/scene"
 import { Camera } from "@core/camera"
 import { Matrix4 } from "@math/matrix4"
 import { ShadowMaps } from "@webgl/renderer/shadow"
-import { WebglRenderState } from "@webgl/utils/renderState"
+import { RenderState } from "@webgl/utils/state"
 import { Mesh } from "@core/mesh"
-import { WebGLDepthTexture } from "@webgl/textures/depth"
+import { WebGLShadowTexture } from "@webgl/textures/shadow"
+import { RenderCache } from "@webgl/renderer/cache"
+import { MeshAttributes } from "@webgl/program/mesh/types";
+import { WebglVertexAttribute } from "@webgl/utils/attribute";
 
 const bias = Matrix4.translation(0.5, 0.5, 0.5).scale(0.5, 0.5, 0.5)
 
 export class MeshRenderer {
   private readonly gl: WebGLRenderingContext
-  private readonly state: WebglRenderState
+  private readonly state: RenderState
+  private readonly cache: RenderCache
   private readonly meshPrograms: WeakMap<Mesh, MeshProgram> = new WeakMap()
-  private readonly webglMeshes: WeakMap<Mesh, WebGLMesh> = new WeakMap()
   private readonly shadowMaps: ShadowMaps
 
   public constructor(
     gl: WebGLRenderingContext,
-    state: WebglRenderState,
+    state: RenderState,
+    cache: RenderCache,
     shadowRenderer: ShadowMaps,
   ) {
     this.gl = gl
     this.state = state
+    this.cache = cache
     this.shadowMaps = shadowRenderer
   }
 
   public render(scene: Scene, camera: Camera): void {
-    const shadowMaps = this.shadowMaps.create(scene)
+    const shadowMap = this.shadowMaps.create(scene)
 
     this.gl.depthMask(true)
     this.gl.enable(this.gl.CULL_FACE)
@@ -40,52 +44,30 @@ export class MeshRenderer {
 
     scene.objects.forEach((object) => {
       object.meshes.forEach((mesh) => {
-        const meshProgram = this.getProgram(mesh, scene)
-        meshProgram.use()
-
-        if (!this.webglMeshes.get(mesh)) {
-          this.webglMeshes.set(mesh, new WebGLMesh(this.gl, mesh))
-        }
-        const webglMesh = this.webglMeshes.get(mesh)!
-        this.updateProgram(meshProgram, mesh, webglMesh, scene, shadowMaps, camera)
-        webglMesh.render()
+        this.renderMesh(mesh, scene, shadowMap, camera)
       })
     })
   }
 
-  private getProgram(mesh: Mesh, scene: Scene): MeshProgram {
-    if (!this.meshPrograms.has(mesh)) {
-      this.meshPrograms.set(mesh, new MeshProgram(this.gl, this.state, {
-        ambientLightsAmount: scene.ambientLights.length,
-        pointLightsAmount: scene.pointLights.length,
-        spotLightsAmount: scene.spotLights.length,
-        directionalLightsAmount: scene.directionalLights.length,
-        shadowsAmount: scene.shadowLights.length,
-        useSkinning: !!mesh.skeleton,
-        useColorTexture: !!mesh.material.colorTexture,
-      }))
-    }
-    return this.meshPrograms.get(mesh)!
-  }
+  private renderMesh(mesh: Mesh, scene: Scene, shadowMap: WebGLShadowTexture[], camera: Camera): void {
+    const program = this.getProgram(mesh, scene)
+    program.use()
 
-  private updateProgram(
-    program: MeshProgram,
-    mesh: Mesh,
-    webglMesh: WebGLMesh,
-    scene: Scene,
-    shadowMaps: WebGLDepthTexture[],
-    camera: Camera,
-  ): void {
+    const boneTexture = this.cache.getBoneTexture(mesh)
+    const colorTexture = this.cache.getColorTexture(mesh)
+
+    boneTexture?.update()
+
     program.uniforms.setValues({
       worldMatrix: mesh.worldMatrix.elements,
       material: {
         metalness: mesh.material.metalness,
         roughness: mesh.material.roughness,
         color: mesh.material.color.elements,
-        colorTexture: webglMesh.colorTexture,
+        colorTexture: colorTexture,
       },
-      boneTexture: webglMesh.boneTexture,
-      boneTextureSize: webglMesh.boneTextureSize,
+      boneTexture: boneTexture?.texture,
+      boneTextureSize: boneTexture?.size,
       projectionMatrix: camera.projectionMatrix.elements,
       textureMatrices: scene.shadowLights.map((light) => {
         return bias.clone().multiply(light.projectionMatrix).elements
@@ -111,9 +93,36 @@ export class MeshRenderer {
           castShadow,
         }
       }),
-      shadowTextures: shadowMaps,
+      shadowTextures: shadowMap,
       cameraPosition: camera.position.elements,
     })
-    program.attributes.update(webglMesh.attributes)
+
+    const attributes = this.cache.getAttributes(mesh)
+    program.attributes.update(attributes)
+
+    this.drawBuffer(attributes)
+  }
+
+  private getProgram(mesh: Mesh, scene: Scene): MeshProgram {
+    if (!this.meshPrograms.has(mesh)) {
+      this.meshPrograms.set(mesh, new MeshProgram(this.gl, this.state, {
+        ambientLightsAmount: scene.ambientLights.length,
+        pointLightsAmount: scene.pointLights.length,
+        spotLightsAmount: scene.spotLights.length,
+        directionalLightsAmount: scene.directionalLights.length,
+        shadowsAmount: scene.shadowLights.length,
+        useSkinning: !!mesh.skeleton,
+        useColorTexture: !!mesh.material.colorTexture,
+      }))
+    }
+    return this.meshPrograms.get(mesh)!
+  }
+
+  private drawBuffer({ index, position }: Partial<MeshAttributes> & { index?: WebglVertexAttribute; }): void {
+    if (index) {
+      this.gl.drawElements(this.gl.TRIANGLES, index.count, index.type, index.offset)
+    } else {
+      this.gl.drawArrays(this.gl.TRIANGLES, 0, position?.count ?? 0)
+    }
   }
 }

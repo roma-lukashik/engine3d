@@ -1,6 +1,6 @@
 import { SingleUniform } from "@webgl/uniforms/single"
 import { Uniform } from "@webgl/uniforms/types"
-import { WebglRenderState } from "@webgl/utils/renderState"
+import { RenderState } from "@webgl/utils/state"
 
 export class StructureUniform<T extends Record<string, unknown>> implements Uniform<T> {
   public name: string
@@ -10,7 +10,7 @@ export class StructureUniform<T extends Record<string, unknown>> implements Unif
 
   public constructor(
     gl: WebGLRenderingContext,
-    state: WebglRenderState,
+    state: RenderState,
     name: string,
     location: WebGLUniformLocation,
     type: number,

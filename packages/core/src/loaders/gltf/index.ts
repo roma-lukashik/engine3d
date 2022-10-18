@@ -20,7 +20,7 @@ import { Object3d } from "@core/object3d"
 import { Skeleton } from "@core/skeleton"
 import { Texture } from "@core/texture"
 import { loadImage } from "@core/loaders/image"
-import { transform } from "@utils/object"
+import { mapObject } from "@utils/object"
 import { nthOption, mapOption, mapOptionAsync, Option } from "@utils/optionable"
 import { timesMap } from "@utils/array"
 import { Matrix4 } from "@math/matrix4"
@@ -82,7 +82,7 @@ const parseMesh = async (data: GltfRaw, meshIndex: Option<number>): Promise<Opti
 }
 
 const parsePrimitive = async (data: GltfRaw, primitive: MeshPrimitive): Promise<Mesh> => {
-  const geometryData = transform(primitive.attributes, (accessorIndex) => {
+  const geometryData = mapObject(primitive.attributes, (accessorIndex) => {
     return parseAttributeAccessor(data, accessorIndex)
   })
   const geometry = new Geometry({
