@@ -1,7 +1,6 @@
 import { DebugLinesProgram } from "@webgl/program/debugLines"
 import { RenderState } from "@webgl/utils/state"
 import { Camera } from "@core/camera"
-import { WebglVertexAttribute } from "@webgl/utils/attribute"
 import { BufferAttribute } from "@core/bufferAttribute"
 import { Matrix4 } from "@math/matrix4"
 import { BufferViewTarget } from "@core/loaders/types"
@@ -13,8 +12,8 @@ export class DebugMeshRenderer {
   private readonly gl: WebGLRenderingContext
   private readonly program: DebugLinesProgram
   private readonly color: Vector3
-  private readonly positionAttribute: WebglVertexAttribute
-  private readonly indexAttribute: WebglVertexAttribute
+  private readonly positionAttribute: BufferAttribute
+  private readonly indexAttribute: BufferAttribute
 
   public constructor(
     gl: WebGLRenderingContext,
@@ -24,15 +23,15 @@ export class DebugMeshRenderer {
     this.gl = gl
     this.color = color
     this.program = new DebugLinesProgram(gl, state)
-    this.positionAttribute = new WebglVertexAttribute(this.gl, new BufferAttribute({
+    this.positionAttribute = new BufferAttribute({
       array: positions,
       itemSize: Vector3.size,
-    }))
-    this.indexAttribute = new WebglVertexAttribute(this.gl, new BufferAttribute({
+    })
+    this.indexAttribute = new BufferAttribute({
       array: indexes,
       itemSize: 1,
       target: BufferViewTarget.ElementArrayBuffer,
-    }))
+    })
   }
 
   public render(object: Gltf<any>, camera: Camera): void {

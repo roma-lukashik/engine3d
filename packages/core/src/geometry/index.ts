@@ -2,7 +2,7 @@ import { MeshPrimitiveAttributes } from "@core/loaders/types"
 import { BufferAttribute } from "@core/bufferAttribute"
 import { forEachKey } from "@utils/object"
 
-export class Geometry extends autoImplement<Attributes>() {
+export class Geometry extends autoImplement<GeometryAttributes>() {
   public constructor(data: Partial<Record<keyof MeshPrimitiveAttributes | "index", BufferAttribute>> = {}) {
     super()
     forEachKey(data, (key, bufferAttribute) => {
@@ -16,7 +16,7 @@ export class Geometry extends autoImplement<Attributes>() {
 
 type Digits = "" | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
 
-type Attributes = {
+export type GeometryAttributes = {
   position: BufferAttribute
   normal?: BufferAttribute
   tangent?: BufferAttribute
@@ -35,7 +35,7 @@ function autoImplement<T>(): new () => T {
   return class { } as any
 }
 
-function getAttributeKey(key: keyof MeshPrimitiveAttributes | "index"): keyof Attributes | undefined {
+function getAttributeKey(key: keyof MeshPrimitiveAttributes | "index"): keyof GeometryAttributes | undefined {
   if (key === "POSITION") return "position"
   if (key === "NORMAL") return "normal"
   if (key === "TANGENT") return "tangent"

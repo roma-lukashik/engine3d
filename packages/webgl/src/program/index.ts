@@ -35,7 +35,7 @@ export class Program<U extends UniformValues, A extends AttributeValues> {
 
     this.program = program
     this.uniforms = new Uniforms(gl, state, program)
-    this.attributes = new Attributes({ gl, program })
+    this.attributes = new Attributes(gl, program)
   }
 
   public use(): void {

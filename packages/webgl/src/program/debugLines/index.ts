@@ -2,7 +2,7 @@ import { Matrix4Array } from "@math/matrix4"
 import { Vector3Array } from "@math/vector3"
 import { Program } from "@webgl/program"
 import { RenderState } from "@webgl/utils/state"
-import { WebglVertexAttribute } from "@webgl/utils/attribute"
+import { GeometryAttributes } from "@core/geometry"
 
 type DebugLinesUniforms = {
   projectionMatrix: Matrix4Array
@@ -10,9 +10,7 @@ type DebugLinesUniforms = {
   color: Vector3Array
 }
 
-type DebugLinesAttributes = {
-  position: WebglVertexAttribute
-}
+type DebugLinesAttributes = Pick<GeometryAttributes, "position">
 
 export class DebugLinesProgram extends Program<DebugLinesUniforms, DebugLinesAttributes> {
   public constructor(

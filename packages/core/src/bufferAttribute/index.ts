@@ -1,5 +1,6 @@
-import { BufferViewTarget } from "@core/loaders/types"
+import { BufferViewTarget, ComponentType } from "@core/loaders/types"
 import { TypedArray } from "@core/types"
+import { getArrayComponentType } from "@core/bufferAttribute/utils"
 
 type Props = {
   array: TypedArray
@@ -13,13 +14,14 @@ type Props = {
 export class BufferAttribute {
   public array: TypedArray
   public itemSize: number
+  public type: ComponentType
   public normalized: boolean
   public count: number
   public stride: number
   public offset: number
   public target: BufferViewTarget
 
-  constructor({
+  public constructor({
     array,
     itemSize,
     normalized = false,
@@ -29,6 +31,7 @@ export class BufferAttribute {
   }: Props) {
     this.array = array
     this.itemSize = itemSize
+    this.type = getArrayComponentType(array)
     this.normalized = normalized
     this.stride = stride
     this.offset = offset

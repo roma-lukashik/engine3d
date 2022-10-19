@@ -1,7 +1,6 @@
 import { DebugLinesProgram } from "@webgl/program/debugLines"
 import { RenderState } from "@webgl/utils/state"
 import { Camera } from "@core/camera"
-import { WebglVertexAttribute } from "@webgl/utils/attribute"
 import { BufferAttribute } from "@core/bufferAttribute"
 import { Matrix4 } from "@math/matrix4"
 import { BufferViewTarget } from "@core/loaders/types"
@@ -31,15 +30,15 @@ export class DebugSkeletonRenderer {
       return
     }
     const positions = this.getSkeletonPoints(object)
-    const positionAttribute = new WebglVertexAttribute(this.gl, new BufferAttribute({
+    const positionAttribute = new BufferAttribute({
       array: positions,
       itemSize: Vector3.size,
-    }))
-    const indexAttribute = new WebglVertexAttribute(this.gl, new BufferAttribute({
+    })
+    const indexAttribute = new BufferAttribute({
       array: new Uint16Array(range(0, positions.length / Vector3.size)),
       itemSize: 1,
       target: BufferViewTarget.ElementArrayBuffer,
-    }))
+    })
 
     this.program.use()
     this.gl.disable(this.gl.DEPTH_TEST)

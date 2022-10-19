@@ -2,7 +2,7 @@ import { Matrix4Array } from "@math/matrix4"
 import { Vector3Array } from "@math/vector3"
 import { WebGLBaseTexture } from "@webgl/textures/types"
 import { Vector4Array } from "@math/vector4"
-import { WebglVertexAttribute } from "@webgl/utils/attribute"
+import { GeometryAttributes } from "@core/geometry"
 
 export type MeshUniforms = {
   worldMatrix?: Matrix4Array
@@ -19,13 +19,14 @@ export type MeshUniforms = {
   boneTextureSize?: number
 }
 
-export type MeshAttributes = {
-  position: WebglVertexAttribute
-  normal: WebglVertexAttribute
-  skinIndex?: WebglVertexAttribute
-  skinWeight?: WebglVertexAttribute
-  uv: WebglVertexAttribute
-}
+export type MeshAttributes = Pick<
+  GeometryAttributes,
+  | "position"
+  | "normal"
+  | "skinIndex"
+  | "skinWeight"
+  | "uv"
+>
 
 type PointLight = {
   color: Vector4Array

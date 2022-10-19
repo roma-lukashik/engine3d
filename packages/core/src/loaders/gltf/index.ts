@@ -3,7 +3,6 @@ import {
   AnimationChannel,
   AnimationChannelPath,
   BufferViewTarget,
-  ComponentType,
   GltfRaw,
   GltfAnimation,
   GltfBufferView,
@@ -29,6 +28,7 @@ import { Quaternion } from "@math/quaternion"
 import { Vector4 } from "@math/vector4"
 import { AnimationSample } from "@core/animationSample"
 import { Gltf } from "@core/gltf"
+import { TypedArrayByComponentType } from "@core/bufferAttribute/utils"
 
 export const parseGltf = async <K extends string>(raw: ArrayBufferLike | string | GltfRaw): Promise<Gltf<K>> => {
   const data = typeof raw === "string" ? JSON.parse(raw) as GltfRaw : "byteLength" in raw ? parseGlb(raw) : raw
@@ -206,15 +206,6 @@ const AccessorTypeSizes = {
   [AccessorType.Mat2]: 4,
   [AccessorType.Mat3]: 9,
   [AccessorType.Mat4]: 16,
-}
-
-const TypedArrayByComponentType = {
-  [ComponentType.Int8]: Int8Array,
-  [ComponentType.Uint8]: Uint8Array,
-  [ComponentType.Int16]: Int16Array,
-  [ComponentType.Uint16]: Uint16Array,
-  [ComponentType.Uint32]: Uint32Array,
-  [ComponentType.Float32]: Float32Array,
 }
 
 const parseBufferView = (data: GltfRaw, bufferView: Option<GltfBufferView>): Option<ArrayBuffer> => {

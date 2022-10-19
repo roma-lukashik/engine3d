@@ -54,6 +54,7 @@ export enum ComponentType {
   Uint8 = 5121,
   Int16 = 5122,
   Uint16 = 5123,
+  Int32 = 5124,
   Uint32 = 5125,
   Float32 = 5126,
 }

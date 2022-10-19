@@ -7,8 +7,6 @@ import { RenderState } from "@webgl/utils/state"
 import { Mesh } from "@core/mesh"
 import { WebGLShadowTexture } from "@webgl/textures/shadow"
 import { RenderCache } from "@webgl/renderer/cache"
-import { MeshAttributes } from "@webgl/program/mesh/types";
-import { WebglVertexAttribute } from "@webgl/utils/attribute";
 
 const bias = Matrix4.translation(0.5, 0.5, 0.5).scale(0.5, 0.5, 0.5)
 
@@ -97,10 +95,9 @@ export class MeshRenderer {
       cameraPosition: camera.position.elements,
     })
 
-    const attributes = this.cache.getAttributes(mesh)
-    program.attributes.update(attributes)
+    program.attributes.update(mesh.geometry)
 
-    this.drawBuffer(attributes)
+    this.drawBuffer(mesh)
   }
 
   private getProgram(mesh: Mesh, scene: Scene): MeshProgram {
@@ -118,11 +115,12 @@ export class MeshRenderer {
     return this.meshPrograms.get(mesh)!
   }
 
-  private drawBuffer({ index, position }: Partial<MeshAttributes> & { index?: WebglVertexAttribute; }): void {
+  private drawBuffer(mesh: Mesh): void {
+    const { index, position } = mesh.geometry
     if (index) {
       this.gl.drawElements(this.gl.TRIANGLES, index.count, index.type, index.offset)
     } else {
-      this.gl.drawArrays(this.gl.TRIANGLES, 0, position?.count ?? 0)
+      this.gl.drawArrays(this.gl.TRIANGLES, 0, position.count)
     }
   }
 }

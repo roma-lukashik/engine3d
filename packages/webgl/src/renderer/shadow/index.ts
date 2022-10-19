@@ -1,11 +1,10 @@
-import { ShadowAttributes, ShadowProgram } from "@webgl/program/shadow"
+import { ShadowProgram } from "@webgl/program/shadow"
 import { LightWithShadow } from "@core/lights"
 import { Mesh } from "@core/mesh"
 import { RenderState } from "@webgl/utils/state"
 import { Scene } from "@webgl/scene"
 import { WebGLShadowTexture } from "@webgl/textures/shadow"
 import { RenderCache } from "@webgl/renderer/cache"
-import { WebglVertexAttribute } from "@webgl/utils/attribute"
 
 export class ShadowMaps {
   private readonly gl: WebGLRenderingContext
@@ -74,22 +73,22 @@ export class ShadowMaps {
       projectionMatrix: light.projectionMatrix.elements,
     })
 
-    const attributes = this.cache.getAttributes(mesh)
     program.attributes.update({
-      position: attributes.position,
-      skinIndex: attributes.skinIndex,
-      skinWeight: attributes.skinWeight,
-      index: attributes.index,
+      position: mesh.geometry.position,
+      skinIndex: mesh.geometry.skinIndex,
+      skinWeight: mesh.geometry.skinWeight,
+      index: mesh.geometry.index,
     })
 
-    this.drawBuffer(attributes)
+    this.drawBuffer(mesh)
   }
 
-  private drawBuffer({ index, position }: Partial<ShadowAttributes> & { index?: WebglVertexAttribute; }): void {
+  private drawBuffer(mesh: Mesh): void {
+    const { index, position } = mesh.geometry
     if (index) {
       this.gl.drawElements(this.gl.TRIANGLES, index.count, index.type, index.offset)
     } else {
-      this.gl.drawArrays(this.gl.TRIANGLES, 0, position?.count ?? 0)
+      this.gl.drawArrays(this.gl.TRIANGLES, 0, position.count)
     }
   }
 }

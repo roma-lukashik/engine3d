@@ -1,6 +1,5 @@
 import { indexes, positions } from "@webgl/renderer/debugLight/data"
 import { DebugLinesProgram } from "@webgl/program/debugLines"
-import { WebglVertexAttribute } from "@webgl/utils/attribute"
 import { BufferAttribute } from "@core/bufferAttribute"
 import { BufferViewTarget } from "@core/loaders/types"
 import { Camera } from "@core/camera"
@@ -11,8 +10,8 @@ import { Scene } from "@webgl/scene"
 export class DebugLightRenderer {
   private readonly gl: WebGLRenderingContext
   private readonly program: DebugLinesProgram
-  private readonly positionAttribute: WebglVertexAttribute
-  private readonly indexAttribute: WebglVertexAttribute
+  private readonly positionAttribute: BufferAttribute
+  private readonly indexAttribute: BufferAttribute
   private readonly color: Vector3
 
   public constructor(
@@ -23,15 +22,15 @@ export class DebugLightRenderer {
     this.gl = gl
     this.color = color
     this.program = new DebugLinesProgram(gl, state)
-    this.positionAttribute = new WebglVertexAttribute(gl, new BufferAttribute({
+    this.positionAttribute = new BufferAttribute({
       array: positions,
       itemSize: Vector3.size,
-    }))
-    this.indexAttribute = new WebglVertexAttribute(gl, new BufferAttribute({
+    })
+    this.indexAttribute = new BufferAttribute({
       array: indexes,
       itemSize: 1,
       target: BufferViewTarget.ElementArrayBuffer,
-    }))
+    })
   }
 
   public render(scene: Scene, camera: Camera): void {
