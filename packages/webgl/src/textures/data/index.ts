@@ -8,7 +8,7 @@ export class WebGLDataTexture<T extends TypedArray> implements WebGLBaseTexture 
 
   private readonly gl: WebGLRenderingContext
 
-  constructor(
+  public constructor(
     gl: WebGLRenderingContext,
     size: number,
     data: T,

@@ -13,7 +13,7 @@ export class Animation {
   private readonly endTime: number
   private readonly duration: number
 
-  constructor(name: string, samples: AnimationSample[]) {
+  public constructor(name: string, samples: AnimationSample[]) {
     this.name = name
     this.samples = samples
     this.startTime = Math.min(...samples.map(({ times }) => times[0]))

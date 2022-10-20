@@ -25,7 +25,7 @@ export class Renderer {
   private readonly debugSkeletonRenderer: DebugSkeletonRenderer
   private readonly debugMeshRenderer: DebugMeshRenderer
 
-  constructor({
+  public constructor({
     canvas = document.createElement("canvas"),
     width,
     height,

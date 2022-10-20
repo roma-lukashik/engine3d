@@ -13,7 +13,7 @@ export class Mesh extends Object3d {
   public material: Material
   public skeleton?: Skeleton
 
-  constructor({
+  public constructor({
     geometry,
     material,
     ...props

@@ -19,9 +19,9 @@ export class Quaternion {
 
   private readonly array: QuaternionArray = new QuaternionArray()
 
-  constructor()
-  constructor(x: number, y: number, z: number, w: number)
-  constructor(x: number = 0, y: number = 0, z: number = 0, w: number = 1) {
+  public constructor()
+  public constructor(x: number, y: number, z: number, w: number)
+  public constructor(x: number = 0, y: number = 0, z: number = 0, w: number = 1) {
     this.set(x, y, z, w)
   }
 

@@ -32,7 +32,7 @@ export class Material {
   public occlusionTexture?: Texture
   public emissiveTexture?: Texture
 
-  constructor({
+  public constructor({
     alphaMode = AlphaMode.Opaque,
     alphaCutoff = 0.5,
     color = Vector4.one(),

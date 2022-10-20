@@ -19,7 +19,7 @@ export class CameraControl {
   private element: HTMLElement | Document
   private rotationSpeed: number
 
-  constructor({
+  public constructor({
     camera,
     element = document,
     rotationSpeed = 1,

@@ -23,7 +23,7 @@ export class PerspectiveCamera implements Camera {
   public target: Vector3 = Vector3.zero()
   public projectionMatrix: Matrix4 = Matrix4.identity()
 
-  constructor({
+  public constructor({
     up = new Vector3(0, 1, 0),
     near = 0.1,
     far = 2000,

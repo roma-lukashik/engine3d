@@ -5,7 +5,7 @@ type Props = {
 export class Texture {
   public source: TexImageSource
 
-  constructor({ source }: Props) {
+  public constructor({ source }: Props) {
     this.source = source
   }
 }

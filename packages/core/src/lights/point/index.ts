@@ -44,7 +44,7 @@ export class PointLight implements LightWithShadow {
     })
   }
 
-  setPosition(position: Vector3): void {
+  public setPosition(position: Vector3): void {
     this.camera.setPosition(position)
   }
 }

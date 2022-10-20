@@ -17,7 +17,7 @@ export class AmbientLight implements Light {
   public readonly color: RGB
   public intensity: number
 
-  constructor({
+  public constructor({
     color = 0xFFFFFF,
     intensity = 0.1,
   }: Props = {}) {

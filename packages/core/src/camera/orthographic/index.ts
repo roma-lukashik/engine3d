@@ -27,7 +27,7 @@ export class OrthographicCamera implements Camera {
   public target: Vector3 = Vector3.zero()
   public projectionMatrix: Matrix4 = Matrix4.identity()
 
-  constructor({
+  public constructor({
     left,
     right,
     top,

@@ -42,5 +42,8 @@ module.exports = {
         "delimiter": "semi",
       },
     }],
+    "@typescript-eslint/explicit-member-accessibility": ["error", {
+      "accessibility": "explicit",
+    }],
   },
 }

@@ -20,7 +20,7 @@ export class Object3d {
   public children: Object3d[] = []
   public parent?: Object3d
 
-  constructor({
+  public constructor({
     name,
     position = Vector3.zero(),
     scale = Vector3.one(),

@@ -11,7 +11,7 @@ export class Skeleton {
   public boneInverses: Matrix4[]
   public boneMatrices: Float32Array
 
-  constructor({ bones, boneInverses }: SkeletonProps) {
+  public constructor({ bones, boneInverses }: SkeletonProps) {
     this.bones = bones
     this.boneInverses = boneInverses
     this.boneMatrices = new Float32Array(bones.length * Matrix4.size)

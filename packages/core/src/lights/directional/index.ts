@@ -55,12 +55,12 @@ export class DirectionalLight implements LightWithShadow {
     this.updateDirection()
   }
 
-  setPosition(position: Vector3): void {
+  public setPosition(position: Vector3): void {
     this.camera.setPosition(position)
     this.updateDirection()
   }
 
-  setTarget(target: Vector3): void {
+  public setTarget(target: Vector3): void {
     this.camera.lookAt(target)
     this.updateDirection()
   }

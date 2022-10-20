@@ -14,7 +14,7 @@ export class WebGLShadowTexture implements WebGLBaseTexture {
   public readonly frameBuffer: WebGLFramebuffer | null
   public readonly renderBuffer: WebGLRenderbuffer | null
 
-  constructor({
+  public constructor({
     gl,
     width = 1000,
     height = 1000,
