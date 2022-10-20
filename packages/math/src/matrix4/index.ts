@@ -325,16 +325,16 @@ export class Matrix4 {
     ])
   }
 
-  public rotateX(deg: number): this {
-    return this.multiply(Matrix4.rotationX(deg))
+  public rotateX(rad: number): this {
+    return this.multiply(Matrix4.rotationX(rad))
   }
 
-  public rotateY(deg: number): this {
-    return this.multiply(Matrix4.rotationY(deg))
+  public rotateY(rad: number): this {
+    return this.multiply(Matrix4.rotationY(rad))
   }
 
-  public rotateZ(deg: number): this {
-    return this.multiply(Matrix4.rotationZ(deg))
+  public rotateZ(rad: number): this {
+    return this.multiply(Matrix4.rotationZ(rad))
   }
 
   public translate(x: number, y: number, z: number): this {
