@@ -13,7 +13,7 @@ describe("Mesh", () => {
     expect(mesh).toBeDefined()
   })
 
-  it("to be instance of Object3d", () => {
+  it("to be instance of Node", () => {
     const mesh = new Mesh({ geometry, material })
     expect(mesh).toBeInstanceOf(Node)
   })

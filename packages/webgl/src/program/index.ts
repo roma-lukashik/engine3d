@@ -1,5 +1,5 @@
 import { UniformValues, Uniforms } from "@webgl/uniforms"
-import { Attributes, AttributeValues } from "@webgl/utils/attributes"
+import { Attributes, AttributeValues } from "@webgl/attributes"
 import { RenderState } from "@webgl/utils/state"
 
 export class Program<U extends UniformValues, A extends AttributeValues> {

@@ -1,5 +1,5 @@
 import { BufferAttribute } from "@core/bufferAttribute"
-import { LocationAttribute } from "@webgl/utils/attributes/locationAttribute"
+import { LocationAttribute } from "@webgl/attributes/locationAttribute"
 
 export type AttributeValues<K extends string = string> = Record<K, BufferAttribute>
 
@@ -7,7 +7,7 @@ export class Attributes<T extends AttributeValues<K>, K extends string = string>
   private readonly gl: WebGLRenderingContext
   private readonly program: WebGLProgram
   private readonly locationAttributes: LocationAttribute<K>[] = []
-  private readonly indexBuffer: WebGLBuffer | null
+  private readonly buffers: WeakMap<BufferAttribute, WebGLBuffer | null> = new WeakMap()
 
   public constructor(
     gl: WebGLRenderingContext,
@@ -15,23 +15,21 @@ export class Attributes<T extends AttributeValues<K>, K extends string = string>
   ) {
     this.gl = gl
     this.program = program
-    this.indexBuffer = gl.createBuffer()
     this.extractAttributes()
   }
 
-  public update(attributes: Partial<T & AttributeValues<"index">>): void {
-    this.locationAttributes.forEach(({ location, type, name, buffer }) => {
+  public update(attributes: Partial<T> & Partial<AttributeValues<"index">>): void {
+    this.locationAttributes.forEach(({ location, type, name }) => {
       const attribute = attributes[name]
       if (attribute) {
+        const buffer = this.getBuffer(attribute!)
         this.bindBuffer(attribute, buffer)
-        // TODO assign only once
-        this.assignBufferData(attribute)
         this.bindBufferToVertexAttribute(attribute, location, type)
       }
     })
     if (attributes.index) {
-      this.bindBuffer(attributes.index, this.indexBuffer)
-      this.assignBufferData(attributes.index)
+      const indexBuffer = this.getBuffer(attributes.index)
+      this.bindBuffer(attributes.index, indexBuffer)
     }
   }
 
@@ -46,8 +44,18 @@ export class Attributes<T extends AttributeValues<K>, K extends string = string>
       if (location === -1) {
         continue
       }
-      this.locationAttributes.push(new LocationAttribute(this.gl, location, info.type, info.name as K))
+      this.locationAttributes.push(new LocationAttribute(location, info.type, info.name as K))
     }
+  }
+
+  private getBuffer(attribute: AttributeValues<K>[K]): WebGLBuffer | null {
+    if (!this.buffers.has(attribute)) {
+      const buffer = this.gl.createBuffer()
+      this.buffers.set(attribute, buffer)
+      this.bindBuffer(attribute, buffer)
+      this.assignBufferData(attribute)
+    }
+    return this.buffers.get(attribute) ?? null
   }
 
   private bindBuffer(attribute: BufferAttribute, buffer: WebGLBuffer | null): void {
