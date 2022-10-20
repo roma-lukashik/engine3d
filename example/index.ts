@@ -127,7 +127,7 @@ window.addEventListener("resize", () => {
   camera.setOptions({ aspect: window.innerWidth / window.innerHeight })
 })
 
-window.addEventListener("keypress", (e) => {
+window.addEventListener("keydown", (e) => {
   e.preventDefault()
   if (e.key.toLowerCase() === "w") {
     wPressed = true
