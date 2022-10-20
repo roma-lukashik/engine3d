@@ -13,6 +13,10 @@ type Props = {
 }
 
 export class OrthographicCamera implements Camera {
+  public position: Vector3 = Vector3.zero()
+  public target: Vector3 = Vector3.zero()
+  public projectionMatrix: Matrix4 = Matrix4.identity()
+
   private left: number
   private right: number
   private top: number
@@ -22,10 +26,6 @@ export class OrthographicCamera implements Camera {
   private far: number
   private up: Vector3 = new Vector3(0, 1, 0)
   private orthographicMatrix: Matrix4 = Matrix4.identity()
-
-  public position: Vector3 = Vector3.zero()
-  public target: Vector3 = Vector3.zero()
-  public projectionMatrix: Matrix4 = Matrix4.identity()
 
   public constructor({
     left,

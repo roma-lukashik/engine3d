@@ -3,12 +3,12 @@ import { Attributes, AttributeValues } from "@webgl/utils/attributes"
 import { RenderState } from "@webgl/utils/state"
 
 export class Program<U extends UniformValues, A extends AttributeValues> {
+  public readonly uniforms: Uniforms<U>
+  public readonly attributes: Attributes<A>
+
   private readonly gl: WebGLRenderingContext
   private readonly state: RenderState
   private readonly program: WebGLProgram
-
-  public readonly uniforms: Uniforms<U>
-  public readonly attributes: Attributes<A>
 
   public constructor(
     gl: WebGLRenderingContext,

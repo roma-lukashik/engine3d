@@ -45,5 +45,41 @@ module.exports = {
     "@typescript-eslint/explicit-member-accessibility": ["error", {
       "accessibility": "explicit",
     }],
+    "@typescript-eslint/member-ordering": [
+      "error",
+      {
+        "default": [
+          "public-static-field",
+          "protected-static-field",
+          "private-static-field",
+
+          "public-abstract-field",
+          "protected-abstract-field",
+          "private-abstract-field",
+
+          "public-instance-field",
+          "protected-instance-field",
+          "private-instance-field",
+
+          "constructor",
+
+          "public-static-method",
+          "protected-static-method",
+          "private-static-method",
+
+          "public-abstract-method",
+          "protected-abstract-method",
+          "private-abstract-method",
+
+          "public-instance-method",
+          "protected-instance-method",
+          "private-instance-method",
+
+          "method",
+        ],
+        "interfaces": "never",
+        "typeLiterals": "never",
+      },
+    ],
   },
 }

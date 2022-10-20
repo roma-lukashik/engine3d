@@ -12,16 +12,16 @@ type Props = {
 }
 
 export class PerspectiveCamera implements Camera {
+  public position: Vector3 = Vector3.zero()
+  public target: Vector3 = Vector3.zero()
+  public projectionMatrix: Matrix4 = Matrix4.identity()
+
   private near: number
   private far: number
   private aspect: number
   private fovy: number
   private up: Vector3
   private perspectiveMatrix: Matrix4 = Matrix4.identity()
-
-  public position: Vector3 = Vector3.zero()
-  public target: Vector3 = Vector3.zero()
-  public projectionMatrix: Matrix4 = Matrix4.identity()
 
   public constructor({
     up = new Vector3(0, 1, 0),
