@@ -7,18 +7,19 @@ import { BufferViewTarget } from "@core/loaders/types"
 import { Vector3 } from "@math/vector3"
 import { indexes, positions } from "@webgl/renderer/debugMesh/data"
 import { Gltf } from "@core/gltf"
+import { RGB } from "@core/color/rgb"
 
 export class DebugMeshRenderer {
   private readonly gl: WebGLRenderingContext
   private readonly program: DebugLinesProgram
-  private readonly color: Vector3
+  private readonly color: RGB
   private readonly positionAttribute: BufferAttribute
   private readonly indexAttribute: BufferAttribute
 
   public constructor(
     gl: WebGLRenderingContext,
     state: RenderState,
-    color: Vector3 = new Vector3(0.8, 0, 0.1),
+    color: RGB = new RGB(0xDE3E4B),
   ) {
     this.gl = gl
     this.color = color

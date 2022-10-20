@@ -1,7 +1,6 @@
 import { Light, LightType } from "@core/lights/types"
-import { Color } from "@core/color"
+import { RGB } from "@core/color/rgb"
 import { clamp } from "@math/operators"
-import { Vector3 } from "@math/vector3"
 
 type Props = {
   // Hexadecimal color of the light.
@@ -15,7 +14,7 @@ type Props = {
 export class AmbientLight implements Light {
   public readonly type: LightType
   public readonly castShadow: boolean
-  public color: Vector3
+  public readonly color: RGB
   public intensity: number
 
   constructor({
@@ -24,7 +23,7 @@ export class AmbientLight implements Light {
   }: Props = {}) {
     this.type = LightType.Ambient
     this.castShadow = false
-    this.color = new Color(color).rgb
+    this.color = new RGB(color)
     this.intensity = clamp(intensity, 0, 1)
   }
 }

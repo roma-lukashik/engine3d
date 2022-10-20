@@ -1,6 +1,6 @@
 import { Camera, PerspectiveCamera } from "@core/camera"
 import { LightType, LightWithShadow } from "@core/lights/types"
-import { Color } from "@core/color"
+import { RGB } from "@core/color/rgb"
 import { Vector3 } from "@math/vector3"
 import { Matrix4 } from "@math/matrix4"
 
@@ -26,11 +26,9 @@ type Props = {
 }
 
 export class SpotLight implements LightWithShadow {
-  private readonly camera: Camera
-
   public readonly type: LightType
   public readonly castShadow: boolean
-  public color: Vector3
+  public readonly color: RGB
   public intensity: number
   public distance: number
   public angle: number
@@ -56,7 +54,9 @@ export class SpotLight implements LightWithShadow {
     return Math.cos(this.angle * (1 - this.penumbra))
   }
 
-  constructor({
+  private readonly camera: Camera
+
+  public constructor({
     castShadow = true,
     color = 0xFFFFFF,
     intensity = 1,
@@ -65,7 +65,7 @@ export class SpotLight implements LightWithShadow {
     penumbra = 0,
   }: Props = {}) {
     this.type = LightType.SpotLight
-    this.color = new Color(color).rgb
+    this.color = new RGB(color)
     this.castShadow = castShadow
     this.intensity = intensity
     this.distance = distance

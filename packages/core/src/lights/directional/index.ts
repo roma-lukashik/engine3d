@@ -3,7 +3,7 @@ import { Matrix4 } from "@math/matrix4"
 import { clamp } from "@math/operators"
 import { Camera, OrthographicCamera } from "@core/camera"
 import { LightType, LightWithShadow } from "@core/lights/types"
-import { Color } from "@core/color"
+import { RGB } from "@core/color/rgb"
 
 type Props = {
   // Hexadecimal color of the light.
@@ -20,27 +20,27 @@ type Props = {
 }
 
 export class DirectionalLight implements LightWithShadow {
-  private readonly camera: Camera
-
   public readonly type: LightType
   public readonly castShadow: boolean
-  public direction: Vector3 = Vector3.zero()
-  public color: Vector3
+  public readonly color: RGB
+  public readonly direction: Vector3 = Vector3.zero()
   public intensity: number
   public bias: number
+
+  private readonly camera: Camera
 
   public get projectionMatrix(): Matrix4 {
     return this.camera.projectionMatrix
   }
 
-  constructor({
+  public constructor({
     castShadow = false,
     intensity = 1,
     color = 0xFFFFFF,
     bias = 0.001,
   }: Props = {}) {
     this.type = LightType.Directional
-    this.color = new Color(color).rgb
+    this.color = new RGB(color)
     this.castShadow = castShadow
     this.intensity = clamp(intensity, 0, 1)
     this.bias = bias

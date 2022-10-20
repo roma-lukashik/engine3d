@@ -7,18 +7,19 @@ import { BufferViewTarget } from "@core/loaders/types"
 import { range } from "@utils/array"
 import { Vector3 } from "@math/vector3"
 import { Gltf } from "@core/gltf"
+import { RGB } from "@core/color/rgb"
 
 const identity = Matrix4.identity()
 
 export class DebugSkeletonRenderer {
   private readonly gl: WebGLRenderingContext
   private readonly program: DebugLinesProgram
-  private readonly color: Vector3
+  private readonly color: RGB
 
   public constructor(
     gl: WebGLRenderingContext,
     state: RenderState,
-    color: Vector3 = new Vector3(0, 0.8, 0.1),
+    color: RGB = new RGB(0x30CF65),
   ) {
     this.gl = gl
     this.color = color

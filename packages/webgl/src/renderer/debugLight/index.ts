@@ -6,18 +6,19 @@ import { Camera } from "@core/camera"
 import { RenderState } from "@webgl/utils/state"
 import { Vector3 } from "@math/vector3"
 import { Scene } from "@webgl/scene"
+import { RGB } from "@core/color/rgb"
 
 export class DebugLightRenderer {
   private readonly gl: WebGLRenderingContext
   private readonly program: DebugLinesProgram
   private readonly positionAttribute: BufferAttribute
   private readonly indexAttribute: BufferAttribute
-  private readonly color: Vector3
+  private readonly color: RGB
 
   public constructor(
     gl: WebGLRenderingContext,
     state: RenderState,
-    color: Vector3 = new Vector3(0.9, 0.9, 0.1),
+    color: RGB = new RGB(0xEBEB14),
   ) {
     this.gl = gl
     this.color = color
