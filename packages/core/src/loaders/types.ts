@@ -3,7 +3,7 @@ import type { Vector4Tuple } from "@math/vector4"
 import type { QuaternionTuple } from "@math/quaternion"
 import type { Matrix4Tuple } from "@math/matrix4"
 
-export type GltfRaw = {
+export type Gltf = {
   asset?: GltfAsset
   accessors?: Accessor[]
   buffers?: GltfBuffer[]

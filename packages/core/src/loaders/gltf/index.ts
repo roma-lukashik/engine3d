@@ -3,7 +3,7 @@ import {
   AnimationChannel,
   AnimationChannelPath,
   BufferViewTarget,
-  GltfRaw,
+  Gltf,
   GltfAnimation,
   GltfBufferView,
   MeshPrimitive,
@@ -15,7 +15,7 @@ import { Material } from "@core/material"
 import { Mesh } from "@core/mesh"
 import { BufferAttribute } from "@core/bufferAttribute"
 import { Geometry } from "@core/geometry"
-import { Object3d } from "@core/object3d"
+import { Node } from "@core/node"
 import { Skeleton } from "@core/skeleton"
 import { Texture } from "@core/texture"
 import { loadImage } from "@core/loaders/image"
@@ -27,11 +27,11 @@ import { Vector3 } from "@math/vector3"
 import { Quaternion } from "@math/quaternion"
 import { Vector4 } from "@math/vector4"
 import { AnimationSample } from "@core/animationSample"
-import { Gltf } from "@core/gltf"
+import { Object3D } from "@core/object3d"
 import { TypedArrayByComponentType } from "@core/bufferAttribute/utils"
 
-export const parseGltf = async <K extends string>(raw: ArrayBufferLike | string | GltfRaw): Promise<Gltf<K>> => {
-  const data = typeof raw === "string" ? JSON.parse(raw) as GltfRaw : "byteLength" in raw ? parseGlb(raw) : raw
+export const parseGltf = async <K extends string>(raw: ArrayBufferLike | string | Gltf): Promise<Object3D<K>> => {
+  const data = typeof raw === "string" ? JSON.parse(raw) as Gltf : "byteLength" in raw ? parseGlb(raw) : raw
   const version = Number(data.asset?.version ?? 0)
   if (version < 2) {
     throw new Error("Unsupported *.gltf file. Version should be >= 2.0.")
@@ -39,12 +39,12 @@ export const parseGltf = async <K extends string>(raw: ArrayBufferLike | string 
   const nodes = parseNodes(data)
   const scene = await parseScene(data, nodes)
   const animations = parseAnimations<K>(data, nodes)
-  return new Gltf(scene, animations)
+  return new Object3D(scene, animations)
 }
 
-const parseNodes = (data: GltfRaw): Object3d[] => {
+const parseNodes = (data: Gltf): Node[] => {
   return mapOption(data.nodes, ({ translation, rotation, scale, matrix, name }) =>
-    new Object3d({
+    new Node({
       position: translation && Vector3.fromArray(translation),
       rotation: rotation && Quaternion.fromArray(rotation),
       scale: scale && Vector3.fromArray(scale),
@@ -54,15 +54,15 @@ const parseNodes = (data: GltfRaw): Object3d[] => {
   )
 }
 
-const parseScene = async (data: GltfRaw, nodes: Object3d[]): Promise<Object3d>=> {
-  const scene = new Object3d({ name: "Scene" })
+const parseScene = async (data: Gltf, nodes: Node[]): Promise<Node>=> {
+  const scene = new Node({ name: "Scene" })
   const gltfScene = nthOption(data.scenes, data.scene ?? 0)
   const children = await mapOptionAsync(gltfScene?.nodes, (nodeId) => parseNode(data, nodes, nodeId))
   scene.add(children)
   return scene
 }
 
-const parseNode = async (data: GltfRaw, nodes: Object3d[], nodeId: number): Promise<Option<Object3d>> => {
+const parseNode = async (data: Gltf, nodes: Node[], nodeId: number): Promise<Option<Node>> => {
   const gltfNode = nthOption(data.nodes, nodeId)
   const node = nthOption(nodes, nodeId)
   const meshes = await parseMesh(data, gltfNode?.mesh) ?? []
@@ -76,12 +76,12 @@ const parseNode = async (data: GltfRaw, nodes: Object3d[], nodeId: number): Prom
   return node
 }
 
-const parseMesh = async (data: GltfRaw, meshIndex: Option<number>): Promise<Option<Mesh[]>> => {
+const parseMesh = async (data: Gltf, meshIndex: Option<number>): Promise<Option<Mesh[]>> => {
   const gltfMesh = nthOption(data.meshes, meshIndex)
   return mapOptionAsync(gltfMesh?.primitives, (primitive) => parsePrimitive(data, primitive))
 }
 
-const parsePrimitive = async (data: GltfRaw, primitive: MeshPrimitive): Promise<Mesh> => {
+const parsePrimitive = async (data: Gltf, primitive: MeshPrimitive): Promise<Mesh> => {
   const geometryData = mapObject(primitive.attributes, (accessorIndex) => {
     return parseAttributeAccessor(data, accessorIndex)
   })
@@ -152,7 +152,7 @@ const createMesh = (geometry: Geometry, material: Material, mode?: MeshPrimitive
   }
 }
 
-const parseTexture = async (data: GltfRaw, textureIndex: Option<number>): Promise<Option<Texture>> => {
+const parseTexture = async (data: Gltf, textureIndex: Option<number>): Promise<Option<Texture>> => {
   const texture = nthOption(data.textures, textureIndex)
   const image = nthOption(data.images, texture?.source)
   if (image?.uri) {
@@ -169,7 +169,7 @@ const parseTexture = async (data: GltfRaw, textureIndex: Option<number>): Promis
 
 // Handling sparse has not been implemented yet.
 const parseAttributeAccessor = (
-  data: GltfRaw,
+  data: Gltf,
   accessorIndex: Option<number>,
   customTarget?: BufferViewTarget,
 ): Option<BufferAttribute> => {
@@ -208,13 +208,13 @@ const AccessorTypeSizes = {
   [AccessorType.Mat4]: 16,
 }
 
-const parseBufferView = (data: GltfRaw, bufferView: Option<GltfBufferView>): Option<ArrayBuffer> => {
+const parseBufferView = (data: Gltf, bufferView: Option<GltfBufferView>): Option<ArrayBuffer> => {
   const { buffer, byteOffset = 0, byteLength = 0 } = bufferView ?? {}
   const arrayBuffer = parseBuffer(data, buffer)
   return arrayBuffer?.slice(byteOffset, byteOffset + byteLength)
 }
 
-const parseBuffer = (data: GltfRaw, bufferIndex: Option<number>): Option<ArrayBuffer> => {
+const parseBuffer = (data: Gltf, bufferIndex: Option<number>): Option<ArrayBuffer> => {
   const buffer = nthOption(data.buffers, bufferIndex)
   if (!buffer) {
     return
@@ -225,7 +225,7 @@ const parseBuffer = (data: GltfRaw, bufferIndex: Option<number>): Option<ArrayBu
   throw new Error("Getting buffer from URI is not supported yet.")
 }
 
-const parseSkin = (data: GltfRaw, nodes: Object3d[], skinIndex: Option<number>) => {
+const parseSkin = (data: Gltf, nodes: Node[], skinIndex: Option<number>) => {
   const skin = nthOption(data.skins, skinIndex)
   const inverseMatrices = parseAttributeAccessor(data, skin?.inverseBindMatrices)
   if (!skin || !inverseMatrices) {
@@ -238,22 +238,22 @@ const parseSkin = (data: GltfRaw, nodes: Object3d[], skinIndex: Option<number>) 
   return new Skeleton({ bones, boneInverses })
 }
 
-const parseAnimations = <K extends string>(data: GltfRaw, nodes: Object3d[]): Record<K, Animation> => {
+const parseAnimations = <K extends string>(data: Gltf, nodes: Node[]): Record<K, Animation> => {
   const array = mapOption(data.animations, (animation, index) => {
     return new Animation(animation.name ?? `animation_${index}`, parseAnimation(data, nodes, animation))
   })
   return Object.fromEntries(array.map((x) => [x.name, x])) as Record<K, Animation>
 }
 
-const parseAnimation = (data: GltfRaw, nodes: Object3d[], animation: GltfAnimation) => {
+const parseAnimation = (data: Gltf, nodes: Node[], animation: GltfAnimation) => {
   return mapOption(animation.channels, (channel) => {
     return parseAnimationSample(data, nodes, animation, channel)
   })
 }
 
 const parseAnimationSample = (
-  data: GltfRaw,
-  nodes: Object3d[],
+  data: Gltf,
+  nodes: Node[],
   animation: GltfAnimation,
   channel: AnimationChannel,
 ): Option<AnimationSample> => {

@@ -1,15 +1,15 @@
 import { Animation } from "@core/animation"
-import { Object3d } from "@core/object3d"
+import { Node } from "@core/node"
 import { AnimationSample } from "@core/animationSample"
 
 describe("Animation", () => {
   let animation: Animation
-  let node1: Object3d
-  let node2: Object3d
+  let node1: Node
+  let node2: Node
 
   beforeEach(() => {
-    node1 = new Object3d()
-    node2 = new Object3d()
+    node1 = new Node()
+    node2 = new Node()
 
     const sample1 = new AnimationSample({
       node: node1,

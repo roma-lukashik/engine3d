@@ -1,4 +1,4 @@
-import { GltfRaw } from "@core/loaders/types"
+import { Gltf } from "@core/loaders/types"
 
 const BINARY_HEADER_LENGTH = 12
 const UINT_SIZE = 4
@@ -14,7 +14,7 @@ const BINARY_CHUNK_BIN_TYPES = 0x004E4942
 // - contentLength (uint32)
 // - contentFormat (uint32)
 // - json or binary data
-export const parseGlb = (buffer: ArrayBufferLike): GltfRaw => {
+export const parseGlb = (buffer: ArrayBufferLike): Gltf => {
   const [magic, version] = new Uint32Array(buffer, 0, BINARY_HEADER_LENGTH / UINT_SIZE)
   if (magic !== BINARY_HEADER_MAGIC) {
     throw new Error("Unsupported glTF-Binary header.")
@@ -29,7 +29,7 @@ export const parseGlb = (buffer: ArrayBufferLike): GltfRaw => {
   }
   const jsonOffset = BINARY_HEADER_LENGTH + 2 * UINT_SIZE
   const jsonBuffer = buffer.slice(jsonOffset, jsonOffset + jsonLength)
-  const json = JSON.parse(decodeText(jsonBuffer)) as GltfRaw
+  const json = JSON.parse(decodeText(jsonBuffer)) as Gltf
 
   if (jsonLength + jsonOffset === buffer.byteLength) {
     return json

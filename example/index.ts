@@ -2,7 +2,7 @@ import { AmbientLight, DirectionalLight } from "@core/lights"
 import { PerspectiveCamera } from "@core/camera"
 import { CameraControl } from "@core/cameraControl"
 import { parseGltf } from "@core/loaders/gltf"
-import { Object3d } from "@core/object3d"
+import { Node } from "@core/node"
 
 import { Renderer } from "@webgl/renderer"
 import { Scene } from "@webgl/scene"
@@ -10,7 +10,7 @@ import { Scene } from "@webgl/scene"
 import { toRadian } from "@math/angle"
 import { Vector3 } from "@math/vector3"
 import { Matrix4 } from "@math/matrix4"
-import { Gltf } from "@core/gltf"
+import { Object3D } from "@core/object3d"
 
 const camera = new PerspectiveCamera({
   aspect: window.innerWidth / window.innerHeight,
@@ -49,16 +49,16 @@ scene.addLight(
   ambientLight,
 )
 
-const followObject = (object: Object3d): void => {
-  const objectPosition = object.getWorldPosition()
-  const objectRotation = object.getWorldRotation()
+const followObject = (node: Node): void => {
+  const nodePosition = node.getWorldPosition()
+  const nodeRotation = node.getWorldRotation()
   const from = new Vector3(0, 300, 400)
   const up = new Vector3(0, 150, 0)
-  camera.setPosition(from.rotateByQuaternion(objectRotation).add(objectPosition))
-  camera.lookAt(up.add(objectPosition))
+  camera.setPosition(from.rotateByQuaternion(nodeRotation).add(nodePosition))
+  camera.lookAt(up.add(nodePosition))
 }
 
-const move = (object: Gltf, translationVector: Vector3, colliders: Gltf[] = []) => {
+const move = (object: Object3D, translationVector: Vector3, colliders: Object3D[] = []) => {
   const collide = colliders.some((collider) => collider.aabb.collide(object.aabb))
   if (!collide) {
     object.node.localMatrix.translate(translationVector.x, translationVector.y, translationVector.z)

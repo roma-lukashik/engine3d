@@ -1,4 +1,4 @@
-import { Object3d } from "@core/object3d"
+import { Node } from "@core/node"
 import { Vector3 } from "@math/vector3"
 import { Mesh } from "@core/mesh"
 import { Geometry } from "@core/geometry"
@@ -11,11 +11,11 @@ import { Animation } from "@core/animation"
 import { AnimationSample } from "@core/animationSample"
 import { Vector4 } from "@math/vector4"
 
-export const expectedGltf = (): Object3d => {
-  const root = new Object3d({ name: "Scene" })
-  const child1 = new Object3d()
-  const child2 = new Object3d()
-  const child21 = new Object3d({ position: new Vector3(0, 1, 0) })
+export const expectedGltf = (): Node => {
+  const root = new Node({ name: "Scene" })
+  const child1 = new Node()
+  const child2 = new Node()
+  const child21 = new Node({ position: new Vector3(0, 1, 0) })
 
   const geometry = new Geometry({
     index: new BufferAttribute({
@@ -119,7 +119,7 @@ export const expectedAnimation = (): Animation => {
     0, 0, -0.382999986410141, 0.9240000247955322,
     0, 0, 0, 1,
   ])
-  const node = new Object3d({ position: new Vector3(0, 1, 0) })
+  const node = new Node({ position: new Vector3(0, 1, 0) })
   node.updateWorldMatrix()
 
   return new Animation("animation_0", [

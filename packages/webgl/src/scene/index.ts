@@ -11,10 +11,10 @@ import {
   PointLight,
   SpotLight,
 } from "@core/lights"
-import { Gltf } from "@core/gltf"
+import { Object3D } from "@core/object3d"
 
 export class Scene {
-  public objects: Set<Gltf> = new Set()
+  public objects: Set<Object3D> = new Set()
   public lights: Light[] = []
 
   public get pointLights(): PointLight[] {
@@ -37,7 +37,7 @@ export class Scene {
     return this.lights.filter(isShadowLight)
   }
 
-  public addObject(object: Gltf): void {
+  public addObject(object: Object3D): void {
     this.objects.add(object)
   }
 

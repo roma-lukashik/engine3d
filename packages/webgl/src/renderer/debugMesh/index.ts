@@ -6,7 +6,7 @@ import { Matrix4 } from "@math/matrix4"
 import { BufferViewTarget } from "@core/loaders/types"
 import { Vector3 } from "@math/vector3"
 import { indexes, positions } from "@webgl/renderer/debugMesh/data"
-import { Gltf } from "@core/gltf"
+import { Object3D } from "@core/object3d"
 import { RGB } from "@core/color/rgb"
 
 export class DebugMeshRenderer {
@@ -35,7 +35,7 @@ export class DebugMeshRenderer {
     })
   }
 
-  public render(object: Gltf<any>, camera: Camera): void {
+  public render(object: Object3D, camera: Camera): void {
     const min = object.aabb.min
     const max = object.aabb.max
 

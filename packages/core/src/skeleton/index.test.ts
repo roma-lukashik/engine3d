@@ -1,10 +1,10 @@
 import { Skeleton } from "@core/skeleton"
-import { Object3d } from "@core/object3d"
+import { Node } from "@core/node"
 import { Matrix4 } from "@math/matrix4"
 
 describe("Skeleton", () => {
-  const bone1 = new Object3d({ matrix: Matrix4.scaling(2, 2, 2) })
-  const bone2 = new Object3d({ matrix: Matrix4.scaling(3, 3, 3) })
+  const bone1 = new Node({ matrix: Matrix4.scaling(2, 2, 2) })
+  const bone2 = new Node({ matrix: Matrix4.scaling(3, 3, 3) })
   const bones = [bone1, bone2]
   bone1.updateWorldMatrix()
   bone2.updateWorldMatrix()
@@ -31,7 +31,7 @@ describe("Skeleton", () => {
 
   it("fills a boneMatrices array", () => {
     const skeleton = new Skeleton({ bones, boneInverses })
-    const node = new Object3d({
+    const node = new Node({
       matrix: new Matrix4([
         1, 1, 1, -1,
         1, 1, -1, 1,

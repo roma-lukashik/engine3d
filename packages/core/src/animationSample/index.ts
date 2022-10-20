@@ -1,9 +1,9 @@
-import { Object3d } from "@core/object3d"
+import { Node } from "@core/node"
 import { TypedArray } from "@core/types"
 import { AnimationInterpolationType } from "@core/loaders/types"
 
 type Props = {
-  node: Object3d
+  node: Node
   times: TypedArray
   values: TypedArray
   interpolation?: AnimationInterpolationType
@@ -13,7 +13,7 @@ type Props = {
 type Transform = "position" | "rotation" | "scale"
 
 export class AnimationSample {
-  public node: Object3d
+  public node: Node
   public times: TypedArray
   public values: TypedArray
   public interpolation: AnimationInterpolationType

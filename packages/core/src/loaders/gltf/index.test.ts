@@ -1,14 +1,14 @@
 import { parseGltf } from "@core/loaders/gltf"
 import { receivedGltf } from "@core/loaders/gltf/__test__/received"
 import { expectedGltf } from "@core/loaders/gltf/__test__/expected"
-import { GltfRaw } from "@core/loaders/types"
-import { Gltf } from "@core/gltf"
+import { Gltf } from "@core/loaders/types"
+import { Object3D } from "@core/object3d"
 
 type AnimationKeys = "animation_0"
 
 describe("parseGltf", () => {
   describe("advanced GLTF", () => {
-    let gltf: Gltf<AnimationKeys>
+    let gltf: Object3D<AnimationKeys>
     beforeAll(async () => {
       gltf = await parseGltf<"animation_0">(receivedGltf)
     })
@@ -22,7 +22,7 @@ describe("parseGltf", () => {
 
   describe("errors handling", () => {
     it("throws an error if version is lower than 2", () => {
-      const gltf: GltfRaw = {
+      const gltf: Gltf = {
         ...receivedGltf,
         asset: {
           version: "1",

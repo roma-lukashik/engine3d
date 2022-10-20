@@ -6,7 +6,7 @@ import { Matrix4 } from "@math/matrix4"
 import { BufferViewTarget } from "@core/loaders/types"
 import { range } from "@utils/array"
 import { Vector3 } from "@math/vector3"
-import { Gltf } from "@core/gltf"
+import { Object3D } from "@core/object3d"
 import { RGB } from "@core/color/rgb"
 
 const identity = Matrix4.identity()
@@ -26,7 +26,7 @@ export class DebugSkeletonRenderer {
     this.program = new DebugLinesProgram(gl, state)
   }
 
-  public render(object: Gltf, camera: Camera): void {
+  public render(object: Object3D, camera: Camera): void {
     if (!object.skeletons.length) {
       return
     }
@@ -61,7 +61,7 @@ export class DebugSkeletonRenderer {
   }
 
   // TODO move to somewhere
-  private getSkeletonPoints(object: Gltf): Float32Array {
+  private getSkeletonPoints(object: Object3D): Float32Array {
     const doubledVectorSize = Vector3.size * 2
     const pointsAmount = object.skeletons.reduce((amount, skeleton) => {
       return amount + (skeleton.bones.length - 1) * doubledVectorSize

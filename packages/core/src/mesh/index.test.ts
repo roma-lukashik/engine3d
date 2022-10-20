@@ -1,7 +1,7 @@
 import { Mesh } from "@core/mesh"
 import { Geometry } from "@core/geometry"
 import { Material } from "@core/material"
-import { Object3d } from "@core/object3d"
+import { Node } from "@core/node"
 import { Skeleton } from "@core/skeleton"
 
 describe("Mesh", () => {
@@ -15,7 +15,7 @@ describe("Mesh", () => {
 
   it("to be instance of Object3d", () => {
     const mesh = new Mesh({ geometry, material })
-    expect(mesh).toBeInstanceOf(Object3d)
+    expect(mesh).toBeInstanceOf(Node)
   })
 
   it("has correct props", () => {

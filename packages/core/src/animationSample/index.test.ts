@@ -1,9 +1,9 @@
 import { AnimationSample } from "@core/animationSample"
-import { Object3d } from "@core/object3d"
+import { Node } from "@core/node"
 import { AnimationInterpolationType } from "@core/loaders/types"
 
 describe("AnimationSample", () => {
-  const node = new Object3d()
+  const node = new Node()
   const times = new Float32Array([0, 0.5, 1])
   const values = new Float32Array([
     0, 0, 0,

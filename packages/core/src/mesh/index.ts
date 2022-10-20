@@ -1,14 +1,14 @@
 import { Material } from "@core/material"
 import { Geometry } from "@core/geometry"
-import { Object3d } from "@core/object3d"
+import { Node } from "@core/node"
 import { Skeleton } from "@core/skeleton"
 
-type MeshProps = ConstructorParameters<typeof Object3d>[0] & {
+type MeshProps = ConstructorParameters<typeof Node>[0] & {
   geometry: Geometry
   material: Material
 }
 
-export class Mesh extends Object3d {
+export class Mesh extends Node {
   public geometry: Geometry
   public material: Material
   public skeleton?: Skeleton
