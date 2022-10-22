@@ -1,6 +1,6 @@
 import { Scene } from "@webgl/scene"
 import { Camera } from "@core/camera"
-import { ShadowMaps } from "@webgl/renderer/shadow"
+import { ShadowMapRenderer } from "@webgl/renderer/shadow"
 import { MeshRenderer } from "@webgl/renderer/mesh"
 import { DebugLightRenderer } from "@webgl/renderer/debugLight"
 import { RenderState } from "@webgl/utils/state"
@@ -19,7 +19,7 @@ export class Renderer {
 
   private readonly state: RenderState
   private readonly cache: RenderCache
-  private readonly shadowMaps: ShadowMaps
+  private readonly shadowMapRenderer: ShadowMapRenderer
   private readonly meshRenderer: MeshRenderer
   private readonly debugLightRenderer: DebugLightRenderer
   private readonly debugSkeletonRenderer: DebugSkeletonRenderer
@@ -43,8 +43,8 @@ export class Renderer {
     this.gl = gl
     this.state = new RenderState(this.gl)
     this.cache = new RenderCache(this.gl)
-    this.shadowMaps = new ShadowMaps(this.gl, this.state, this.cache)
-    this.meshRenderer = new MeshRenderer(this.gl, this.state, this.cache, this.shadowMaps)
+    this.shadowMapRenderer = new ShadowMapRenderer(this.gl, this.state, this.cache)
+    this.meshRenderer = new MeshRenderer(this.gl, this.state, this.cache, this.shadowMapRenderer)
     this.debugLightRenderer = new DebugLightRenderer(this.gl, this.state)
     this.debugSkeletonRenderer = new DebugSkeletonRenderer(this.gl, this.state)
     this.debugMeshRenderer = new DebugMeshRenderer(this.gl, this.state)

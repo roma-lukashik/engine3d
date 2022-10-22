@@ -3,7 +3,7 @@ import { RenderState } from "@webgl/utils/state"
 import { StructureUniform } from "@webgl/uniforms/structure"
 
 export class StructureArrayUniform<T extends Record<string, unknown>> implements Uniform<T[]> {
-  public name: string
+  public readonly name: string
 
   private readonly uniform: StructureUniform<T>
   private readonly arrayIndex: number

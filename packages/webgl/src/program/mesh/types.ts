@@ -7,14 +7,13 @@ import { GeometryAttributes } from "@core/geometry"
 export type MeshUniforms = {
   worldMatrix?: Matrix4Array
   cameraPosition?: Vector3Array
-  textureMatrices?: Matrix4Array[]
   projectionMatrix?: Matrix4Array
   ambientLights?: AmbientLight[]
   pointLights?: PointLight[]
   spotLights?: SpotLight[]
   directionalLights?: DirectionalLight[]
+  directionalShadowLights?: DirectionalShadowLight[]
   material?: Material
-  shadowTextures?: WebGLBaseTexture[]
   boneTexture?: WebGLBaseTexture
   boneTextureSize?: number
 }
@@ -49,8 +48,14 @@ type AmbientLight = {
 type DirectionalLight = {
   color: Vector4Array
   direction: Vector3Array
+}
+
+type DirectionalShadowLight = {
+  color: Vector4Array
+  direction: Vector3Array
   bias: number
-  castShadow: boolean
+  projectionMatrix: Matrix4Array
+  shadowMap: WebGLBaseTexture
 }
 
 type Material = {

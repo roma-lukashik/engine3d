@@ -6,12 +6,14 @@ import { Scene } from "@webgl/scene"
 import { WebGLShadowTexture } from "@webgl/textures/shadow"
 import { RenderCache } from "@webgl/renderer/cache"
 
-export class ShadowMaps {
+export type ShadowMap = WeakMap<LightWithShadow, WebGLShadowTexture>
+
+export class ShadowMapRenderer {
   private readonly gl: WebGLRenderingContext
   private readonly state: RenderState
   private readonly cache: RenderCache
   private readonly programs: WeakMap<Mesh, ShadowProgram> = new WeakMap()
-  private readonly textures: WeakMap<LightWithShadow, WebGLShadowTexture> = new WeakMap()
+  private readonly textures: ShadowMap = new WeakMap()
 
   public constructor(
     gl: WebGLRenderingContext,
@@ -23,11 +25,13 @@ export class ShadowMaps {
     this.cache = cache
   }
 
-  public create(scene: Scene): WebGLShadowTexture[] {
+  public create(scene: Scene): ShadowMap {
+    const shadowMap: ShadowMap = new WeakMap()
+
     this.gl.disable(this.gl.CULL_FACE)
     this.gl.cullFace(this.gl.FRONT)
 
-    return scene.shadowLights.map((light) => {
+    scene.shadowLights.forEach((light) => {
       const texture = this.getTexture(light)
 
       this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, texture.frameBuffer)
@@ -40,8 +44,10 @@ export class ShadowMaps {
         })
       })
 
-      return texture
+      shadowMap.set(light, texture)
     })
+
+    return shadowMap
   }
 
   private getTexture(light: LightWithShadow): WebGLShadowTexture {
@@ -49,15 +55,6 @@ export class ShadowMaps {
       this.textures.set(light, new WebGLShadowTexture({ gl: this.gl }))
     }
     return this.textures.get(light)!
-  }
-
-  private getProgram(mesh: Mesh): ShadowProgram {
-    if (!this.programs.has(mesh)) {
-      this.programs.set(mesh, new ShadowProgram(this.gl, this.state, {
-        useSkinning: !!mesh.skeleton,
-      }))
-    }
-    return this.programs.get(mesh)!
   }
 
   private renderShadow(mesh: Mesh, light: LightWithShadow): void {
@@ -81,6 +78,15 @@ export class ShadowMaps {
     })
 
     this.drawBuffer(mesh)
+  }
+
+  private getProgram(mesh: Mesh): ShadowProgram {
+    if (!this.programs.has(mesh)) {
+      this.programs.set(mesh, new ShadowProgram(this.gl, this.state, {
+        useSkinning: !!mesh.skeleton,
+      }))
+    }
+    return this.programs.get(mesh)!
   }
 
   private drawBuffer(mesh: Mesh): void {

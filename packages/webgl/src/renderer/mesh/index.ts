@@ -1,36 +1,32 @@
 import { MeshProgram } from "@webgl/program/mesh"
 import { Scene } from "@webgl/scene"
 import { Camera } from "@core/camera"
-import { Matrix4 } from "@math/matrix4"
-import { ShadowMaps } from "@webgl/renderer/shadow"
+import { ShadowMap, ShadowMapRenderer } from "@webgl/renderer/shadow"
 import { RenderState } from "@webgl/utils/state"
 import { Mesh } from "@core/mesh"
-import { WebGLShadowTexture } from "@webgl/textures/shadow"
 import { RenderCache } from "@webgl/renderer/cache"
-
-const bias = Matrix4.translation(0.5, 0.5, 0.5).scale(0.5, 0.5, 0.5)
 
 export class MeshRenderer {
   private readonly gl: WebGLRenderingContext
   private readonly state: RenderState
   private readonly cache: RenderCache
   private readonly meshPrograms: WeakMap<Mesh, MeshProgram> = new WeakMap()
-  private readonly shadowMaps: ShadowMaps
+  private readonly shadowMapRenderer: ShadowMapRenderer
 
   public constructor(
     gl: WebGLRenderingContext,
     state: RenderState,
     cache: RenderCache,
-    shadowRenderer: ShadowMaps,
+    shadowRenderer: ShadowMapRenderer,
   ) {
     this.gl = gl
     this.state = state
     this.cache = cache
-    this.shadowMaps = shadowRenderer
+    this.shadowMapRenderer = shadowRenderer
   }
 
   public render(scene: Scene, camera: Camera): void {
-    const shadowMap = this.shadowMaps.create(scene)
+    const shadowMap = this.shadowMapRenderer.create(scene)
 
     this.gl.depthMask(true)
     this.gl.enable(this.gl.CULL_FACE)
@@ -47,7 +43,7 @@ export class MeshRenderer {
     })
   }
 
-  private renderMesh(mesh: Mesh, scene: Scene, shadowMap: WebGLShadowTexture[], camera: Camera): void {
+  private renderMesh(mesh: Mesh, scene: Scene, shadowMap: ShadowMap, camera: Camera): void {
     const program = this.getProgram(mesh, scene)
     program.use()
 
@@ -67,9 +63,6 @@ export class MeshRenderer {
       boneTexture: boneTexture?.texture,
       boneTextureSize: boneTexture?.size,
       projectionMatrix: camera.projectionMatrix.elements,
-      textureMatrices: scene.shadowLights.map((light) => {
-        return bias.clone().multiply(light.projectionMatrix).elements
-      }),
       ambientLights: scene.ambientLights.map(({ color, intensity }) => {
         return { color: color.clone().multiply(intensity).elements }
       }),
@@ -83,15 +76,26 @@ export class MeshRenderer {
           penumbraCos,
         }
       }),
-      directionalLights: scene.directionalLights.map(({ color, intensity, direction, bias, castShadow }) => {
-        return {
-          color: color.clone().multiply(intensity).elements,
-          direction: direction.elements,
-          bias,
-          castShadow,
-        }
+      directionalLights: scene.directionalLights
+        .filter((light) => !light.castShadow)
+        .map(({ color, intensity, direction }) => {
+          return {
+            color: color.clone().multiply(intensity).elements,
+            direction: direction.elements,
+          }
       }),
-      shadowTextures: shadowMap,
+      directionalShadowLights: scene.directionalLights
+        .filter((light) => light.castShadow)
+        .map((light) => {
+          const { color, intensity, direction, bias, projectionMatrix } = light
+          return {
+            color: color.clone().multiply(intensity).elements,
+            direction: direction.elements,
+            bias,
+            projectionMatrix: projectionMatrix.elements,
+            shadowMap: shadowMap.get(light)!,
+          }
+      }),
       cameraPosition: camera.position.elements,
     })
 
@@ -106,8 +110,8 @@ export class MeshRenderer {
         ambientLightsAmount: scene.ambientLights.length,
         pointLightsAmount: scene.pointLights.length,
         spotLightsAmount: scene.spotLights.length,
-        directionalLightsAmount: scene.directionalLights.length,
-        shadowsAmount: scene.shadowLights.length,
+        directionalLightsAmount: scene.directionalLights.filter((light) => !light.castShadow).length,
+        directionalShadowLightsAmount: scene.directionalLights.filter((light) => light.castShadow).length,
         useSkinning: !!mesh.skeleton,
         useColorTexture: !!mesh.material.colorTexture,
       }))

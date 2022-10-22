@@ -3,7 +3,7 @@ import { Uniform } from "@webgl/uniforms/types"
 import { RenderState } from "@webgl/utils/state"
 
 export class StructureUniform<T extends Record<string, unknown>> implements Uniform<T> {
-  public name: string
+  public readonly name: string
 
   private readonly structProperty: keyof T
   private readonly uniform: SingleUniform<T[keyof T]>
