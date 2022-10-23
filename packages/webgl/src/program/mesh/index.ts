@@ -101,6 +101,7 @@ const defaultVertex = `
   ${ifdef(USE_AMBIENT_LIGHT, `
     struct AmbientLight {
       vec3 color;
+      float intensity;
     };
 
     uniform AmbientLight ambientLights[${AMBIENT_LIGHTS_AMOUNT}];
@@ -118,7 +119,7 @@ const defaultVertex = `
     ${ifdef(USE_AMBIENT_LIGHT, `
       ambientColor = vec3(0.0);
       for(int i = 0; i < ${AMBIENT_LIGHTS_AMOUNT}; i++) {
-        ambientColor += ambientLights[i].color;
+        ambientColor += ambientLights[i].color * ambientLights[i].intensity;
       }
     `)}
 
@@ -162,6 +163,7 @@ const defaultFragment = `
     struct DirectionalLight {
       vec3 direction;
       vec3 color;
+      float intensity;
     };
 
     uniform DirectionalLight directionalLights[${DIRECTIONAL_LIGHTS_AMOUNT}];
@@ -173,7 +175,7 @@ const defaultFragment = `
         vec3 color = tex;
         vec3 diffuse = BRDF(color, light.direction);
         float NdL = saturate(dot(normal, light.direction));
-        diffuseColor += NdL * light.color * diffuse;
+        diffuseColor += NdL * light.color * light.intensity * diffuse;
       }
       return diffuseColor;
     }
@@ -183,6 +185,7 @@ const defaultFragment = `
     struct DirectionalShadowLight {
       vec3 direction;
       vec3 color;
+      float intensity;
       float bias;
       mat4 projectionMatrix;
       sampler2D shadowMap;
@@ -208,7 +211,8 @@ const defaultFragment = `
         );
         vec3 diffuse = BRDF(color, directionalShadowLights[i].direction);
         float NdL = saturate(dot(normal, directionalShadowLights[i].direction));
-        diffuseColor += NdL * directionalShadowLights[i].color * diffuse;
+        vec3 lightColor = directionalShadowLights[i].color * directionalShadowLights[i].intensity;
+        diffuseColor += NdL * lightColor * diffuse;
       }
       return diffuseColor;
     }

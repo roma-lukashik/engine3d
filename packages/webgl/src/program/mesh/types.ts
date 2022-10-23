@@ -28,31 +28,36 @@ export type MeshAttributes = Pick<
 >
 
 type PointLight = {
-  color: Vector4Array
+  color: Vector3Array
   position: Vector3Array
+  intensity: number
 }
 
 type SpotLight = {
-  color: Vector4Array
+  color: Vector3Array
   position: Vector3Array
   target: Vector3Array
+  intensity: number
   coneCos: number
   penumbraCos: number
   distance: number
 }
 
 type AmbientLight = {
-  color: Vector4Array
+  color: Vector3Array
+  intensity: number
 }
 
 type DirectionalLight = {
-  color: Vector4Array
+  color: Vector3Array
   direction: Vector3Array
+  intensity: number
 }
 
 type DirectionalShadowLight = {
-  color: Vector4Array
+  color: Vector3Array
   direction: Vector3Array
+  intensity: number
   bias: number
   projectionMatrix: Matrix4Array
   shadowMap: WebGLBaseTexture

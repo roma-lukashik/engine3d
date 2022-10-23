@@ -58,19 +58,20 @@ export class MeshRenderer {
         metalness: mesh.material.metalness,
         roughness: mesh.material.roughness,
         color: mesh.material.color.elements,
-        colorTexture: colorTexture,
+        colorTexture,
       },
       boneTexture: boneTexture?.texture,
       boneTextureSize: boneTexture?.size,
       projectionMatrix: camera.projectionMatrix.elements,
       ambientLights: scene.ambientLights.map(({ color, intensity }) => {
-        return { color: color.clone().multiply(intensity).elements }
+        return { color: color.elements, intensity }
       }),
       spotLights: scene.spotLights.map(({ color, intensity, position, target, distance, coneCos, penumbraCos }) => {
         return {
-          color: color.clone().multiply(intensity).elements,
+          color: color.elements,
           position: position.elements,
           distance,
+          intensity,
           target: target.elements,
           coneCos,
           penumbraCos,
@@ -80,8 +81,9 @@ export class MeshRenderer {
         .filter((light) => !light.castShadow)
         .map(({ color, intensity, direction }) => {
           return {
-            color: color.clone().multiply(intensity).elements,
+            color: color.elements,
             direction: direction.elements,
+            intensity,
           }
       }),
       directionalShadowLights: scene.directionalLights
@@ -89,8 +91,9 @@ export class MeshRenderer {
         .map((light) => {
           const { color, intensity, direction, bias, projectionMatrix } = light
           return {
-            color: color.clone().multiply(intensity).elements,
+            color: color.elements,
             direction: direction.elements,
+            intensity,
             bias,
             projectionMatrix: projectionMatrix.elements,
             shadowMap: shadowMap.get(light)!,
