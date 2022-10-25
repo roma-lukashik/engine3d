@@ -41,4 +41,6 @@ describe("BufferAttribute", () => {
       count: 4,
     })
   })
+
+  it.todo("handles stride")
 })

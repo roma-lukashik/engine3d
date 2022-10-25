@@ -1,14 +1,13 @@
-import { parseGltf } from "@core/loaders/gltf"
+import { ParsedGltf, parseGltf } from "@core/loaders/gltf"
 import { receivedGltf } from "@core/loaders/gltf/__test__/received"
-import { expectedGltf } from "@core/loaders/gltf/__test__/expected"
+import { expectedAnimation, expectedGltf } from "@core/loaders/gltf/__test__/expected"
 import { Gltf } from "@core/loaders/types"
-import { Object3D } from "@core/object3d"
 
 type AnimationKeys = "animation_0"
 
 describe("parseGltf", () => {
   describe("advanced GLTF", () => {
-    let gltf: Object3D<AnimationKeys>
+    let gltf: ParsedGltf<AnimationKeys>
     beforeAll(async () => {
       gltf = await parseGltf<"animation_0">(receivedGltf)
     })
@@ -17,7 +16,9 @@ describe("parseGltf", () => {
       expect(gltf.node).toEqual(expectedGltf())
     })
 
-    it.todo("animation")
+    it("builds animations correctly", () => {
+      expect(gltf.animations["animation_0"]).toEqual(expectedAnimation())
+    })
   })
 
   describe("errors handling", () => {

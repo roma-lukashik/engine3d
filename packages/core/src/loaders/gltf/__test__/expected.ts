@@ -50,6 +50,16 @@ export const expectedGltf = (): Node => {
         0, 0, 0, 0,
         0, 1, 0, 0,
         0, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 0, 0,
       ]),
       itemSize: 4,
       stride: 16,
@@ -94,9 +104,7 @@ export const expectedGltf = (): Node => {
   root.add([child1, child2])
   child1.add([mesh])
   child2.add([child21])
-  root.updateWorldMatrix()
   mesh.bindSkeleton(skeleton)
-  mesh.updateSkeleton()
 
   return root
 }
@@ -119,8 +127,9 @@ export const expectedAnimation = (): Animation => {
     0, 0, -0.382999986410141, 0.9240000247955322,
     0, 0, 0, 1,
   ])
-  const node = new Node({ position: new Vector3(0, 1, 0) })
-  node.updateWorldMatrix()
+
+  const scene = expectedGltf()
+  const node = scene.children[1].children[0]
 
   return new Animation("animation_0", [
     new AnimationSample({ interpolation, times, values, transform, node }),

@@ -27,10 +27,14 @@ import { Vector3 } from "@math/vector3"
 import { Quaternion } from "@math/quaternion"
 import { Vector4 } from "@math/vector4"
 import { AnimationSample } from "@core/animationSample"
-import { Object3D } from "@core/object3d"
 import { TypedArrayByComponentType } from "@core/bufferAttribute/utils"
 
-export const parseGltf = async <K extends string>(raw: ArrayBufferLike | string | Gltf): Promise<Object3D<K>> => {
+export type ParsedGltf<K extends string> = {
+  node: Node
+  animations: Record<K, Animation>
+}
+
+export const parseGltf = async <K extends string>(raw: ArrayBufferLike | string | Gltf): Promise<ParsedGltf<K>> => {
   const data = typeof raw === "string" ? JSON.parse(raw) as Gltf : "byteLength" in raw ? parseGlb(raw) : raw
   const version = Number(data.asset?.version ?? 0)
   if (version < 2) {
@@ -39,7 +43,10 @@ export const parseGltf = async <K extends string>(raw: ArrayBufferLike | string 
   const nodes = parseNodes(data)
   const scene = await parseScene(data, nodes)
   const animations = parseAnimations<K>(data, nodes)
-  return new Object3D(scene, animations)
+  return {
+    node: scene,
+    animations,
+  }
 }
 
 const parseNodes = (data: Gltf): Node[] => {

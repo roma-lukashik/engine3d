@@ -71,7 +71,10 @@ type HeroAnimations =
   | "TPose"
   | "Walk"
 
-const loadModel = async <T extends string>(url: string) => parseGltf<T>(await (await fetch(url)).arrayBuffer())
+const loadModel = async <T extends string>(url: string) => {
+  const gltf = await parseGltf<T>(await (await fetch(url)).arrayBuffer())
+  return new Object3D(gltf.node, gltf.animations)
+}
 
 const hero = await loadModel<HeroAnimations>("models/soldier.glb")
 const surface = await loadModel("models/surface.glb")
