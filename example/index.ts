@@ -79,6 +79,9 @@ const box = await loadModel("models/box.glb")
 const box2 = await loadModel("models/box.glb")
 const box3 = await loadModel("models/box.glb")
 
+hero.frustumCulled = false
+surface.frustumCulled = false
+
 scene.addObject(surface)
 scene.addObject(box)
 scene.addObject(box2)

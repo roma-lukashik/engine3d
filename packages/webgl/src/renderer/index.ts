@@ -7,6 +7,7 @@ import { RenderState } from "@webgl/utils/state"
 import { DebugSkeletonRenderer } from "@webgl/renderer/debugSkeleton"
 import { DebugMeshRenderer } from "@webgl/renderer/debugMesh"
 import { RenderCache } from "@webgl/renderer/cache"
+import { getRenderStack } from "@webgl/renderer/utils"
 
 type Props = {
   canvas?: HTMLCanvasElement
@@ -53,9 +54,10 @@ export class Renderer {
   }
 
   public render(scene: Scene, camera: Camera): void {
-    this.meshRenderer.render(scene, camera)
+    const renderStack = getRenderStack(scene, camera)
+    this.meshRenderer.render(renderStack, scene, camera)
     this.debugLightRenderer.render(scene, camera)
-    scene.objects.forEach((object) => {
+    renderStack.forEach((object) => {
       this.debugSkeletonRenderer.render(object, camera)
       this.debugMeshRenderer.render(object, camera)
     })

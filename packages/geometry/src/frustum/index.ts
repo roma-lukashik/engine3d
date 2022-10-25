@@ -1,7 +1,9 @@
 import { Plane } from "@geometry/plane"
 import { Sphere } from "@geometry/bbox/sphere"
+import { AABB } from "@geometry/bbox/aabb"
 import { Matrix4 } from "@math/matrix4"
-import { gte } from "@math/operators"
+import { Vector3 } from "@math/vector3"
+import { gt, gte } from "@math/operators"
 
 export class Frustum {
   private readonly planes: [
@@ -76,5 +78,15 @@ export class Frustum {
 
   public intersectSphere(sphere: Sphere): boolean {
     return this.planes.every((plane) => gte(plane.distanceToPoint(sphere.center), -sphere.radius))
+  }
+
+  public intersectAABB(aabb: AABB): boolean {
+    const v = new Vector3()
+    return this.planes.every((plane) => {
+      v.x = gt(plane.normal.x, 0) ? aabb.max.x : aabb.min.x
+      v.y = gt(plane.normal.y, 0) ? aabb.max.y : aabb.min.y
+      v.z = gt(plane.normal.z, 0) ? aabb.max.z : aabb.min.z
+      return gte(plane.distanceToPoint(v), 0)
+    })
   }
 }

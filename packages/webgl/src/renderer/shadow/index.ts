@@ -5,6 +5,7 @@ import { RenderState } from "@webgl/utils/state"
 import { Scene } from "@webgl/scene"
 import { WebGLShadowTexture } from "@webgl/textures/shadow"
 import { RenderCache } from "@webgl/renderer/cache"
+import { getRenderStack } from "@webgl/renderer/utils"
 
 export type ShadowMap = WeakMap<LightWithShadow, WebGLShadowTexture>
 
@@ -38,7 +39,7 @@ export class ShadowMapRenderer {
       this.gl.viewport(0, 0, texture.width, texture.height)
       this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
 
-      scene.objects.forEach((object) => {
+      getRenderStack(scene, light).forEach((object) => {
         object.meshes.forEach((mesh) => {
           this.renderShadow(mesh, light)
         })

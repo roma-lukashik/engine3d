@@ -11,6 +11,7 @@ export class Object3D<AnimationKeys extends string = string> {
   public readonly skeletons: Skeleton[] = []
   public readonly meshes: Set<Mesh> = new Set()
   public readonly aabb: AABB = new AABB(Vector3.zero().set(Infinity), Vector3.zero().set(-Infinity))
+  public frustumCulled: boolean = true
 
   private readonly animations: Record<AnimationKeys, Animation>
 
