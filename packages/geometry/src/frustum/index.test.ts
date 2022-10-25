@@ -4,6 +4,7 @@ import { PI } from "@math/constants"
 import { Plane } from "@geometry/plane"
 import { Vector3 } from "@math/vector3"
 import { Sphere } from "@geometry/bbox/sphere"
+import { AABB } from "@geometry/bbox/aabb"
 
 describe("Frustum", () => {
   it("to be created", () => {
@@ -88,24 +89,80 @@ describe("Frustum", () => {
     expect(frustum.far.constant).toBeCloseTo(50)
   })
 
-  it.each([
-    new Sphere(Vector3.zero(), 1), // inside
-    new Sphere(Vector3.zero(), 10), // inscribed
-    new Sphere(Vector3.zero(), 12), // bigger
-    new Sphere(new Vector3(8, 8, 8), 5), // intersect when sphere center is inside
-    new Sphere(new Vector3(12, 12, 12), 5), // intersect when sphere center is outside
-  ])("intersectSphere to be true %#", (sphere) => {
+  describe("intersectSphere", () => {
     const matrix = Matrix4.orthographic(-10, 10, 10, -10, -10, 10)
     const frustum = Frustum.fromProjectionMatrix(matrix)
-    expect(frustum.intersectSphere(sphere)).toBe(true)
+
+    it("returns true when sphere is inside frustum", () => {
+      const sphere = new Sphere(Vector3.zero(), 1)
+      expect(frustum.intersectSphere(sphere)).toBe(true)
+    })
+
+    it("returns true when sphere is inscribed frustum", () => {
+      const sphere = new Sphere(Vector3.zero(), 10)
+      expect(frustum.intersectSphere(sphere)).toBe(true)
+    })
+
+    it("returns true when sphere is bigger than frustum", () => {
+      const sphere = new Sphere(Vector3.zero(), 12)
+      expect(frustum.intersectSphere(sphere)).toBe(true)
+    })
+
+    it("returns true when sphere intersects frustum and center of sphere is inside frustum", () => {
+      const sphere = new Sphere(new Vector3(8, 8, 8), 5)
+      expect(frustum.intersectSphere(sphere)).toBe(true)
+    })
+
+    it("returns true when sphere intersects frustum and center of sphere is outside frustum", () => {
+      const sphere = new Sphere(new Vector3(12, 12, 12), 5)
+      expect(frustum.intersectSphere(sphere)).toBe(true)
+    })
+
+    it.each([
+      new Sphere(new Vector3(12, 12, 12), 1),
+      new Sphere(new Vector3(-12, -12, 12), 1),
+    ])("intersectSphere to be false %#", (sphere) => {
+      expect(frustum.intersectSphere(sphere)).toBe(false)
+    })
   })
 
-  it.each([
-    new Sphere(new Vector3(12, 12, 12), 1),
-    new Sphere(new Vector3(-12, -12, 12), 1),
-  ])("intersectSphere to be false %#", (sphere) => {
+  describe("intersectAABB", () => {
     const matrix = Matrix4.orthographic(-10, 10, 10, -10, -10, 10)
     const frustum = Frustum.fromProjectionMatrix(matrix)
-    expect(frustum.intersectSphere(sphere)).toBe(false)
+
+    it("returns true when aabb is inside frustum", () => {
+      const scale = 1
+      const aabb = new AABB(new Vector3(-scale, -scale, -scale), new Vector3(scale, scale, scale))
+      expect(frustum.intersectAABB(aabb)).toBe(true)
+    })
+
+    it("returns true when aabb is inscribed frustum", () => {
+      const scale = 10
+      const aabb = new AABB(new Vector3(-scale, -scale, -scale), new Vector3(scale, scale, scale))
+      expect(frustum.intersectAABB(aabb)).toBe(true)
+    })
+
+    it("returns true when aabb is bigger than frustum", () => {
+      const scale = 12
+      const aabb = new AABB(new Vector3(-scale, -scale, -scale), new Vector3(scale, scale, scale))
+      expect(frustum.intersectAABB(aabb)).toBe(true)
+    })
+
+    it("returns true when aabb intersects frustum and center of aabb is inside frustum", () => {
+      const aabb = new AABB(new Vector3(-3, -3, -3), new Vector3(13, 13, 13))
+      expect(frustum.intersectAABB(aabb)).toBe(true)
+    })
+
+    it("returns true when aabb intersects frustum and center of aabb is outside frustum", () => {
+      const aabb = new AABB(new Vector3(9, 9, 9), new Vector3(13, 13, 13))
+      expect(frustum.intersectAABB(aabb)).toBe(true)
+    })
+
+    it.each([
+      new AABB(new Vector3(12, 12, 12), new Vector3(13, 13, 13)),
+      new AABB(new Vector3(-12, -12, 12), new Vector3(13, 13, 13)),
+    ])("intersectAABB to be false %#", (aabb) => {
+      expect(frustum.intersectAABB(aabb)).toBe(false)
+    })
   })
 })
