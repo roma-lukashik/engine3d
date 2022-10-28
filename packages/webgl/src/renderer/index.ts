@@ -7,7 +7,7 @@ import { RenderState } from "@webgl/utils/state"
 import { DebugSkeletonRenderer } from "@webgl/renderer/debugSkeleton"
 import { DebugMeshRenderer } from "@webgl/renderer/debugMesh"
 import { RenderCache } from "@webgl/renderer/cache"
-import { getRenderStack } from "@webgl/renderer/utils"
+import { getRenderStack } from "@webgl/renderer/renderStack"
 
 type Props = {
   canvas?: HTMLCanvasElement

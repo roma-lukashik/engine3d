@@ -11,6 +11,7 @@ export type MeshUniforms = {
   ambientLights?: AmbientLight[]
   pointLights?: PointLight[]
   spotLights?: SpotLight[]
+  spotShadowLights?: SpotShadowLight[]
   directionalLights?: DirectionalLight[]
   directionalShadowLights?: DirectionalShadowLight[]
   material?: Material
@@ -27,20 +28,11 @@ export type MeshAttributes = Pick<
   | "uv"
 >
 
-type PointLight = {
-  color: Vector3Array
-  position: Vector3Array
-  intensity: number
-}
-
-type SpotLight = {
-  color: Vector3Array
-  position: Vector3Array
-  target: Vector3Array
-  intensity: number
-  coneCos: number
-  penumbraCos: number
-  distance: number
+type Material = {
+  metalness: number
+  roughness: number
+  color: Vector4Array
+  colorTexture?: WebGLBaseTexture
 }
 
 type AmbientLight = {
@@ -54,18 +46,28 @@ type DirectionalLight = {
   intensity: number
 }
 
-type DirectionalShadowLight = {
+type DirectionalShadowLight = DirectionalLight & ShadowLight
+
+type SpotLight = {
   color: Vector3Array
-  direction: Vector3Array
+  position: Vector3Array
+  target: Vector3Array
   intensity: number
+  coneCos: number
+  penumbraCos: number
+  distance: number
+}
+
+type SpotShadowLight = SpotLight & ShadowLight
+
+type PointLight = {
+  color: Vector3Array
+  position: Vector3Array
+  intensity: number
+}
+
+type ShadowLight = {
   bias: number
   projectionMatrix: Matrix4Array
   shadowMap: WebGLBaseTexture
-}
-
-type Material = {
-  metalness: number
-  roughness: number
-  color: Vector4Array
-  colorTexture?: WebGLBaseTexture
 }

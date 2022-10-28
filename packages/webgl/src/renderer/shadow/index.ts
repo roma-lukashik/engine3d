@@ -5,7 +5,7 @@ import { RenderState } from "@webgl/utils/state"
 import { Scene } from "@webgl/scene"
 import { WebGLShadowTexture } from "@webgl/textures/shadow"
 import { RenderCache } from "@webgl/renderer/cache"
-import { getRenderStack } from "@webgl/renderer/utils"
+import { getRenderStack } from "@webgl/renderer/renderStack"
 
 export type ShadowMap = WeakMap<LightWithShadow, WebGLShadowTexture>
 

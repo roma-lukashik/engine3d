@@ -1,4 +1,4 @@
-import { AmbientLight, DirectionalLight } from "@core/lights"
+import { AmbientLight, DirectionalLight, SpotLight } from "@core/lights"
 import { PerspectiveCamera } from "@core/camera"
 import { CameraControl } from "@core/cameraControl"
 import { parseGltf } from "@core/loaders/gltf"
@@ -21,7 +21,7 @@ const camera = new PerspectiveCamera({
 new CameraControl({ camera })
 
 const directionalLight = new DirectionalLight({
-  intensity: 0.8,
+  intensity: 0.2,
   castShadow: true,
   bias: 0.002,
 })
@@ -34,8 +34,29 @@ const directionalLight2 = new DirectionalLight({
 })
 directionalLight2.setPosition(new Vector3(-500, 1500, 500))
 
+const spotLight = new SpotLight({
+  intensity: 0.9,
+  castShadow: true,
+  distance: 1200,
+  angle: Math.PI / 8,
+  penumbra: 0.6,
+  bias: 0.000001,
+  color: 0xff0000,
+})
+spotLight.setPosition(new Vector3(-700, 500, 500))
+spotLight.setTarget(new Vector3(-300, 0, 200))
+
+const spotLight2 = new SpotLight({
+  intensity: 0.9,
+  castShadow: true,
+  distance: 1200,
+  angle: Math.PI / 8,
+  penumbra: 0.6,
+  bias: 0.001,
+})
+
 const ambientLight = new AmbientLight({
-  intensity: 0.2,
+  intensity: 0.1,
 })
 
 const renderer = new Renderer({
@@ -44,8 +65,8 @@ const renderer = new Renderer({
 })
 const scene = new Scene()
 scene.addLight(
-  directionalLight,
-  directionalLight2,
+  spotLight,
+  spotLight2,
   ambientLight,
 )
 
@@ -56,6 +77,9 @@ const followObject = (node: Node): void => {
   const up = new Vector3(0, 150, 0)
   camera.setPosition(from.rotateByQuaternion(nodeRotation).add(nodePosition))
   camera.lookAt(up.add(nodePosition))
+
+  spotLight2.setPosition(up.clone().add(new Vector3(0, 0, -35).rotateByQuaternion(nodeRotation)))
+  spotLight2.setTarget(new Vector3(0, 40, -250).rotateByQuaternion(nodeRotation).add(nodePosition))
 }
 
 const move = (object: Object3D, translationVector: Vector3, colliders: Object3D[] = []) => {

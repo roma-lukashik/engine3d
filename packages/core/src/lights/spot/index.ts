@@ -12,7 +12,7 @@ type Props = {
   // Takes values between 0 and 1. Default is 1.
   intensity?: number
   // The flag to enable or disable dynamic shadows.
-  // Default if true (shadow is enabled).
+  // Default if true (shadow is disabled).
   castShadow?: boolean
   // Maximum range of the light.
   // Default is 0 (no limit).
@@ -23,12 +23,17 @@ type Props = {
   // Percent of the light cone that is attenuated due to penumbra.
   // Takes values between 0 and 1. Default is 0.
   penumbra?: number
+  // How much to add or subtract from depth shadow map to reduce shadow acne.
+  // Do not set a huge value.
+  // Default is 0.
+  bias?: number
 }
 
 export class SpotLight implements LightWithShadow {
   public readonly type: LightType
   public readonly castShadow: boolean
   public readonly color: RGB
+  public readonly bias: number
   public intensity: number
   public distance: number
   public angle: number
@@ -57,12 +62,13 @@ export class SpotLight implements LightWithShadow {
   private readonly camera: Camera
 
   public constructor({
-    castShadow = true,
+    castShadow = false,
     color = 0xFFFFFF,
     intensity = 1,
     distance = 0,
     angle = Math.PI / 3,
     penumbra = 0,
+    bias = 0,
   }: Props = {}) {
     this.type = LightType.SpotLight
     this.color = new RGB(color)
@@ -71,6 +77,7 @@ export class SpotLight implements LightWithShadow {
     this.distance = distance
     this.angle = angle
     this.penumbra = penumbra
+    this.bias = bias
     this.camera = new PerspectiveCamera({
       near: 0.5,
       far: distance || 100,

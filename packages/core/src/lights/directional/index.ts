@@ -15,7 +15,9 @@ type Props = {
   // The flag to enable or disable dynamic shadows.
   // Default if false (shadow is disabled).
   castShadow?: boolean
-
+  // How much to add or subtract from depth shadow map to reduce shadow acne.
+  // Do not set a huge value.
+  // Default is 0.001.
   bias?: number
 }
 

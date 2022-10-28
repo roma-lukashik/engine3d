@@ -1,4 +1,4 @@
-export type { Light, LightWithShadow, LightType } from "@core/lights/types"
+export { type Light, type LightWithShadow, LightType } from "@core/lights/types"
 export { AmbientLight } from "@core/lights/ambient"
 export { PointLight } from "@core/lights/point"
 export { SpotLight } from "@core/lights/spot"

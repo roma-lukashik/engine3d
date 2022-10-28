@@ -67,38 +67,69 @@ export class MeshRenderer {
       ambientLights: scene.ambientLights.map(({ color, intensity }) => {
         return { color: color.elements, intensity }
       }),
-      spotLights: scene.spotLights.map(({ color, intensity, position, target, distance, coneCos, penumbraCos }) => {
-        return {
-          color: color.elements,
-          position: position.elements,
-          distance,
+      spotLights: scene.spotLights
+        .map(({
+          color,
           intensity,
-          target: target.elements,
+          position,
+          target,
+          distance,
           coneCos,
           penumbraCos,
-        }
-      }),
-      directionalLights: scene.directionalLights
-        .filter((light) => !light.castShadow)
-        .map(({ color, intensity, direction }) => {
+        }) => {
           return {
             color: color.elements,
-            direction: direction.elements,
+            position: position.elements,
+            distance,
             intensity,
+            target: target.elements,
+            coneCos,
+            penumbraCos,
           }
       }),
-      directionalShadowLights: scene.directionalLights
-        .filter((light) => light.castShadow)
+      spotShadowLights: scene.spotShadowLights
         .map((light) => {
-          const { color, intensity, direction, bias, projectionMatrix } = light
+          const {
+            color,
+            intensity,
+            position,
+            target,
+            distance,
+            coneCos,
+            penumbraCos,
+            bias,
+            projectionMatrix,
+          } = light
           return {
             color: color.elements,
-            direction: direction.elements,
+            position: position.elements,
+            distance,
             intensity,
+            target: target.elements,
+            coneCos,
+            penumbraCos,
             bias,
             projectionMatrix: projectionMatrix.elements,
             shadowMap: shadowMap.get(light)!,
           }
+      }),
+      directionalLights: scene.directionalLights.map(({ color, intensity, direction }) => {
+        return {
+          color: color.elements,
+          direction: direction.elements,
+          intensity,
+        }
+      }),
+      directionalShadowLights: scene.directionalShadowLights.map((light) => {
+        const { color, intensity, direction, bias, projectionMatrix } = light
+        return {
+          color: color.elements,
+          direction: direction.elements,
+          intensity,
+          bias,
+          projectionMatrix: projectionMatrix.elements,
+          shadowMap: shadowMap.get(light)!,
+        }
       }),
       cameraPosition: camera.position.elements,
     })
@@ -112,10 +143,10 @@ export class MeshRenderer {
     if (!this.meshPrograms.has(mesh)) {
       this.meshPrograms.set(mesh, new MeshProgram(this.gl, this.state, {
         ambientLightsAmount: scene.ambientLights.length,
-        pointLightsAmount: scene.pointLights.length,
         spotLightsAmount: scene.spotLights.length,
-        directionalLightsAmount: scene.directionalLights.filter((light) => !light.castShadow).length,
-        directionalShadowLightsAmount: scene.directionalLights.filter((light) => light.castShadow).length,
+        spotShadowLightsAmount: scene.spotShadowLights.length,
+        directionalLightsAmount: scene.directionalLights.length,
+        directionalShadowLightsAmount: scene.directionalShadowLights.length,
         useSkinning: !!mesh.skeleton,
         useColorTexture: !!mesh.material.colorTexture,
       }))
