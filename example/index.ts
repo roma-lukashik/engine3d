@@ -28,7 +28,7 @@ const directionalLight = new DirectionalLight({
 directionalLight.setPosition(new Vector3(500, 500, 500))
 
 const directionalLight2 = new DirectionalLight({
-  intensity: 0.7,
+  intensity: 0.8,
   castShadow: true,
   bias: 0.001,
 })
@@ -47,16 +47,16 @@ spotLight.setPosition(new Vector3(-700, 500, 500))
 spotLight.setTarget(new Vector3(-300, 0, 200))
 
 const spotLight2 = new SpotLight({
-  intensity: 0.9,
+  intensity: 0.99,
   castShadow: true,
   distance: 1200,
   angle: Math.PI / 8,
-  penumbra: 0.6,
-  bias: 0.001,
+  penumbra: 0.2,
+  bias: 0.00001,
 })
 
 const ambientLight = new AmbientLight({
-  intensity: 0.1,
+  intensity: 0.25,
 })
 
 const renderer = new Renderer({
@@ -65,6 +65,7 @@ const renderer = new Renderer({
 })
 const scene = new Scene()
 scene.addLight(
+  directionalLight2,
   spotLight,
   spotLight2,
   ambientLight,
@@ -158,7 +159,6 @@ window.addEventListener("resize", () => {
 })
 
 window.addEventListener("keydown", (e) => {
-  e.preventDefault()
   if (e.key.toLowerCase() === "w") {
     wPressed = true
   }
@@ -177,7 +177,6 @@ window.addEventListener("keydown", (e) => {
 })
 
 window.addEventListener("keyup", (e) => {
-  e.preventDefault()
   if (e.key.toLowerCase() === "w") {
     wPressed = false
   }

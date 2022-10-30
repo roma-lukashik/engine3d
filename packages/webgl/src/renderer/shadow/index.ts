@@ -30,6 +30,7 @@ export class ShadowMapRenderer {
     const shadowMap: ShadowMap = new WeakMap()
 
     this.gl.disable(this.gl.CULL_FACE)
+    this.gl.disable(this.gl.DEPTH_TEST)
     this.gl.cullFace(this.gl.FRONT)
 
     scene.shadowLights.forEach((light) => {

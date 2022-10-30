@@ -13,6 +13,7 @@ import {
   USE_COLOR_TEXTURE,
   USE_DIRECTIONAL_LIGHT,
   USE_DIRECTIONAL_SHADOW_LIGHT,
+  USE_NORMAL_TEXTURE,
   USE_POINT_LIGHT,
   USE_SKINNING,
   USE_SPOT_LIGHT,
@@ -39,6 +40,7 @@ type Options = {
   directionalShadowLightsAmount?: number
   useSkinning?: boolean
   useColorTexture?: boolean
+  useNormalTexture?: boolean
 }
 
 export class MeshProgram extends Program<MeshUniforms, MeshAttributes> {
@@ -54,6 +56,7 @@ export class MeshProgram extends Program<MeshUniforms, MeshAttributes> {
       directionalShadowLightsAmount = 0,
       useSkinning = false,
       useColorTexture = false,
+      useNormalTexture = false,
     }: Options = {},
   ) {
     const defs = [
@@ -65,6 +68,7 @@ export class MeshProgram extends Program<MeshUniforms, MeshAttributes> {
       directionalShadowLightsAmount > 0 ? define(USE_DIRECTIONAL_SHADOW_LIGHT) : "",
       useSkinning ? define(USE_SKINNING) : "",
       useColorTexture ? define(USE_COLOR_TEXTURE) : "",
+      useNormalTexture ? define(USE_NORMAL_TEXTURE) : "",
     ]
     const transform = (shader: string) => {
       shader = addDefs(shader, defs)
@@ -134,7 +138,9 @@ const defaultVertex = `
 `
 
 const defaultFragment = `
-  precision mediump float;
+  #extension GL_OES_standard_derivatives : enable
+
+  precision highp float;
 
   struct Material {
     float metalness;
@@ -144,8 +150,13 @@ const defaultFragment = `
     ${ifdef(USE_COLOR_TEXTURE, `
       sampler2D colorTexture;
     `)}
+
+    ${ifdef(USE_NORMAL_TEXTURE, `
+      sampler2D normalTexture;
+    `)}
   };
 
+  uniform mat4 viewMatrix;
   uniform vec3 cameraPosition;
   uniform Material material;
 
@@ -156,6 +167,21 @@ const defaultFragment = `
   ${helpers}
   ${shadow}
   ${brdf}
+
+  ${ifdef(USE_NORMAL_TEXTURE, `
+    vec3 getNormal() {
+      vec3 dxPos = dFdx(vPosition);
+      vec3 dyPos = dFdy(vPosition);
+      vec2 dxTex = dFdx(vUv);
+      vec2 dyTex = dFdy(vUv);
+      vec3 tangent = normalize(dxPos * dyTex.t - dyPos * dxTex.t);
+      vec3 bitangent = normalize(-dxPos * dyTex.s + dyPos * dxTex.s);
+      mat3 tbn = mat3(tangent, bitangent, normalize(vNormal));
+      vec3 normal = texture2D(material.normalTexture, vUv).rgb * 2.0 - 1.0;
+      // Get world normal from view normal
+      return normalize((vec4(normalize(tbn * normal), 0.0) * viewMatrix).xyz);
+    }
+  `)}
 
   ${ifdef(USE_AMBIENT_LIGHT, `
     varying vec3 ambientColor;
@@ -320,8 +346,14 @@ const defaultFragment = `
 
   void main() {
     vec3 tex = material.color;
+    vec3 normal = vNormal;
+
     ${ifdef(USE_COLOR_TEXTURE, `
       tex = texture2D(material.colorTexture, vUv).rgb;
+    `)}
+
+    ${ifdef(USE_NORMAL_TEXTURE, `
+      normal = getNormal();
     `)}
 
     vec3 ambientLight = vec3(0.0);
@@ -334,19 +366,19 @@ const defaultFragment = `
     `)}
 
     ${ifdef(USE_DIRECTIONAL_LIGHT, `
-      directionalLight += calcDirectionalLight(vNormal, tex);
+      directionalLight += calcDirectionalLight(normal, tex);
     `)}
 
     ${ifdef(USE_DIRECTIONAL_SHADOW_LIGHT, `
-      directionalLight += calcDirectionalShadowLight(vNormal, tex);
+      directionalLight += calcDirectionalShadowLight(normal, tex);
     `)}
 
     ${ifdef(USE_SPOT_LIGHT, `
-      spotLight += calcSpotLight(vNormal, tex);
+      spotLight += calcSpotLight(normal, tex);
     `)}
 
     ${ifdef(USE_SPOT_SHADOW_LIGHT, `
-      spotLight += calcSpotShadowLight(vNormal, tex);
+      spotLight += calcSpotShadowLight(normal, tex);
     `)}
 
     gl_FragColor = vec4(ambientLight + directionalLight + spotLight, 1.0);

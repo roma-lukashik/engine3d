@@ -1,12 +1,14 @@
 import { Mesh } from "@core/mesh"
 import { BoneTexture } from "@webgl/textures/bone"
 import { WebGLImageTexture } from "@webgl/textures/image"
+import { Texture } from "@core/texture"
 
 export class RenderCache {
   private readonly gl: WebGLRenderingContext
 
   private readonly boneTextures: WeakMap<Mesh, BoneTexture> = new WeakMap()
   private readonly colorTextures: WeakMap<Mesh, WebGLImageTexture> = new WeakMap()
+  private readonly normalTextures: WeakMap<Mesh, WebGLImageTexture> = new WeakMap()
 
   public constructor(gl: WebGLRenderingContext) {
     this.gl = gl
@@ -23,12 +25,24 @@ export class RenderCache {
   }
 
   public getColorTexture(mesh: Mesh): WebGLImageTexture | undefined {
-    if (!mesh.material.colorTexture) {
+    return this.getImageTexture(mesh, this.colorTextures, mesh.material.colorTexture)
+  }
+
+  public getNormalTexture(mesh: Mesh): WebGLImageTexture | undefined {
+    return this.getImageTexture(mesh, this.normalTextures, mesh.material.normalTexture)
+  }
+
+  private getImageTexture(
+    mesh: Mesh,
+    texturesMap: WeakMap<Mesh, WebGLImageTexture>,
+    texture: Texture | undefined,
+  ): WebGLImageTexture | undefined {
+    if (!texture) {
       return
     }
-    if (!this.colorTextures.has(mesh)) {
-      this.colorTextures.set(mesh, new WebGLImageTexture(this.gl, mesh.material.colorTexture.source))
+    if (!texturesMap.has(mesh)) {
+      texturesMap.set(mesh, new WebGLImageTexture(this.gl, texture.source))
     }
-    return this.colorTextures.get(mesh)
+    return texturesMap.get(mesh)
   }
 }

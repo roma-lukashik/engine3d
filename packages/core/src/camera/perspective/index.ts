@@ -15,6 +15,7 @@ export class PerspectiveCamera implements Camera {
   public position: Vector3 = Vector3.zero()
   public target: Vector3 = Vector3.zero()
   public projectionMatrix: Matrix4 = Matrix4.identity()
+  public viewMatrix: Matrix4 = Matrix4.identity()
 
   private near: number
   private far: number
@@ -53,8 +54,8 @@ export class PerspectiveCamera implements Camera {
     if (this.position.equal(this.target)) {
       this.projectionMatrix = Matrix4.identity()
     } else {
-      const viewMatrix = Matrix4.lookAt(this.position, this.target, this.up).invert()
-      this.projectionMatrix.copy(this.perspectiveMatrix).multiply(viewMatrix)
+      this.viewMatrix = Matrix4.lookAt(this.position, this.target, this.up).invert()
+      this.projectionMatrix.copy(this.perspectiveMatrix).multiply(this.viewMatrix)
     }
   }
 

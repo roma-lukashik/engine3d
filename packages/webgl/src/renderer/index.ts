@@ -41,6 +41,9 @@ export class Renderer {
     if (!gl.getExtension("OES_element_index_uint")) {
       throw new Error("Your browser cannot support uint index element")
     }
+    if (!gl.getExtension("OES_standard_derivatives")) {
+      throw new Error("Your browser cannot support standard derivatives extension")
+    }
     this.gl = gl
     this.state = new RenderState(this.gl)
     this.cache = new RenderCache(this.gl)

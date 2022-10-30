@@ -50,6 +50,7 @@ export class MeshRenderer {
 
     const boneTexture = this.cache.getBoneTexture(mesh)
     const colorTexture = this.cache.getColorTexture(mesh)
+    const normalTexture = this.cache.getNormalTexture(mesh)
 
     boneTexture?.update()
 
@@ -60,10 +61,12 @@ export class MeshRenderer {
         roughness: mesh.material.roughness,
         color: mesh.material.color.elements,
         colorTexture,
+        normalTexture,
       },
       boneTexture: boneTexture?.texture,
       boneTextureSize: boneTexture?.size,
       projectionMatrix: camera.projectionMatrix.elements,
+      viewMatrix: camera.viewMatrix.elements,
       ambientLights: scene.ambientLights.map(({ color, intensity }) => {
         return { color: color.elements, intensity }
       }),
@@ -149,6 +152,7 @@ export class MeshRenderer {
         directionalShadowLightsAmount: scene.directionalShadowLights.length,
         useSkinning: !!mesh.skeleton,
         useColorTexture: !!mesh.material.colorTexture,
+        useNormalTexture: !!mesh.material.normalTexture,
       }))
     }
     return this.meshPrograms.get(mesh)!

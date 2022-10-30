@@ -8,6 +8,7 @@ export type MeshUniforms = {
   worldMatrix?: Matrix4Array
   cameraPosition?: Vector3Array
   projectionMatrix?: Matrix4Array
+  viewMatrix?: Matrix4Array
   ambientLights?: AmbientLight[]
   pointLights?: PointLight[]
   spotLights?: SpotLight[]
@@ -33,6 +34,7 @@ type Material = {
   roughness: number
   color: Vector4Array
   colorTexture?: WebGLBaseTexture
+  normalTexture?: WebGLBaseTexture
 }
 
 type AmbientLight = {
