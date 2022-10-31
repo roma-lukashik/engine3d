@@ -18,8 +18,6 @@ const camera = new PerspectiveCamera({
   far: 8000,
 })
 
-new CameraControl({ camera })
-
 const directionalLight = new DirectionalLight({
   intensity: 0.2,
   castShadow: true,
@@ -63,6 +61,11 @@ const renderer = new Renderer({
   width: window.innerWidth,
   height: window.innerHeight,
 })
+
+renderer.gl.canvas.onclick = () => {
+  new CameraControl({ camera, element: renderer.gl.canvas, rotationSpeed: 0.5 })
+}
+
 const scene = new Scene()
 scene.addLight(
   directionalLight2,
@@ -134,8 +137,10 @@ let i = 0
 
 const update = () => {
   const step = 0.03
-  if (wPressed) move(hero, new Vector3(0, 0, (shiftPressed ? 3 : 1) * -step), [box, box2, box3])
-  if (sPressed) move(hero, new Vector3(0, 0, (shiftPressed ? 3 : 1) * step), [box, box2, box3])
+  const colliders = [box, box2, box3]
+  const speed = shiftPressed ? 3 : 1
+  if (wPressed) move(hero, new Vector3(0, 0, speed * -step), colliders)
+  if (sPressed) move(hero, new Vector3(0, 0, speed * step), colliders)
   if (aPressed) hero.node.localMatrix.rotateY(-0.03)
   if (dPressed) hero.node.localMatrix.rotateY(0.03)
 
