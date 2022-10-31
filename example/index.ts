@@ -19,25 +19,18 @@ const camera = new PerspectiveCamera({
 })
 
 const directionalLight = new DirectionalLight({
-  intensity: 0.2,
-  castShadow: true,
-  bias: 0.002,
-})
-directionalLight.setPosition(new Vector3(500, 500, 500))
-
-const directionalLight2 = new DirectionalLight({
   intensity: 0.8,
   castShadow: true,
-  bias: 0.001,
+  bias: 0.005,
 })
-directionalLight2.setPosition(new Vector3(-500, 1500, 500))
+directionalLight.setPosition(new Vector3(-500, 800, 500))
 
 const spotLight = new SpotLight({
-  intensity: 0.9,
+  intensity: 0.7,
   castShadow: true,
   distance: 1200,
   angle: Math.PI / 8,
-  penumbra: 0.6,
+  penumbra: 1.0,
   bias: 0.000001,
   color: 0xff0000,
 })
@@ -49,7 +42,7 @@ const spotLight2 = new SpotLight({
   castShadow: true,
   distance: 1200,
   angle: Math.PI / 8,
-  penumbra: 0.2,
+  penumbra: 0.5,
   bias: 0.00001,
 })
 
@@ -63,12 +56,12 @@ const renderer = new Renderer({
 })
 
 renderer.gl.canvas.onclick = () => {
-  new CameraControl({ camera, element: renderer.gl.canvas, rotationSpeed: 0.5 })
+  new CameraControl({ camera, element: renderer.gl.canvas, rotationSpeed: 0.7 })
 }
 
 const scene = new Scene()
 scene.addLight(
-  directionalLight2,
+  directionalLight,
   spotLight,
   spotLight2,
   ambientLight,
