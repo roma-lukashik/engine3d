@@ -82,7 +82,12 @@ const followObject = (node: Node): void => {
 const move = (object: Object3D, translationVector: Vector3, colliders: Object3D[] = []) => {
   const collide = colliders.some((collider) => collider.aabb.collide(object.aabb))
   if (!collide) {
-    object.node.localMatrix.translate(translationVector.x, translationVector.y, translationVector.z)
+    const position = object.node.getWorldPosition()
+    const target = camera.target.clone().subtract(camera.position).add(position)
+    target.y = position.y
+    object.node.localMatrix = Matrix4.lookAt(position, target, new Vector3(0, 1, 0))
+      .scale(100, 100, 100)
+      .translate(translationVector.x, translationVector.y, translationVector.z)
   }
 }
 
