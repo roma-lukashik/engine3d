@@ -128,8 +128,6 @@ followObject(hero.node)
 
 let wPressed = false
 let sPressed = false
-let aPressed = false
-let dPressed = false
 let shiftPressed = false
 let i = 0
 
@@ -139,14 +137,12 @@ const update = () => {
   const speed = shiftPressed ? 3 : 1
   if (wPressed) move(hero, new Vector3(0, 0, speed * -step), colliders)
   if (sPressed) move(hero, new Vector3(0, 0, speed * step), colliders)
-  if (aPressed) hero.node.localMatrix.rotateY(-0.03)
-  if (dPressed) hero.node.localMatrix.rotateY(0.03)
 
   if (wPressed || sPressed) {
     hero.animate(shiftPressed ? "Run" : "Walk", i += 0.02)
     followObject(hero.node)
   } else {
-    hero.updateWorldMatrix()
+    hero.animate("Idle", i += 0.02)
   }
 
   renderer.render(scene, camera)
@@ -168,12 +164,6 @@ window.addEventListener("keydown", (e) => {
   if (e.key.toLowerCase() === "s") {
     sPressed = true
   }
-  if (e.key.toLowerCase() === "a") {
-    aPressed = true
-  }
-  if (e.key.toLowerCase() === "d") {
-    dPressed = true
-  }
   if (e.shiftKey) {
     shiftPressed = true
   }
@@ -185,12 +175,6 @@ window.addEventListener("keyup", (e) => {
   }
   if (e.key.toLowerCase() === "s") {
     sPressed = false
-  }
-  if (e.key.toLowerCase() === "a") {
-    aPressed = false
-  }
-  if (e.key.toLowerCase() === "d") {
-    dPressed = false
   }
   if (!e.shiftKey) {
     shiftPressed = false
