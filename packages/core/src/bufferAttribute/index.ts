@@ -40,7 +40,7 @@ export class BufferAttribute {
   }
 
   public getBufferElement(index: number): TypedArray {
-    const start = this.offset + index * (this.stride ?? this.itemSize)
+    const start = this.offset + index * (this.stride || this.itemSize)
     const end = start + this.itemSize
     return this.array.slice(start, end)
   }
