@@ -134,7 +134,7 @@ export class Quaternion {
       scale1 = t
     }
 
-    return this.multiply(scale0).add(q.clone().multiply(scale1 * Math.sign(dot)))
+    return this.multiplyScalar(scale0).add(q.clone().multiplyScalar(scale1 * Math.sign(dot)))
   }
 
   private add(q: Quaternion): this {
@@ -145,7 +145,7 @@ export class Quaternion {
     return this
   }
 
-  private multiply(c: number): this {
+  private multiplyScalar(c: number): this {
     this.array[0] *= c
     this.array[1] *= c
     this.array[2] *= c
