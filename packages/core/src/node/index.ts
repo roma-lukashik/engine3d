@@ -60,8 +60,12 @@ export class Node {
     this.children.forEach((child) => child.traverse(fn))
   }
 
-  public updateWorldMatrix(matrix: Matrix4 = Matrix4.identity()): void {
-    this.worldMatrix.copy(matrix).multiply(this.localMatrix)
-    this.children.forEach((child) => child.updateWorldMatrix(this.worldMatrix))
+  public updateWorldMatrix(): void {
+    if (this.parent) {
+      this.worldMatrix.set(this.parent.worldMatrix.elements).multiply(this.localMatrix)
+    } else {
+      this.worldMatrix.set(this.localMatrix.elements)
+    }
+    this.children.forEach((child) => child.updateWorldMatrix())
   }
 }

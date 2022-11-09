@@ -4,7 +4,6 @@ import { Mesh } from "@core/mesh"
 import { Skeleton } from "@core/skeleton"
 import { AABB } from "@geometry/bbox/aabb"
 import { Vector3 } from "@math/vector3"
-import { Matrix4 } from "@math/matrix4"
 
 export class Object3D<AnimationKeys extends string = string> {
   public readonly node: Node
@@ -40,8 +39,8 @@ export class Object3D<AnimationKeys extends string = string> {
     this.updateWorldMatrix()
   }
 
-  public updateWorldMatrix(matrix: Matrix4 = Matrix4.identity()): void {
-    this.node.updateWorldMatrix(matrix)
+  public updateWorldMatrix(): void {
+    this.node.updateWorldMatrix()
     this.updateAABB()
   }
 

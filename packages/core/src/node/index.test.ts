@@ -73,7 +73,8 @@ describe("Node", () => {
     const child11 = new Node({ matrix: Matrix4.rotationY(PI) })
     root.add([child1, child2])
     child1.add([child11])
-    root.updateWorldMatrix(Matrix4.translation(1, 2, 3))
+    root.localMatrix = Matrix4.translation(1, 2, 3)
+    root.updateWorldMatrix()
 
     expect(root.worldMatrix).toValueEqual([
       1, 0, 0, 0,
