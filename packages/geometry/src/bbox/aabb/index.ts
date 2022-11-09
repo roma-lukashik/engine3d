@@ -29,12 +29,6 @@ export class AABB {
     )
   }
 
-  public expandByAABB(aabb: AABB): this {
-    this.min.min(aabb.min)
-    this.max.max(aabb.max)
-    return this
-  }
-
   public expandByPoint(point: Vector3): this {
     this.min.min(point)
     this.max.max(point)
