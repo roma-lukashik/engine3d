@@ -64,11 +64,19 @@ describe("Vector2", () => {
   })
 
   it("multiply", () => {
-    expect(a.multiply(2)).toValueEqual([2, 4])
+    expect(a.multiply(b)).toValueEqual([3, 8])
   })
 
   it("divide", () => {
-    expect(a.divide(2)).toValueEqual([0.5, 1])
+    expect(b.divide(a)).toValueEqual([3, 2])
+  })
+
+  it("multiplyScalar", () => {
+    expect(a.multiplyScalar(2)).toValueEqual([2, 4])
+  })
+
+  it("divideScalar", () => {
+    expect(a.divideScalar(2)).toValueEqual([0.5, 1])
   })
 
   it("lengthSquared", () => {

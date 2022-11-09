@@ -85,7 +85,23 @@ export class Vector4 {
     return this
   }
 
-  public multiply(c: number): this {
+  public multiply(v: Vector4): this {
+    this.array[0] *= v.x
+    this.array[1] *= v.y
+    this.array[2] *= v.z
+    this.array[3] *= v.w
+    return this
+  }
+
+  public divide(v: Vector4): this {
+    this.array[0] /= v.x
+    this.array[1] /= v.y
+    this.array[2] /= v.z
+    this.array[3] /= v.w
+    return this
+  }
+
+  public multiplyScalar(c: number): this {
     this.array[0] *= c
     this.array[1] *= c
     this.array[2] *= c
@@ -93,7 +109,7 @@ export class Vector4 {
     return this
   }
 
-  public divide(c: number): this {
+  public divideScalar(c: number): this {
     this.array[0] /= c
     this.array[1] /= c
     this.array[2] /= c
@@ -118,11 +134,11 @@ export class Vector4 {
   }
 
   public normalize(): this {
-    return this.divide(this.length())
+    return this.divideScalar(this.length())
   }
 
   public negate(): this {
-    return this.multiply(-1)
+    return this.multiplyScalar(-1)
   }
 
   public dot(v: Vector4): number {

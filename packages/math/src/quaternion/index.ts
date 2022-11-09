@@ -49,7 +49,7 @@ export class Quaternion {
     const halfTheta = angle / 2
     const sin = Math.sin(halfTheta)
     const cos = Math.cos(halfTheta)
-    const vec = axis.clone().multiply(sin)
+    const vec = axis.clone().multiplyScalar(sin)
     return new Quaternion(vec.x, vec.y, vec.z, cos)
   }
 

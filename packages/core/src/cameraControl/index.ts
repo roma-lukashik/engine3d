@@ -29,7 +29,7 @@ export class CameraControl {
   }
 
   private onMouseDown = (event: MouseEvent) => {
-    const movement = new Vector2(event.movementX, event.movementY).multiply(this.rotationSpeed)
+    const movement = new Vector2(event.movementX, event.movementY).multiplyScalar(this.rotationSpeed)
     this.rotate(movement)
   }
 
@@ -51,7 +51,7 @@ export class CameraControl {
       .clone()
       .subtract(this.camera.position)
       .normalize()
-      .multiply(event.deltaY)
+      .multiplyScalar(event.deltaY)
       .add(this.camera.position)
     this.camera.setPosition(position)
     event.preventDefault()

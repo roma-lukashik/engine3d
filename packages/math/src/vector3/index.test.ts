@@ -86,11 +86,19 @@ describe("Vector3", () => {
   })
 
   it("multiply", () => {
-    expect(a.multiply(2)).toValueEqual([2, 4, 6])
+    expect(a.multiply(b)).toValueEqual([2, 6, 3])
   })
 
   it("divide", () => {
-    expect(a.divide(2)).toValueEqual([0.5, 1, 1.5])
+    expect(a.divide(b)).toValueEqual([0.5, 0.666, 3])
+  })
+
+  it("multiplyScalar", () => {
+    expect(a.multiplyScalar(2)).toValueEqual([2, 4, 6])
+  })
+
+  it("divideScalar", () => {
+    expect(a.divideScalar(2)).toValueEqual([0.5, 1, 1.5])
   })
 
   it("lengthSquared", () => {

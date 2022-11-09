@@ -92,14 +92,28 @@ export class Vector3 {
     return this
   }
 
-  public multiply(c: number): this {
+  public multiply(v: Vector3): this {
+    this.array[0] *= v.x
+    this.array[1] *= v.y
+    this.array[2] *= v.z
+    return this
+  }
+
+  public divide(v: Vector3): this {
+    this.array[0] /= v.x
+    this.array[1] /= v.y
+    this.array[2] /= v.z
+    return this
+  }
+
+  public multiplyScalar(c: number): this {
     this.array[0] *= c
     this.array[1] *= c
     this.array[2] *= c
     return this
   }
 
-  public divide(c: number): this {
+  public divideScalar(c: number): this {
     this.array[0] /= c
     this.array[1] /= c
     this.array[2] /= c
@@ -123,11 +137,11 @@ export class Vector3 {
   }
 
   public normalize(): this {
-    return this.divide(this.length())
+    return this.divideScalar(this.length())
   }
 
   public negate(): this {
-    return this.multiply(-1)
+    return this.multiplyScalar(-1)
   }
 
   public dot(v: Vector3): number {
@@ -142,7 +156,7 @@ export class Vector3 {
   }
 
   public lerp(v: Vector3, t: number): this {
-    return this.add(v.clone().subtract(this).multiply(t))
+    return this.add(v.clone().subtract(this).multiplyScalar(t))
   }
 
   public transformMatrix4(matrix: Matrix4): this {
@@ -159,8 +173,8 @@ export class Vector3 {
   public rotateByQuaternion(q: Quaternion): this {
     const v = new Vector3(q.x, q.y, q.z)
     const u = v.clone().cross(this)
-    const uu = v.cross(u).multiply(2)
-    return this.add(u.multiply(q.w * 2)).add(uu)
+    const uu = v.cross(u).multiplyScalar(2)
+    return this.add(u.multiplyScalar(q.w * 2)).add(uu)
   }
 
   // TODO tests

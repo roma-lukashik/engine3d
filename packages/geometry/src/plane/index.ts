@@ -31,7 +31,7 @@ export class Plane {
   public normalize(): this {
     const length = this.normal.length()
     const inverseLength = length ? 1.0 / length : 0
-    this.normal.multiply(inverseLength)
+    this.normal.multiplyScalar(inverseLength)
     this.constant *= inverseLength
     return this
   }

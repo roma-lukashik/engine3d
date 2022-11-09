@@ -72,11 +72,19 @@ describe("Vector4", () => {
   })
 
   it("multiply", () => {
-    expect(a.multiply(2)).toValueEqual([2, 4, 6, 8])
+    expect(a.multiply(b)).toValueEqual([5, 12, 21, 32])
   })
 
   it("divide", () => {
-    expect(a.divide(2)).toValueEqual([0.5, 1, 1.5, 2])
+    expect(b.divide(a)).toValueEqual([5, 3, 2.333, 2])
+  })
+
+  it("multiplyScalar", () => {
+    expect(a.multiplyScalar(2)).toValueEqual([2, 4, 6, 8])
+  })
+
+  it("divideScalar", () => {
+    expect(a.divideScalar(2)).toValueEqual([0.5, 1, 1.5, 2])
   })
 
   it("dot", () => {

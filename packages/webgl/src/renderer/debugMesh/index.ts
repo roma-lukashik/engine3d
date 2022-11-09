@@ -39,8 +39,8 @@ export class DebugMeshRenderer {
     const min = object.aabb.min
     const max = object.aabb.max
 
-    const center = max.clone().add(min).divide(2)
-    const scale = max.clone().subtract(min).divide(2)
+    const center = max.clone().add(min).divideScalar(2)
+    const scale = max.clone().subtract(min).divideScalar(2)
     const transformMatrix = Matrix4.translation(center.x, center.y, center.z)
       .scale(scale.x, scale.y, scale.z)
 

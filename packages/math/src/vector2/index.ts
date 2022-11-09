@@ -71,13 +71,25 @@ export class Vector2 {
     return this
   }
 
-  public multiply(c: number): this {
+  public multiply(v: Vector2): this {
+    this.array[0] *= v.x
+    this.array[1] *= v.y
+    return this
+  }
+
+  public divide(v: Vector2): this {
+    this.array[0] /= v.x
+    this.array[1] /= v.y
+    return this
+  }
+
+  public multiplyScalar(c: number): this {
     this.array[0] *= c
     this.array[1] *= c
     return this
   }
 
-  public divide(c: number): this {
+  public divideScalar(c: number): this {
     this.array[0] /= c
     this.array[1] /= c
     return this
@@ -100,11 +112,11 @@ export class Vector2 {
   }
 
   public normalize(): this {
-    return this.divide(this.length())
+    return this.divideScalar(this.length())
   }
 
   public negate(): this {
-    return this.multiply(-1)
+    return this.multiplyScalar(-1)
   }
 
   public perp(): this {
