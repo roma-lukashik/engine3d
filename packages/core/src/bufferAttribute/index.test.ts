@@ -104,4 +104,31 @@ describe("BufferAttribute", () => {
       })
     })
   })
+
+  describe("forEach", () => {
+    it("in case of no stride", () => {
+      const bufferAttribute = new BufferAttribute({
+        array: new Uint8Array([9, 9, 0, 1, 2, 3]),
+        itemSize: 2,
+        offset: 2,
+      })
+      const fn = jest.fn()
+      bufferAttribute.forEach(fn)
+      expect(fn).toHaveBeenNthCalledWith(1, new Uint8Array([0, 1]), 0)
+      expect(fn).toHaveBeenNthCalledWith(2, new Uint8Array([2, 3]), 1)
+    })
+
+    it("in case of stride", () => {
+      const bufferAttribute = new BufferAttribute({
+        array: new Uint8Array([9, 9, 0, 1, 0, 0, 2, 3, 0, 0]),
+        itemSize: 2,
+        offset: 2,
+        stride: 4,
+      })
+      const fn = jest.fn()
+      bufferAttribute.forEach(fn)
+      expect(fn).toHaveBeenNthCalledWith(1, new Uint8Array([0, 1]), 0)
+      expect(fn).toHaveBeenNthCalledWith(2, new Uint8Array([2, 3]), 1)
+    })
+  })
 })

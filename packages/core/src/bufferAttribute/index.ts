@@ -1,6 +1,7 @@
 import { BufferViewTarget, ComponentType } from "@core/loaders/types"
 import { TypedArray } from "@core/types"
 import { getArrayComponentType } from "@core/bufferAttribute/utils"
+import { times } from "@utils/array"
 
 type Props = {
   array: TypedArray
@@ -43,5 +44,9 @@ export class BufferAttribute {
     const start = this.offset + index * (this.stride || this.itemSize)
     const end = start + this.itemSize
     return this.array.slice(start, end)
+  }
+
+  public forEach(fn: (item: TypedArray, index: number) => void): void {
+    times(this.count, (i) => fn(this.getBufferElement(i), i))
   }
 }
