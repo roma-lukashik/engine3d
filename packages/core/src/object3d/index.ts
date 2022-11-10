@@ -3,7 +3,6 @@ import { Animation } from "@core/animation"
 import { Mesh } from "@core/mesh"
 import { Skeleton } from "@core/skeleton"
 import { AABB } from "@geometry/bbox/aabb"
-import { Vector3 } from "@math/vector3"
 import { TypedArray } from "@core/types"
 import { Geometry } from "@core/geometry"
 import { TypedArrayByComponentType } from "@core/bufferAttribute/utils"
@@ -12,7 +11,7 @@ export class Object3D<AnimationKeys extends string = string> {
   public readonly node: Node
   public readonly skeletons: Skeleton[] = []
   public readonly meshes: Set<Mesh> = new Set()
-  public readonly aabb: AABB = new AABB(Vector3.zero().set(Infinity), Vector3.zero().set(-Infinity))
+  public readonly aabb: AABB = new AABB()
   public frustumCulled: boolean = true
 
   private readonly animations: Record<AnimationKeys, Animation>
@@ -48,8 +47,7 @@ export class Object3D<AnimationKeys extends string = string> {
   }
 
   private updateAABB(): void {
-    this.resetAABB()
-
+    this.aabb.reset()
     if (this.skeletons.length) {
       this.node.traverse((node) => {
         this.aabb.expandByPoint(node.getWorldPosition())
@@ -80,10 +78,5 @@ export class Object3D<AnimationKeys extends string = string> {
       position.forEach((pointArray, i) => points.set(pointArray, i * position.itemSize))
       return points
     }
-  }
-
-  private resetAABB(): void {
-    this.aabb.min.set(Infinity)
-    this.aabb.max.set(-Infinity)
   }
 }

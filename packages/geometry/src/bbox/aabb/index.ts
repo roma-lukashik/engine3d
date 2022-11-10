@@ -1,17 +1,17 @@
 import { Vector3 } from "@math/vector3"
 import { gte, lte } from "@math/operators"
-import { minmax } from "@math/utils"
 
 export class AABB {
-  public min: Vector3 = new Vector3()
-  public max: Vector3 = new Vector3()
+  public min: Vector3 = new Vector3(Infinity, Infinity, Infinity)
+  public max: Vector3 = new Vector3(-Infinity, -Infinity, -Infinity)
 
+  public constructor()
   public constructor(min: Vector3, max: Vector3)
   public constructor(points: ArrayLike<number>)
-  public constructor(...args: [Vector3, Vector3] | [ArrayLike<number>]) {
+  public constructor(...args: [Vector3, Vector3] | [ArrayLike<number>] | []) {
     if (args.length === 1) {
       this.calculateMinMax(args[0])
-    } else {
+    } else if (args.length === 2) {
       this.min = args[0]
       this.max = args[1]
     }
@@ -35,9 +35,16 @@ export class AABB {
     return this
   }
 
+  public reset(): void {
+    this.min.set(Infinity)
+    this.max.set(-Infinity)
+  }
+
   private calculateMinMax(array: ArrayLike<number>): void {
-    const [min, max] = minmax(array, Vector3.size)
-    this.min.set(min[0], min[1], min[2])
-    this.max.set(max[0], max[1], max[2])
+    for (let i = 0; i < array.length; i += Vector3.size) {
+      const x = array[i], y = array[i + 1], z = array[i + 2]
+      this.min.set(Math.min(this.min.x, x), Math.min(this.min.y, y), Math.min(this.min.z, z))
+      this.max.set(Math.max(this.max.x, x), Math.max(this.max.y, y), Math.max(this.max.z, z))
+    }
   }
 }
