@@ -47,12 +47,12 @@ export class DirectionalLight implements LightWithShadow {
     this.intensity = clamp(intensity, 0, 1)
     this.bias = bias
     this.camera = new OrthographicCamera({
-      left: -1500,
-      right: 1500,
-      top: 1500,
-      bottom: -1500,
+      left: -2000,
+      right: 2000,
+      top: 2000,
+      bottom: -2000,
       near: 0.5,
-      far: 2000,
+      far: 3000,
     })
     this.updateDirection()
   }

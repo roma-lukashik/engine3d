@@ -12,6 +12,8 @@ import { Vector3 } from "@math/vector3"
 import { Matrix4 } from "@math/matrix4"
 import { Object3D } from "@core/object3d"
 
+import { calculateForces } from "./physics"
+
 const camera = new PerspectiveCamera({
   aspect: window.innerWidth / window.innerHeight,
   fovy: toRadian(60),
@@ -32,19 +34,9 @@ const spotLight = new SpotLight({
   angle: Math.PI / 8,
   penumbra: 1.0,
   bias: 0.000001,
-  color: 0xff0000,
 })
 spotLight.setPosition(new Vector3(-700, 500, 500))
 spotLight.setTarget(new Vector3(-300, 0, 200))
-
-const spotLight2 = new SpotLight({
-  intensity: 0.99,
-  castShadow: true,
-  distance: 1200,
-  angle: Math.PI / 8,
-  penumbra: 0.5,
-  bias: 0.00001,
-})
 
 const ambientLight = new AmbientLight({
   intensity: 0.25,
@@ -62,21 +54,23 @@ renderer.gl.canvas.onclick = () => {
 const scene = new Scene()
 scene.addLight(
   directionalLight,
-  spotLight,
-  spotLight2,
   ambientLight,
 )
 
 const followObject = (node: Node): void => {
   const nodePosition = node.getWorldPosition()
   const nodeRotation = node.getWorldRotation()
-  const from = new Vector3(0, 300, 400)
+  const from = new Vector3(0, 500, 600)
   const up = new Vector3(0, 150, 0)
   camera.setPosition(from.rotateByQuaternion(nodeRotation).add(nodePosition))
   camera.lookAt(up.add(nodePosition))
+}
 
-  spotLight2.setPosition(up.clone().add(new Vector3(0, 0, -35).rotateByQuaternion(nodeRotation)))
-  spotLight2.setTarget(new Vector3(0, 40, -250).rotateByQuaternion(nodeRotation).add(nodePosition))
+const followBall = () => {
+  const ballPosition = ball.node.getWorldPosition()
+  const hp = heroOpponent.node.getWorldPosition()
+  heroOpponent.node.localMatrix = Matrix4.scaling(100, 100, 100).translate(ballPosition.x / 100, hp.y / 100, hp.z / 100)
+  heroOpponent.updateWorldMatrix()
 }
 
 const move = (object: Object3D, translationVector: Vector3, colliders: Object3D[] = []) => {
@@ -103,27 +97,35 @@ const loadModel = async <T extends string>(url: string) => {
 }
 
 const hero = await loadModel<HeroAnimations>("models/soldier.glb")
-const surface = await loadModel("models/surface.glb")
-const box = await loadModel("models/box.glb")
-const box2 = await loadModel("models/box.glb")
-const box3 = await loadModel("models/box.glb")
+const heroOpponent = await loadModel<HeroAnimations>("models/soldier.glb")
+const court = await loadModel("models/court.glb")
+const ball = await loadModel("models/ball.glb")
+const net = await loadModel("models/net.glb")
 
 hero.frustumCulled = false
-surface.frustumCulled = false
+court.frustumCulled = false
 
-scene.addObject(surface)
-scene.addObject(box)
-scene.addObject(box2)
-scene.addObject(box3)
+scene.addObject(court)
+scene.addObject(net)
 scene.addObject(hero)
+scene.addObject(heroOpponent)
+scene.addObject(ball)
 
-surface.updateWorldMatrix(Matrix4.scaling(100, 100, 100).translate(0, -0.1, 0))
-box.updateWorldMatrix(Matrix4.scaling(150, 200, 150).translate(3, 1, -3))
-box2.updateWorldMatrix(Matrix4.scaling(150, 200, 150).translate(-3, 1, -3))
-box3.updateWorldMatrix(Matrix4.scaling(150, 200, 150).translate(3, 1, 3))
+court.node.localMatrix = Matrix4.scaling(100, 100, 100).rotateY(Math.PI / 2)
+court.updateWorldMatrix()
 
-hero.node.localMatrix = Matrix4.scaling(100, 100, 100)
+net.node.localMatrix = Matrix4.scaling(4.5, 2.5, 3).translate(5, 0, 0).rotateY(Math.PI / 2)
+net.updateWorldMatrix()
+
+ball.node.localMatrix = Matrix4.scaling(7, 7, 7).translate(0, 1.1, 155)
+ball.updateWorldMatrix()
+
+hero.node.localMatrix = Matrix4.scaling(100, 100, 100).translate(-1, 0, 12)
 hero.updateWorldMatrix()
+
+heroOpponent.node.localMatrix = Matrix4.scaling(100, 100, 100).translate(1, 0, -12).rotateY(Math.PI)
+heroOpponent.updateWorldMatrix()
+
 followObject(hero.node)
 
 let wPressed = false
@@ -131,19 +133,67 @@ let sPressed = false
 let shiftPressed = false
 let i = 0
 
+const angle = Math.PI / 7
+const power = 60
+const direction = Vector3.one()
+const velocity = Vector3.zero()
+let dT = 0
+
 const update = () => {
   const step = 0.03
-  const colliders = [box, box2, box3]
+  const colliders = [net, heroOpponent]
   const speed = shiftPressed ? 3 : 1
   if (wPressed) move(hero, new Vector3(0, 0, speed * -step), colliders)
   if (sPressed) move(hero, new Vector3(0, 0, speed * step), colliders)
 
+  i += 0.02
+
   if (wPressed || sPressed) {
-    hero.animate(shiftPressed ? "Run" : "Walk", i += 0.02)
+    hero.animate(shiftPressed ? "Run" : "Walk", i)
     followObject(hero.node)
   } else {
-    hero.animate("Idle", i += 0.02)
+    hero.animate("Idle", i)
   }
+  heroOpponent.animate("Idle", i)
+
+  const mass = 0.1
+  const radius = ball.aabb.max.clone().subtract(ball.aabb.min).length() / 1000 / 2
+  const forces = calculateForces(mass, velocity, radius)
+  const acceleration = forces.divideScalar(mass)
+  const dV = acceleration.multiplyScalar(dT)
+  velocity.add(dV)
+  const dx = velocity.clone().multiplyScalar(dT)
+  ball.node.localMatrix.translate(dx.x, dx.y, dx.z)
+  ball.updateWorldMatrix()
+
+  if (ball.aabb.collide(net.aabb)) {
+    velocity.multiplyScalar(0.1)
+    velocity.z *= -1
+    velocity.y *= -1
+    ball.node.localMatrix.translate(0, -dx.y, -dx.z)
+    ball.updateWorldMatrix()
+  }
+
+  if (ball.aabb.collide(court.aabb)) {
+    velocity.multiplyScalar(0.7)
+    velocity.y *= -1
+    ball.node.localMatrix.translate(0, -dx.y, 0)
+    ball.updateWorldMatrix()
+  }
+
+  if (ball.aabb.collide(heroOpponent.aabb)) {
+    direction.x = hero.node.getWorldPosition().subtract(heroOpponent.node.getWorldPosition()).normalize().x
+    direction.z *= -1
+    velocity.set(1, Math.sin(angle), Math.cos(angle)).multiply(direction).multiplyScalar(power)
+    ball.node.localMatrix.translate(-dx.x, -dx.y, -dx.z)
+    ball.updateWorldMatrix()
+  }
+
+  // almost stop
+  if (velocity.lengthSquared() < 1) {
+    velocity.set(0, 0, 0)
+  }
+  followBall()
 
   renderer.render(scene, camera)
   requestAnimationFrame(update)
@@ -178,5 +228,11 @@ window.addEventListener("keyup", (e) => {
   }
   if (!e.shiftKey) {
     shiftPressed = false
+  }
+  if (e.key.toLowerCase() === " ") {
+    dT = 0.07
+    direction.z *= -1
+    direction.x = direction.z * camera.position.clone().subtract(camera.target).normalize().x
+    velocity.set(1, Math.sin(angle), Math.cos(angle)).multiply(direction).multiplyScalar(power)
   }
 })
