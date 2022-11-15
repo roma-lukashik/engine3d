@@ -5,6 +5,7 @@ import { BufferAttribute } from "@core/bufferAttribute"
 import { Matrix4 } from "@math/matrix4"
 import { BufferViewTarget } from "@core/loaders/types"
 import { Vector3 } from "@math/vector3"
+import { Quaternion } from "@math/quaternion"
 import { indexes, positions } from "@webgl/renderer/debugMesh/data"
 import { Object3D } from "@core/object3d"
 import { RGB } from "@core/color/rgb"
@@ -38,11 +39,9 @@ export class DebugMeshRenderer {
   public render(object: Object3D, camera: Camera): void {
     const min = object.aabb.min
     const max = object.aabb.max
-
-    const center = max.clone().add(min).divideScalar(2)
+    const translation = max.clone().add(min).divideScalar(2)
     const scale = max.clone().subtract(min).divideScalar(2)
-    const transformMatrix = Matrix4.translation(center.x, center.y, center.z)
-      .scale(scale.x, scale.y, scale.z)
+    const transformMatrix = Matrix4.compose(Quaternion.identity(), translation, scale)
 
     this.program.use()
     this.gl.disable(this.gl.DEPTH_TEST)

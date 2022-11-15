@@ -2,8 +2,8 @@ import { Vector3 } from "@math/vector3"
 import { gte, lte } from "@math/operators"
 
 export class AABB {
-  public min: Vector3 = new Vector3(Infinity, Infinity, Infinity)
-  public max: Vector3 = new Vector3(-Infinity, -Infinity, -Infinity)
+  public readonly min: Vector3 = new Vector3(Infinity, Infinity, Infinity)
+  public readonly max: Vector3 = new Vector3(-Infinity, -Infinity, -Infinity)
 
   public constructor()
   public constructor(min: Vector3, max: Vector3)

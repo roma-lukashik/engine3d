@@ -1,4 +1,4 @@
-import { AmbientLight, DirectionalLight, SpotLight } from "@core/lights"
+import { AmbientLight, DirectionalLight } from "@core/lights"
 import { PerspectiveCamera } from "@core/camera"
 import { CameraControl } from "@core/cameraControl"
 import { parseGltf } from "@core/loaders/gltf"
@@ -27,17 +27,6 @@ const directionalLight = new DirectionalLight({
 })
 directionalLight.setPosition(new Vector3(-500, 800, 500))
 
-const spotLight = new SpotLight({
-  intensity: 0.7,
-  castShadow: true,
-  distance: 1200,
-  angle: Math.PI / 8,
-  penumbra: 1.0,
-  bias: 0.000001,
-})
-spotLight.setPosition(new Vector3(-700, 500, 500))
-spotLight.setTarget(new Vector3(-300, 0, 200))
-
 const ambientLight = new AmbientLight({
   intensity: 0.25,
 })
@@ -60,7 +49,7 @@ scene.addLight(
 const followObject = (node: Node): void => {
   const nodePosition = node.getWorldPosition()
   const nodeRotation = node.getWorldRotation()
-  const from = new Vector3(0, 500, 600)
+  const from = new Vector3(0, 400, -500)
   const up = new Vector3(0, 150, 0)
   camera.setPosition(from.rotateByQuaternion(nodeRotation).add(nodePosition))
   camera.lookAt(up.add(nodePosition))
@@ -68,47 +57,53 @@ const followObject = (node: Node): void => {
 
 const followBall = () => {
   const ballPosition = ball.node.getWorldPosition()
-  const hp = heroOpponent.node.getWorldPosition()
-  heroOpponent.node.localMatrix = Matrix4.scaling(100, 100, 100).translate(ballPosition.x / 100, hp.y / 100, hp.z / 100)
-  heroOpponent.updateWorldMatrix()
+  const hp = npc.node.getWorldPosition()
+  if (ballPosition.x > hp.x) {
+    npc.animate("RunLeft", i)
+  } else if (ballPosition.x < hp.x) {
+    npc.animate("RunRight", i)
+  } else {
+    npc.animate("Idle", i)
+  }
+  npc.node.localMatrix = Matrix4.translation(ballPosition.x, hp.y, hp.z)
+  npc.updateWorldMatrix()
 }
 
 const move = (object: Object3D, translationVector: Vector3, colliders: Object3D[] = []) => {
   const collide = colliders.some((collider) => collider.aabb.collide(object.aabb))
   if (!collide) {
-    const position = object.node.getWorldPosition()
-    const target = camera.target.clone().subtract(camera.position).add(position)
-    target.y = position.y
-    object.node.localMatrix = Matrix4.lookAt(position, target, new Vector3(0, 1, 0))
-      .scale(100, 100, 100)
-      .translate(translationVector.x, translationVector.y, translationVector.z)
+    object.node.localMatrix.translate(translationVector.x, translationVector.y, translationVector.z)
   }
 }
 
-type HeroAnimations =
-  | "Idle"
+type PlayerAnimations =
   | "Run"
-  | "TPose"
+  | "RunLeft"
+  | "RunRight"
   | "Walk"
+  | "WalkLeft"
+  | "WalkRight"
+  | "WalkBackward"
+  | "Idle"
 
 const loadModel = async <T extends string>(url: string) => {
   const gltf = await parseGltf<T>(await (await fetch(url)).arrayBuffer())
   return new Object3D(gltf.node, gltf.animations)
 }
 
-const hero = await loadModel<HeroAnimations>("models/soldier.glb")
-const heroOpponent = await loadModel<HeroAnimations>("models/soldier.glb")
+const player = await loadModel<PlayerAnimations>("models/player.glb")
+const npc = await loadModel<PlayerAnimations>("models/player.glb")
 const court = await loadModel("models/court.glb")
 const ball = await loadModel("models/ball.glb")
 const net = await loadModel("models/net.glb")
 
-hero.frustumCulled = false
+player.frustumCulled = false
 court.frustumCulled = false
 
 scene.addObject(court)
 scene.addObject(net)
-scene.addObject(hero)
-scene.addObject(heroOpponent)
+scene.addObject(player)
+scene.addObject(npc)
 scene.addObject(ball)
 
 court.node.localMatrix = Matrix4.scaling(100, 100, 100).rotateY(Math.PI / 2)
@@ -120,41 +115,56 @@ net.updateWorldMatrix()
 ball.node.localMatrix = Matrix4.scaling(7, 7, 7).translate(0, 1.1, 155)
 ball.updateWorldMatrix()
 
-hero.node.localMatrix = Matrix4.scaling(100, 100, 100).translate(-1, 0, 12)
-hero.updateWorldMatrix()
+player.node.localMatrix = Matrix4.translation(0, 88, 1200).rotateY(Math.PI)
+player.updateWorldMatrix()
 
-heroOpponent.node.localMatrix = Matrix4.scaling(100, 100, 100).translate(1, 0, -12).rotateY(Math.PI)
-heroOpponent.updateWorldMatrix()
+npc.node.localMatrix = Matrix4.translation(0, 88, -1200)
+npc.updateWorldMatrix()
 
-followObject(hero.node)
+followObject(player.node)
 
 let wPressed = false
 let sPressed = false
-let shiftPressed = false
+let aPressed = false
+let dPressed = false
+// let shiftPressed = false
 let i = 0
 
-const angle = Math.PI / 7
-const power = 60
+const angle = Math.PI / 8
+const power = 62
 const direction = Vector3.one()
 const velocity = Vector3.zero()
 let dT = 0
 
 const update = () => {
   const step = 0.03
-  const colliders = [net, heroOpponent]
-  const speed = shiftPressed ? 3 : 1
-  if (wPressed) move(hero, new Vector3(0, 0, speed * -step), colliders)
-  if (sPressed) move(hero, new Vector3(0, 0, speed * step), colliders)
+  const colliders = [net, npc]
+  const speed = 200
+  const movingVector = Vector3.zero()
+
+  if (wPressed) movingVector.add(new Vector3(0, 0, speed * step))
+  if (sPressed) movingVector.add(new Vector3(0, 0, speed * -step))
+  if (aPressed) movingVector.add(new Vector3(speed * step, 0, 0))
+  if (dPressed) movingVector.add(new Vector3(speed * -step, 0, 0))
+
+  if (!movingVector.equal(Vector3.zero())) {
+    move(player, movingVector, colliders)
+  }
 
   i += 0.02
 
-  if (wPressed || sPressed) {
-    hero.animate(shiftPressed ? "Run" : "Walk", i)
-    followObject(hero.node)
+  if (aPressed) {
+    player.animate("RunLeft", i)
+  } else if (dPressed) {
+    player.animate("RunRight", i)
+  } else if (wPressed) {
+    player.animate("Run", i)
+    // followObject(player.node)
+  } else if (sPressed) {
+    player.animate("WalkBackward", i)
   } else {
-    hero.animate("Idle", i)
+    player.animate("Idle", i)
   }
-  heroOpponent.animate("Idle", i)
 
   const mass = 0.1
   const radius = ball.aabb.max.clone().subtract(ball.aabb.min).length() / 1000 / 2
@@ -181,8 +191,8 @@ const update = () => {
     ball.updateWorldMatrix()
   }
 
-  if (ball.aabb.collide(heroOpponent.aabb)) {
-    direction.x = hero.node.getWorldPosition().subtract(heroOpponent.node.getWorldPosition()).normalize().x
+  if (ball.aabb.collide(npc.aabb)) {
+    direction.x = player.node.getWorldPosition().subtract(npc.node.getWorldPosition()).normalize().x
     direction.z *= -1
     velocity.set(1, Math.sin(angle), Math.cos(angle)).multiply(direction).multiplyScalar(power)
     ball.node.localMatrix.translate(-dx.x, -dx.y, -dx.z)
@@ -214,9 +224,15 @@ window.addEventListener("keydown", (e) => {
   if (e.key.toLowerCase() === "s") {
     sPressed = true
   }
-  if (e.shiftKey) {
-    shiftPressed = true
+  if (e.key.toLowerCase() === "a") {
+    aPressed = true
   }
+  if (e.key.toLowerCase() === "d") {
+    dPressed = true
+  }
+  // if (e.shiftKey) {
+  //   shiftPressed = true
+  // }
 })
 
 window.addEventListener("keyup", (e) => {
@@ -226,9 +242,15 @@ window.addEventListener("keyup", (e) => {
   if (e.key.toLowerCase() === "s") {
     sPressed = false
   }
-  if (!e.shiftKey) {
-    shiftPressed = false
+  if (e.key.toLowerCase() === "a") {
+    aPressed = false
   }
+  if (e.key.toLowerCase() === "d") {
+    dPressed = false
+  }
+  // if (!e.shiftKey) {
+  //   shiftPressed = false
+  // }
   if (e.key.toLowerCase() === " ") {
     dT = 0.07
     direction.z *= -1
