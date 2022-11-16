@@ -24,16 +24,12 @@ export class CameraControl {
     this.element = element
     this.rotationSpeed = rotationSpeed
     this.element.requestPointerLock()
-    this.element.addEventListener("mousemove", this.onMouseDown)
+    this.element.addEventListener("mousemove", this.onMouseMove)
     this.element.addEventListener("wheel", this.onScroll, { passive: false })
   }
 
-  private onMouseDown = (event: MouseEvent) => {
+  private onMouseMove = (event: MouseEvent) => {
     const movement = new Vector2(event.movementX, event.movementY).multiplyScalar(this.rotationSpeed)
-    this.rotate(movement)
-  }
-
-  private rotate(movement: Vector2) {
     const { theta, phi, radius } = toSpherical(this.camera.position, this.camera.target)
     const { width, height } = this.getElementSize()
     const position = fromSpherical({

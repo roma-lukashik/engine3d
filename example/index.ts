@@ -16,7 +16,7 @@ import { calculateForces } from "./physics"
 
 const camera = new PerspectiveCamera({
   aspect: window.innerWidth / window.innerHeight,
-  fovy: toRadian(60),
+  fovy: toRadian(30),
   far: 8000,
 })
 
@@ -49,7 +49,7 @@ scene.addLight(
 const followObject = (node: Node): void => {
   const nodePosition = node.getWorldPosition()
   const nodeRotation = node.getWorldRotation()
-  const from = new Vector3(0, 400, -500)
+  const from = new Vector3(0, 700, -1500)
   const up = new Vector3(0, 150, 0)
   camera.setPosition(from.rotateByQuaternion(nodeRotation).add(nodePosition))
   camera.lookAt(up.add(nodePosition))
@@ -77,14 +77,15 @@ const move = (object: Object3D, translationVector: Vector3, colliders: Object3D[
 }
 
 type PlayerAnimations =
-  | "Run"
+  | "Idle"
+  | "RunForward"
+  | "RunBackward"
   | "RunLeft"
   | "RunRight"
-  | "Walk"
-  | "WalkLeft"
-  | "WalkRight"
-  | "WalkBackward"
-  | "Idle"
+  | "RunForwardRight"
+  | "RunForwardLeft"
+  | "RunBackwardRight"
+  | "RunBackwardLeft"
 
 const loadModel = async <T extends string>(url: string) => {
   const gltf = await parseGltf<T>(await (await fetch(url)).arrayBuffer())
@@ -127,45 +128,43 @@ let wPressed = false
 let sPressed = false
 let aPressed = false
 let dPressed = false
-// let shiftPressed = false
 let i = 0
 
-const angle = Math.PI / 8
-const power = 62
+const angle = Math.PI / 10
+const power = 70
 const direction = Vector3.one()
 const velocity = Vector3.zero()
 const angularVelocity = Vector3.zero()
+const speed = 6
 let dT = 0
 
+const getAnimation = (): PlayerAnimations => {
+  if (wPressed && aPressed) return "RunForwardLeft"
+  if (wPressed && dPressed) return "RunForwardRight"
+  if (sPressed && aPressed) return "RunBackwardLeft"
+  if (sPressed && dPressed) return "RunBackwardRight"
+  if (wPressed) return "RunForward"
+  if (sPressed) return "RunBackward"
+  if (aPressed) return "RunLeft"
+  if (dPressed) return "RunRight"
+  return "Idle"
+}
+
 const update = () => {
-  const step = 0.03
   const colliders = [net, npc]
-  const speed = 200
   const movingVector = Vector3.zero()
 
-  if (wPressed) movingVector.add(new Vector3(0, 0, speed * step))
-  if (sPressed) movingVector.add(new Vector3(0, 0, speed * -step))
-  if (aPressed) movingVector.add(new Vector3(speed * step, 0, 0))
-  if (dPressed) movingVector.add(new Vector3(speed * -step, 0, 0))
+  if (wPressed) movingVector.add(new Vector3(0, 0, 1))
+  if (sPressed) movingVector.add(new Vector3(0, 0, -1))
+  if (aPressed) movingVector.add(new Vector3(1, 0, 0))
+  if (dPressed) movingVector.add(new Vector3(-1, 0, 0))
 
   if (!movingVector.equal(Vector3.zero())) {
+    movingVector.normalize().multiplyScalar(speed)
     move(player, movingVector, colliders)
   }
 
-  i += 0.02
-
-  if (aPressed) {
-    player.animate("RunLeft", i)
-  } else if (dPressed) {
-    player.animate("RunRight", i)
-  } else if (wPressed) {
-    player.animate("Run", i)
-    // followObject(player.node)
-  } else if (sPressed) {
-    player.animate("WalkBackward", i)
-  } else {
-    player.animate("Idle", i)
-  }
+  player.animate(getAnimation(), i += 0.02)
 
   const mass = 0.1
   const radius = ball.aabb.max.clone().subtract(ball.aabb.min).length() / 1000 / 2
@@ -232,9 +231,6 @@ window.addEventListener("keydown", (e) => {
   if (e.key.toLowerCase() === "d") {
     dPressed = true
   }
-  // if (e.shiftKey) {
-  //   shiftPressed = true
-  // }
 })
 
 window.addEventListener("keyup", (e) => {
@@ -250,9 +246,6 @@ window.addEventListener("keyup", (e) => {
   if (e.key.toLowerCase() === "d") {
     dPressed = false
   }
-  // if (!e.shiftKey) {
-  //   shiftPressed = false
-  // }
   if (e.key.toLowerCase() === " ") {
     dT = 0.07
     direction.z *= -1
