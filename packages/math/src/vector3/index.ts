@@ -194,6 +194,10 @@ export class Vector3 {
     )
   }
 
+  public sign(): this {
+    return this.set(Math.sign(this.x), Math.sign(this.y), Math.sign(this.z))
+  }
+
   public equal(v: Vector3): boolean {
     return eq(this.x, v.x) && eq(this.y, v.y) && eq(this.z, v.z)
   }

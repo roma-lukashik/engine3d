@@ -134,6 +134,7 @@ const angle = Math.PI / 8
 const power = 62
 const direction = Vector3.one()
 const velocity = Vector3.zero()
+const angularVelocity = Vector3.zero()
 let dT = 0
 
 const update = () => {
@@ -168,7 +169,7 @@ const update = () => {
 
   const mass = 0.1
   const radius = ball.aabb.max.clone().subtract(ball.aabb.min).length() / 1000 / 2
-  const forces = calculateForces(mass, velocity, radius)
+  const forces = calculateForces(mass, velocity, angularVelocity, radius)
   const acceleration = forces.divideScalar(mass)
   const dV = acceleration.multiplyScalar(dT)
   velocity.add(dV)
@@ -195,6 +196,7 @@ const update = () => {
     direction.x = player.node.getWorldPosition().subtract(npc.node.getWorldPosition()).normalize().x
     direction.z *= -1
     velocity.set(1, Math.sin(angle), Math.cos(angle)).multiply(direction).multiplyScalar(power)
+    angularVelocity.set(0, 0, 0)
     ball.node.localMatrix.translate(-dx.x, -dx.y, -dx.z)
     ball.updateWorldMatrix()
   }
@@ -255,6 +257,7 @@ window.addEventListener("keyup", (e) => {
     dT = 0.07
     direction.z *= -1
     direction.x = direction.z * camera.position.clone().subtract(camera.target).normalize().x
+    angularVelocity.set(0, 300, 0)
     velocity.set(1, Math.sin(angle), Math.cos(angle)).multiply(direction).multiplyScalar(power)
   }
 })
