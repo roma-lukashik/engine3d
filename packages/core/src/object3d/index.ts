@@ -49,8 +49,8 @@ export class Object3D<AnimationKeys extends string = string> {
   private updateAABB(): void {
     this.aabb.reset()
     if (this.skeletons.length) {
-      this.node.traverse((node) => {
-        this.aabb.expandByPoint(node.getWorldPosition())
+      this.skeletons[0].bones.forEach((bone) => {
+        this.aabb.expandByPoint(bone.getWorldPosition())
       })
     } else {
       this.meshes.forEach((mesh) => {

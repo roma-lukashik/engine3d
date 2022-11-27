@@ -341,6 +341,10 @@ export class Matrix4 {
     return this.multiply(Matrix4.translation(x, y, z))
   }
 
+  public translateByVector(v: Vector3): this {
+    return this.translate(v.x, v.y, v.z)
+  }
+
   public scale(x: number, y: number, z: number): this {
     return this.multiply(Matrix4.scaling(x, y, z))
   }

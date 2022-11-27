@@ -13,7 +13,7 @@ export class Sphere {
     if (args.length === 1) {
       this.fromPoints(args[0])
     } else {
-      this.center = args[0]
+      this.center.copy(args[0])
       this.radius = args[1]
     }
   }

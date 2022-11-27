@@ -12,8 +12,9 @@ export class AABB {
     if (args.length === 1) {
       this.calculateMinMax(args[0])
     } else if (args.length === 2) {
-      this.min = args[0]
-      this.max = args[1]
+      // TODO Unit tests
+      this.min.copy(args[0])
+      this.max.copy(args[1])
     }
   }
 
@@ -29,12 +30,14 @@ export class AABB {
     )
   }
 
+  // TODO Unit tests
   public expandByPoint(point: Vector3): this {
     this.min.min(point)
     this.max.max(point)
     return this
   }
 
+  // TODO Unit tests
   public reset(): void {
     this.min.set(Infinity)
     this.max.set(-Infinity)

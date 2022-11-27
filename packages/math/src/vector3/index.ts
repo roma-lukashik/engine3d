@@ -144,6 +144,18 @@ export class Vector3 {
     return this.multiplyScalar(-1)
   }
 
+  public abs(): this {
+    this.x = Math.abs(this.x)
+    this.y = Math.abs(this.y)
+    this.z = Math.abs(this.z)
+    return this
+  }
+
+  public reflect(v: Vector3): this {
+    const n = v.clone().normalize()
+    return this.subtract(n.multiplyScalar(2 * this.dot(n)))
+  }
+
   public dot(v: Vector3): number {
     return this.x * v.x + this.y * v.y + this.z * v.z
   }

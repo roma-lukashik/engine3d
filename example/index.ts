@@ -13,6 +13,7 @@ import { Matrix4 } from "@math/matrix4"
 import { Object3D } from "@core/object3d"
 
 import { calculateForces } from "./physics"
+import { continuousAABBCollisionDetection } from "./sat"
 
 const camera = new PerspectiveCamera({
   aspect: window.innerWidth / window.innerHeight,
@@ -37,7 +38,7 @@ const renderer = new Renderer({
 })
 
 renderer.gl.canvas.onclick = () => {
-  new CameraControl({ camera, element: renderer.gl.canvas, rotationSpeed: 0.7 })
+  new CameraControl({ camera, element: renderer.gl.canvas, speed: 0.7 })
 }
 
 const scene = new Scene()
@@ -70,10 +71,23 @@ const followBall = () => {
 }
 
 const move = (object: Object3D, translationVector: Vector3, colliders: Object3D[] = []) => {
-  const collide = colliders.some((collider) => collider.aabb.collide(object.aabb))
-  if (!collide) {
-    object.node.localMatrix.translate(translationVector.x, translationVector.y, translationVector.z)
+  const collision = findCollision(object, translationVector.clone().negate(), colliders)
+  if (collision) {
+    object.node.localMatrix.translateByVector(collision.clone().negate().add(translationVector))
+  } else {
+    object.node.localMatrix.translateByVector(translationVector)
   }
+  object.updateWorldMatrix()
+}
+
+const findCollision = (object: Object3D, translationVector: Vector3, colliders: Object3D[]) => {
+  for (const collider of colliders) {
+    const overlap = continuousAABBCollisionDetection(object.aabb, collider.aabb, translationVector)
+    if (overlap) {
+      return overlap
+    }
+  }
+  return
 }
 
 type PlayerAnimations =
@@ -113,7 +127,8 @@ court.updateWorldMatrix()
 net.node.localMatrix = Matrix4.scaling(4.5, 2.5, 3).translate(5, 0, 0).rotateY(Math.PI / 2)
 net.updateWorldMatrix()
 
-ball.node.localMatrix = Matrix4.scaling(7, 7, 7).translate(0, 1.1, 155)
+ball.node.children[0].localMatrix.scale(7, 7, 7)
+ball.node.localMatrix = Matrix4.translation(0, 8, 1085)
 ball.updateWorldMatrix()
 
 player.node.localMatrix = Matrix4.translation(0, 88, 1200).rotateY(Math.PI)
@@ -131,12 +146,12 @@ let dPressed = false
 let i = 0
 
 const angle = Math.PI / 10
-const power = 70
+const power = 170
 const direction = Vector3.one()
 const velocity = Vector3.zero()
 const angularVelocity = Vector3.zero()
 const speed = 6
-let dT = 0
+const dt = 0.15
 
 const getAnimation = (): PlayerAnimations => {
   if (wPressed && aPressed) return "RunForwardLeft"
@@ -167,36 +182,52 @@ const update = () => {
   player.animate(getAnimation(), i += 0.02)
 
   const mass = 0.1
-  const radius = ball.aabb.max.clone().subtract(ball.aabb.min).length() / 1000 / 2
+  const radius = ball.aabb.max.clone().subtract(ball.aabb.min).length() / 8000
   const forces = calculateForces(mass, velocity, angularVelocity, radius)
   const acceleration = forces.divideScalar(mass)
-  const dV = acceleration.multiplyScalar(dT)
-  velocity.add(dV)
-  const dx = velocity.clone().multiplyScalar(dT)
-  ball.node.localMatrix.translate(dx.x, dx.y, dx.z)
-  ball.updateWorldMatrix()
+  const dv = acceleration.multiplyScalar(dt)
+  if (!velocity.equal(Vector3.zero())) {
+    velocity.add(dv)
+  }
+  const dx = velocity.clone().multiplyScalar(dt)
 
-  if (ball.aabb.collide(net.aabb)) {
-    velocity.multiplyScalar(0.1)
-    velocity.z *= -1
-    velocity.y *= -1
-    ball.node.localMatrix.translate(0, -dx.y, -dx.z)
+  const netOverlap = continuousAABBCollisionDetection(ball.aabb, net.aabb, dx, [new Vector3(0, 0, 1)])
+  if (netOverlap) {
+    velocity.reflect(netOverlap).multiplyScalar(0.1)
+    ball.node.localMatrix.translateByVector(netOverlap.negate().add(dx).divideScalar(7))
     ball.updateWorldMatrix()
   }
 
-  if (ball.aabb.collide(court.aabb)) {
-    velocity.multiplyScalar(0.7)
-    velocity.y *= -1
-    ball.node.localMatrix.translate(0, -dx.y, 0)
+  const courtOverlap = continuousAABBCollisionDetection(ball.aabb, court.aabb, dx, [new Vector3(0, 1, 0)])
+  if (courtOverlap) {
+    velocity.reflect(courtOverlap).multiplyScalar(0.7)
+    ball.node.localMatrix.translateByVector(courtOverlap.negate().add(dx).divideScalar(7))
     ball.updateWorldMatrix()
   }
 
-  if (ball.aabb.collide(npc.aabb)) {
-    direction.x = player.node.getWorldPosition().subtract(npc.node.getWorldPosition()).normalize().x
-    direction.z *= -1
-    velocity.set(1, Math.sin(angle), Math.cos(angle)).multiply(direction).multiplyScalar(power)
-    angularVelocity.set(0, 0, 0)
-    ball.node.localMatrix.translate(-dx.x, -dx.y, -dx.z)
+  const npcOverlap = continuousAABBCollisionDetection(ball.aabb, npc.aabb, dx, [new Vector3(0, 0, 1)])
+  if (npcOverlap) {
+    direction.reflect(npcOverlap)
+    ball.node.localMatrix.translateByVector(npcOverlap.negate().add(dx).divideScalar(7))
+    ball.updateWorldMatrix()
+
+    velocity.set(0, Math.sin(angle), Math.cos(angle)).multiply(direction).multiplyScalar(power)
+    angularVelocity.set(0, 5000 * (Math.random() - 0.5), 0)
+  }
+
+  const approachSpeed = movingVector.clone().negate().subtract(dx)
+  const playerOverlap = continuousAABBCollisionDetection(player.aabb, ball.aabb, approachSpeed, [new Vector3(0, 0, 1)])
+  if (playerOverlap) {
+    direction.reflect(playerOverlap)
+    ball.node.localMatrix.translateByVector(playerOverlap)
+    ball.updateWorldMatrix()
+
+    velocity.set(0, Math.sin(angle), Math.cos(angle)).multiply(direction).multiplyScalar(power)
+    angularVelocity.set(0, 5000 * (Math.random() - 0.5), 0)
+  }
+
+  if (!netOverlap && !courtOverlap && !npcOverlap && !playerOverlap) {
+    ball.node.localMatrix.translateByVector(dx)
     ball.updateWorldMatrix()
   }
 
@@ -247,10 +278,6 @@ window.addEventListener("keyup", (e) => {
     dPressed = false
   }
   if (e.key.toLowerCase() === " ") {
-    dT = 0.07
-    direction.z *= -1
-    direction.x = direction.z * camera.position.clone().subtract(camera.target).normalize().x
-    angularVelocity.set(0, 300, 0)
-    velocity.set(1, Math.sin(angle), Math.cos(angle)).multiply(direction).multiplyScalar(power)
+    followObject(player.node)
   }
 })
