@@ -6,13 +6,32 @@ import { AABB } from "@geometry/bbox/aabb"
 import { TypedArray } from "@core/types"
 import { Geometry } from "@core/geometry"
 import { TypedArrayByComponentType } from "@core/bufferAttribute/utils"
+import { Vector3 } from "@math/vector3"
 
-export class Object3D<AnimationKeys extends string = string> {
+export type RenderObject = {
+  readonly node: Node
+  readonly skeletons: Skeleton[]
+  readonly meshes: Set<Mesh>
+  readonly aabb: AABB
+  frustumCulled: boolean
+}
+
+export type RigidBody = {
+  readonly velocity: Vector3
+  readonly angularVelocity: Vector3
+  mass: number
+}
+
+export class Object3D<AnimationKeys extends string = string> implements RenderObject, RigidBody {
   public readonly node: Node
   public readonly skeletons: Skeleton[] = []
   public readonly meshes: Set<Mesh> = new Set()
   public readonly aabb: AABB = new AABB()
   public frustumCulled: boolean = true
+
+  public readonly velocity: Vector3 = Vector3.zero()
+  public readonly angularVelocity: Vector3 = Vector3.zero()
+  public mass: number = Number.MAX_VALUE
 
   private readonly animations: Record<AnimationKeys, Animation>
 

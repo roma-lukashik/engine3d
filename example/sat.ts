@@ -13,7 +13,7 @@ export const continuousAABBCollisionDetection = (
   movableBox: AABB,
   staticBox: AABB,
   movementVector: Vector3,
-  resolvingAxes: Vector3[] = axes,
+  resolvingAxes: Vector3[] = [movementVector],
 ): Vector3 | undefined => {
   const expandedMovableBox = expandBoxTowardMovementVector(movableBox, movementVector)
   const tests = []

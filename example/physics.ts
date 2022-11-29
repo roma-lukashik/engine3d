@@ -1,5 +1,6 @@
 import { Vector3 } from "@engine3d/math/src/vector3"
 import { PI } from "@math/constants"
+import { RigidBody } from "@core/object3d"
 
 // type Props = {
 //   gravity?: Vector3
@@ -59,10 +60,10 @@ import { PI } from "@math/constants"
 //   }
 // }
 
-export const calculateForces = (mass: number, velocity: Vector3, angularVelocity: Vector3, radius: number): Vector3 => {
-  const Fg = calculateGravityForce(mass)
-  const Fd = calculateDragForce(velocity, radius)
-  const Fm = calculateMagnusEffect(velocity, angularVelocity, radius)
+export const calculateForces = (rigidBody: RigidBody, radius: number): Vector3 => {
+  const Fg = calculateGravityForce(rigidBody.mass)
+  const Fd = calculateDragForce(rigidBody.velocity, radius)
+  const Fm = calculateMagnusEffect(rigidBody.velocity, rigidBody.angularVelocity, radius)
   return Fg.add(Fd).add(Fm)
 }
 

@@ -41,11 +41,58 @@ renderer.gl.canvas.onclick = () => {
   new CameraControl({ camera, element: renderer.gl.canvas, speed: 0.7 })
 }
 
+type PlayerAnimations =
+  | "Idle"
+  | "RunForward"
+  | "RunBackward"
+  | "RunLeft"
+  | "RunRight"
+  | "RunForwardRight"
+  | "RunForwardLeft"
+  | "RunBackwardRight"
+  | "RunBackwardLeft"
+
+const loadModel = async <T extends string>(url: string) => {
+  const gltf = await parseGltf<T>(await (await fetch(url)).arrayBuffer())
+  return new Object3D(gltf.node, gltf.animations)
+}
+
+const player = await loadModel<PlayerAnimations>("models/player.glb")
+const npc = await loadModel<PlayerAnimations>("models/player.glb")
+const court = await loadModel("models/court.glb")
+const ball = await loadModel("models/ball.glb")
+const net = await loadModel("models/net.glb")
+
+court.frustumCulled = false
+court.node.localMatrix = Matrix4.scaling(100, 100, 100).rotateY(Math.PI / 2)
+court.updateWorldMatrix()
+
+net.node.localMatrix = Matrix4.scaling(4.5, 2.5, 3).translate(5, 0, 0).rotateY(Math.PI / 2)
+net.updateWorldMatrix()
+
+ball.mass = 0.1
+ball.node.children[0].localMatrix.scale(7, 7, 7)
+ball.node.localMatrix = Matrix4.translation(0, 8, 1085)
+ball.updateWorldMatrix()
+
+player.frustumCulled = false
+player.node.localMatrix = Matrix4.translation(0, 88, 1200).rotateY(Math.PI)
+player.updateWorldMatrix()
+
+npc.node.localMatrix = Matrix4.translation(0, 88, -1200)
+npc.updateWorldMatrix()
+
 const scene = new Scene()
 scene.addLight(
   directionalLight,
   ambientLight,
 )
+
+scene.addObject(court)
+scene.addObject(net)
+scene.addObject(player)
+scene.addObject(npc)
+scene.addObject(ball)
 
 const followObject = (node: Node): void => {
   const nodePosition = node.getWorldPosition()
@@ -71,9 +118,9 @@ const followBall = () => {
 }
 
 const move = (object: Object3D, translationVector: Vector3, colliders: Object3D[] = []) => {
-  const collision = findCollision(object, translationVector.clone().negate(), colliders)
+  const collision = findCollision(object, translationVector, colliders)
   if (collision) {
-    object.node.localMatrix.translateByVector(collision.clone().negate().add(translationVector))
+    object.node.localMatrix.translateByVector(collision.negate().subtract(translationVector))
   } else {
     object.node.localMatrix.translateByVector(translationVector)
   }
@@ -90,53 +137,6 @@ const findCollision = (object: Object3D, translationVector: Vector3, colliders: 
   return
 }
 
-type PlayerAnimations =
-  | "Idle"
-  | "RunForward"
-  | "RunBackward"
-  | "RunLeft"
-  | "RunRight"
-  | "RunForwardRight"
-  | "RunForwardLeft"
-  | "RunBackwardRight"
-  | "RunBackwardLeft"
-
-const loadModel = async <T extends string>(url: string) => {
-  const gltf = await parseGltf<T>(await (await fetch(url)).arrayBuffer())
-  return new Object3D(gltf.node, gltf.animations)
-}
-
-const player = await loadModel<PlayerAnimations>("models/player.glb")
-const npc = await loadModel<PlayerAnimations>("models/player.glb")
-const court = await loadModel("models/court.glb")
-const ball = await loadModel("models/ball.glb")
-const net = await loadModel("models/net.glb")
-
-player.frustumCulled = false
-court.frustumCulled = false
-
-scene.addObject(court)
-scene.addObject(net)
-scene.addObject(player)
-scene.addObject(npc)
-scene.addObject(ball)
-
-court.node.localMatrix = Matrix4.scaling(100, 100, 100).rotateY(Math.PI / 2)
-court.updateWorldMatrix()
-
-net.node.localMatrix = Matrix4.scaling(4.5, 2.5, 3).translate(5, 0, 0).rotateY(Math.PI / 2)
-net.updateWorldMatrix()
-
-ball.node.children[0].localMatrix.scale(7, 7, 7)
-ball.node.localMatrix = Matrix4.translation(0, 8, 1085)
-ball.updateWorldMatrix()
-
-player.node.localMatrix = Matrix4.translation(0, 88, 1200).rotateY(Math.PI)
-player.updateWorldMatrix()
-
-npc.node.localMatrix = Matrix4.translation(0, 88, -1200)
-npc.updateWorldMatrix()
-
 followObject(player.node)
 
 let wPressed = false
@@ -148,8 +148,6 @@ let i = 0
 const angle = Math.PI / 10
 const power = 170
 const direction = Vector3.one()
-const velocity = Vector3.zero()
-const angularVelocity = Vector3.zero()
 const speed = 6
 const dt = 0.15
 
@@ -181,26 +179,25 @@ const update = () => {
 
   player.animate(getAnimation(), i += 0.02)
 
-  const mass = 0.1
   const radius = ball.aabb.max.clone().subtract(ball.aabb.min).length() / 8000
-  const forces = calculateForces(mass, velocity, angularVelocity, radius)
-  const acceleration = forces.divideScalar(mass)
+  const forces = calculateForces(ball, radius)
+  const acceleration = forces.divideScalar(ball.mass)
   const dv = acceleration.multiplyScalar(dt)
-  if (!velocity.equal(Vector3.zero())) {
-    velocity.add(dv)
+  if (!ball.velocity.equal(Vector3.zero())) {
+    ball.velocity.add(dv)
   }
-  const dx = velocity.clone().multiplyScalar(dt)
+  const dx = ball.velocity.clone().multiplyScalar(dt)
 
-  const netOverlap = continuousAABBCollisionDetection(ball.aabb, net.aabb, dx, [new Vector3(0, 0, 1)])
+  const netOverlap = continuousAABBCollisionDetection(ball.aabb, net.aabb, dx)
   if (netOverlap) {
-    velocity.reflect(netOverlap).multiplyScalar(0.1)
+    ball.velocity.reflect(netOverlap).multiplyScalar(0.1)
     ball.node.localMatrix.translateByVector(netOverlap.negate().add(dx).divideScalar(7))
     ball.updateWorldMatrix()
   }
 
-  const courtOverlap = continuousAABBCollisionDetection(ball.aabb, court.aabb, dx, [new Vector3(0, 1, 0)])
+  const courtOverlap = continuousAABBCollisionDetection(ball.aabb, court.aabb, dx)
   if (courtOverlap) {
-    velocity.reflect(courtOverlap).multiplyScalar(0.7)
+    ball.velocity.reflect(courtOverlap).multiplyScalar(0.7)
     ball.node.localMatrix.translateByVector(courtOverlap.negate().add(dx).divideScalar(7))
     ball.updateWorldMatrix()
   }
@@ -211,8 +208,8 @@ const update = () => {
     ball.node.localMatrix.translateByVector(npcOverlap.negate().add(dx).divideScalar(7))
     ball.updateWorldMatrix()
 
-    velocity.set(0, Math.sin(angle), Math.cos(angle)).multiply(direction).multiplyScalar(power)
-    angularVelocity.set(0, 5000 * (Math.random() - 0.5), 0)
+    ball.velocity.set(0, Math.sin(angle), Math.cos(angle)).multiply(direction).multiplyScalar(power)
+    ball.angularVelocity.set(0, 5000 * (Math.random() - 0.5), 0)
   }
 
   const approachSpeed = movingVector.clone().negate().subtract(dx)
@@ -222,8 +219,8 @@ const update = () => {
     ball.node.localMatrix.translateByVector(playerOverlap)
     ball.updateWorldMatrix()
 
-    velocity.set(0, Math.sin(angle), Math.cos(angle)).multiply(direction).multiplyScalar(power)
-    angularVelocity.set(0, 5000 * (Math.random() - 0.5), 0)
+    ball.velocity.set(0, Math.sin(angle), Math.cos(angle)).multiply(direction).multiplyScalar(power)
+    ball.angularVelocity.set(0, 5000 * (Math.random() - 0.5), 0)
   }
 
   if (!netOverlap && !courtOverlap && !npcOverlap && !playerOverlap) {
@@ -232,8 +229,8 @@ const update = () => {
   }
 
   // almost stop
-  if (velocity.lengthSquared() < 1) {
-    velocity.set(0, 0, 0)
+  if (ball.velocity.lengthSquared() < 1) {
+    ball.velocity.set(0, 0, 0)
   }
   followBall()
 
