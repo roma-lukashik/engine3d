@@ -99,6 +99,18 @@ scene.addObject(ball)
 
 keyboard.registerKeyPres("Space", () => followObject(player.node))
 
+const getAnimation = (): PlayerAnimations => {
+  if (keyboard.isPressed("KeyW") && keyboard.isPressed("KeyA")) return "RunForwardLeft"
+  if (keyboard.isPressed("KeyW") && keyboard.isPressed("KeyD")) return "RunForwardRight"
+  if (keyboard.isPressed("KeyS") && keyboard.isPressed("KeyA")) return "RunBackwardLeft"
+  if (keyboard.isPressed("KeyS") && keyboard.isPressed("KeyD")) return "RunBackwardRight"
+  if (keyboard.isPressed("KeyW")) return "RunForward"
+  if (keyboard.isPressed("KeyS")) return "RunBackward"
+  if (keyboard.isPressed("KeyA")) return "RunLeft"
+  if (keyboard.isPressed("KeyD")) return "RunRight"
+  return "Idle"
+}
+
 const followObject = (node: Node): void => {
   const nodePosition = node.getWorldPosition()
   const nodeRotation = node.getWorldRotation()
@@ -110,22 +122,22 @@ const followObject = (node: Node): void => {
 
 const followBall = () => {
   const ballPosition = ball.node.getWorldPosition()
-  const hp = npc.node.getWorldPosition()
-  if (ballPosition.x > hp.x) {
+  const npcPosition = npc.node.getWorldPosition()
+  if (ballPosition.x > npcPosition.x) {
     npc.animate("RunLeft", i)
-  } else if (ballPosition.x < hp.x) {
+  } else if (ballPosition.x < npcPosition.x) {
     npc.animate("RunRight", i)
   } else {
     npc.animate("Idle", i)
   }
-  npc.node.localMatrix = Matrix4.translation(ballPosition.x, hp.y, hp.z)
+  npc.node.localMatrix.translate(ballPosition.x - npcPosition.x, 0, 0)
   npc.updateWorldMatrix()
 }
 
 const move = (object: Object3D, translationVector: Vector3, colliders: Object3D[] = []) => {
-  const collision = findCollision(object, translationVector, colliders)
+  const collision = findCollision(object, translationVector.clone().negate(), colliders)
   if (collision) {
-    object.node.localMatrix.translateByVector(collision.negate().subtract(translationVector))
+    object.node.localMatrix.translateByVector(collision.add(translationVector))
   } else {
     object.node.localMatrix.translateByVector(translationVector)
   }
@@ -145,27 +157,15 @@ const findCollision = (object: Object3D, translationVector: Vector3, colliders: 
 followObject(player.node)
 
 let i = 0
-
 const angle = Math.PI / 10
 const power = 170
 const direction = Vector3.one()
 const speed = 6
 const dt = 0.15
-
-const getAnimation = (): PlayerAnimations => {
-  if (keyboard.isPressed("KeyW") && keyboard.isPressed("KeyA")) return "RunForwardLeft"
-  if (keyboard.isPressed("KeyW") && keyboard.isPressed("KeyD")) return "RunForwardRight"
-  if (keyboard.isPressed("KeyS") && keyboard.isPressed("KeyA")) return "RunBackwardLeft"
-  if (keyboard.isPressed("KeyS") && keyboard.isPressed("KeyD")) return "RunBackwardRight"
-  if (keyboard.isPressed("KeyW")) return "RunForward"
-  if (keyboard.isPressed("KeyS")) return "RunBackward"
-  if (keyboard.isPressed("KeyA")) return "RunLeft"
-  if (keyboard.isPressed("KeyD")) return "RunRight"
-  return "Idle"
-}
+const colliders = [net, npc]
+const translationVector = Vector3.zero()
 
 const update = () => {
-  const colliders = [net, npc]
   const movingVector = Vector3.zero()
 
   if (keyboard.isPressed("KeyW")) movingVector.add(new Vector3(0, 0, 1))
@@ -188,49 +188,44 @@ const update = () => {
     ball.velocity.add(dv)
   }
   const dx = ball.velocity.clone().multiplyScalar(dt)
+  translationVector.copy(dx)
 
   const netOverlap = continuousAABBCollisionDetection(ball.aabb, net.aabb, dx)
   if (netOverlap) {
     ball.velocity.reflect(netOverlap).multiplyScalar(0.1)
-    ball.node.localMatrix.translateByVector(netOverlap.negate().add(dx).divideScalar(7))
-    ball.updateWorldMatrix()
+    translationVector.subtract(netOverlap)
   }
 
   const courtOverlap = continuousAABBCollisionDetection(ball.aabb, court.aabb, dx)
   if (courtOverlap) {
     ball.velocity.reflect(courtOverlap).multiplyScalar(0.7)
-    ball.node.localMatrix.translateByVector(courtOverlap.negate().add(dx).divideScalar(7))
-    ball.updateWorldMatrix()
+    translationVector.subtract(courtOverlap)
   }
 
   const npcOverlap = continuousAABBCollisionDetection(ball.aabb, npc.aabb, dx, [new Vector3(0, 0, 1)])
   if (npcOverlap) {
     direction.reflect(npcOverlap)
-    ball.node.localMatrix.translateByVector(npcOverlap.negate().add(dx).divideScalar(7))
-    ball.updateWorldMatrix()
+    translationVector.subtract(npcOverlap)
 
     ball.velocity.set(0, Math.sin(angle), Math.cos(angle)).multiply(direction).multiplyScalar(power)
     ball.angularVelocity.set(0, 5000 * (Math.random() - 0.5), 0)
   }
 
-  const approachSpeed = movingVector.clone().negate().subtract(dx)
+  const approachSpeed = movingVector.clone().negate().add(dx)
   const playerOverlap = continuousAABBCollisionDetection(player.aabb, ball.aabb, approachSpeed, [new Vector3(0, 0, 1)])
   if (playerOverlap) {
     direction.reflect(playerOverlap)
-    ball.node.localMatrix.translateByVector(playerOverlap)
-    ball.updateWorldMatrix()
+    translationVector.subtract(playerOverlap)
 
     ball.velocity.set(0, Math.sin(angle), Math.cos(angle)).multiply(direction).multiplyScalar(power)
     ball.angularVelocity.set(0, 5000 * (Math.random() - 0.5), 0)
   }
 
-  if (!netOverlap && !courtOverlap && !npcOverlap && !playerOverlap) {
-    ball.node.localMatrix.translateByVector(dx)
+  // Assume, that if velocity magnitude less than 1, the ball stops
+  if (ball.velocity.lengthSquared() > 1) {
+    ball.node.localMatrix.translateByVector(translationVector)
     ball.updateWorldMatrix()
-  }
-
-  // almost stop
-  if (ball.velocity.lengthSquared() < 1) {
+  } else {
     ball.velocity.set(0, 0, 0)
   }
   followBall()

@@ -54,6 +54,6 @@ const testAxis = (axis: Vector3, minA: number, maxA: number, minB: number, maxB:
     return
   }
   const sign = gte(axis.dot(direction), 0) ? 1 : -1
-  const overlap = sign === 1 ? left : right
+  const overlap = sign === 1 ? right : left
   return { axis: axis.clone().multiplyScalar(sign), overlap }
 }
