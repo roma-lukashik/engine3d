@@ -1,6 +1,7 @@
 import { AmbientLight, DirectionalLight } from "@core/lights"
 import { PerspectiveCamera } from "@core/camera"
 import { CameraControl } from "@core/cameraControl"
+import { KeyboardManager } from "@core/controls/keyboard"
 import { parseGltf } from "@core/loaders/gltf"
 import { Node } from "@core/node"
 
@@ -40,6 +41,8 @@ const renderer = new Renderer({
 renderer.gl.canvas.onclick = () => {
   new CameraControl({ camera, element: renderer.gl.canvas, speed: 0.7 })
 }
+
+const keyboard = new KeyboardManager()
 
 type PlayerAnimations =
   | "Idle"
@@ -94,6 +97,8 @@ scene.addObject(player)
 scene.addObject(npc)
 scene.addObject(ball)
 
+keyboard.registerKeyPres("Space", () => followObject(player.node))
+
 const followObject = (node: Node): void => {
   const nodePosition = node.getWorldPosition()
   const nodeRotation = node.getWorldRotation()
@@ -139,10 +144,6 @@ const findCollision = (object: Object3D, translationVector: Vector3, colliders: 
 
 followObject(player.node)
 
-let wPressed = false
-let sPressed = false
-let aPressed = false
-let dPressed = false
 let i = 0
 
 const angle = Math.PI / 10
@@ -152,14 +153,14 @@ const speed = 6
 const dt = 0.15
 
 const getAnimation = (): PlayerAnimations => {
-  if (wPressed && aPressed) return "RunForwardLeft"
-  if (wPressed && dPressed) return "RunForwardRight"
-  if (sPressed && aPressed) return "RunBackwardLeft"
-  if (sPressed && dPressed) return "RunBackwardRight"
-  if (wPressed) return "RunForward"
-  if (sPressed) return "RunBackward"
-  if (aPressed) return "RunLeft"
-  if (dPressed) return "RunRight"
+  if (keyboard.isPressed("KeyW") && keyboard.isPressed("KeyA")) return "RunForwardLeft"
+  if (keyboard.isPressed("KeyW") && keyboard.isPressed("KeyD")) return "RunForwardRight"
+  if (keyboard.isPressed("KeyS") && keyboard.isPressed("KeyA")) return "RunBackwardLeft"
+  if (keyboard.isPressed("KeyS") && keyboard.isPressed("KeyD")) return "RunBackwardRight"
+  if (keyboard.isPressed("KeyW")) return "RunForward"
+  if (keyboard.isPressed("KeyS")) return "RunBackward"
+  if (keyboard.isPressed("KeyA")) return "RunLeft"
+  if (keyboard.isPressed("KeyD")) return "RunRight"
   return "Idle"
 }
 
@@ -167,10 +168,10 @@ const update = () => {
   const colliders = [net, npc]
   const movingVector = Vector3.zero()
 
-  if (wPressed) movingVector.add(new Vector3(0, 0, 1))
-  if (sPressed) movingVector.add(new Vector3(0, 0, -1))
-  if (aPressed) movingVector.add(new Vector3(1, 0, 0))
-  if (dPressed) movingVector.add(new Vector3(-1, 0, 0))
+  if (keyboard.isPressed("KeyW")) movingVector.add(new Vector3(0, 0, 1))
+  if (keyboard.isPressed("KeyS")) movingVector.add(new Vector3(0, 0, -1))
+  if (keyboard.isPressed("KeyA")) movingVector.add(new Vector3(1, 0, 0))
+  if (keyboard.isPressed("KeyD")) movingVector.add(new Vector3(-1, 0, 0))
 
   if (!movingVector.equal(Vector3.zero())) {
     movingVector.normalize().multiplyScalar(speed)
@@ -244,37 +245,4 @@ document.body.appendChild(renderer.gl.canvas)
 window.addEventListener("resize", () => {
   renderer.resize(window.innerWidth, window.innerHeight)
   camera.setOptions({ aspect: window.innerWidth / window.innerHeight })
-})
-
-window.addEventListener("keydown", (e) => {
-  if (e.key.toLowerCase() === "w") {
-    wPressed = true
-  }
-  if (e.key.toLowerCase() === "s") {
-    sPressed = true
-  }
-  if (e.key.toLowerCase() === "a") {
-    aPressed = true
-  }
-  if (e.key.toLowerCase() === "d") {
-    dPressed = true
-  }
-})
-
-window.addEventListener("keyup", (e) => {
-  if (e.key.toLowerCase() === "w") {
-    wPressed = false
-  }
-  if (e.key.toLowerCase() === "s") {
-    sPressed = false
-  }
-  if (e.key.toLowerCase() === "a") {
-    aPressed = false
-  }
-  if (e.key.toLowerCase() === "d") {
-    dPressed = false
-  }
-  if (e.key.toLowerCase() === " ") {
-    followObject(player.node)
-  }
 })
