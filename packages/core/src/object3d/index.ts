@@ -20,6 +20,7 @@ export type RigidBody = {
   readonly velocity: Vector3
   readonly angularVelocity: Vector3
   mass: number
+  restitution: number
 }
 
 export class Object3D<AnimationKeys extends string = string> implements RenderObject, RigidBody {
@@ -32,6 +33,7 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
   public readonly velocity: Vector3 = Vector3.zero()
   public readonly angularVelocity: Vector3 = Vector3.zero()
   public mass: number = Number.MAX_VALUE
+  public restitution: number = 0
 
   private readonly animations: Record<AnimationKeys, Animation>
 
