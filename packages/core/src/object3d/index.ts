@@ -19,6 +19,9 @@ export type RenderObject = {
 export type RigidBody = {
   readonly velocity: Vector3
   readonly angularVelocity: Vector3
+  readonly aabb: AABB
+  isMovable: boolean
+  colliders: RigidBody[]
   mass: number
   restitution: number
 }
@@ -32,8 +35,10 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
 
   public readonly velocity: Vector3 = Vector3.zero()
   public readonly angularVelocity: Vector3 = Vector3.zero()
+  public isMovable: boolean = true
   public mass: number = Number.MAX_VALUE
   public restitution: number = 0
+  public colliders: RigidBody[] = []
 
   private readonly animations: Record<AnimationKeys, Animation>
 

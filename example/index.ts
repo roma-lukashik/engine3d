@@ -67,26 +67,32 @@ const ball = await loadModel("models/ball.glb")
 const net = await loadModel("models/net.glb")
 
 court.frustumCulled = false
+court.isMovable = false
 court.restitution = 1
 court.mass = 1e10
 court.node.localMatrix = Matrix4.scaling(100, 100, 100).rotateY(Math.PI / 2)
 court.updateWorldMatrix()
 
+net.isMovable = false
 net.restitution = 0.15
 net.mass = 1e10
 net.node.localMatrix = Matrix4.scaling(4.5, 2.5, 3).translate(5, 0, 0).rotateY(Math.PI / 2)
 net.updateWorldMatrix()
 
 ball.mass = 0.1
-ball.restitution = 0.7
+ball.restitution = 0.6
+ball.colliders = [court, net, ...wall]
 ball.node.children[0].localMatrix.scale(7, 7, 7)
 ball.node.localMatrix = Matrix4.translation(0, 8, 1085)
 ball.updateWorldMatrix()
 
 player.frustumCulled = false
+player.isMovable = false
+player.colliders = [net, npc]
 player.node.localMatrix = Matrix4.translation(0, 88, 1200).rotateY(Math.PI)
 player.updateWorldMatrix()
 
+npc.isMovable = false
 npc.node.localMatrix = Matrix4.translation(0, 88, -1200)
 npc.updateWorldMatrix()
 
@@ -139,8 +145,8 @@ const followBall = () => {
   npc.updateWorldMatrix()
 }
 
-const move = (object: Object3D, translationVector: Vector3, colliders: Object3D[] = []) => {
-  const collision = findCollision(object, translationVector.clone().negate(), colliders)
+const move = (object: Object3D, translationVector: Vector3) => {
+  const collision = findCollision(object, translationVector.clone().negate())
   if (collision) {
     object.node.localMatrix.translateByVector(collision.add(translationVector))
   } else {
@@ -149,8 +155,8 @@ const move = (object: Object3D, translationVector: Vector3, colliders: Object3D[
   object.updateWorldMatrix()
 }
 
-const findCollision = (object: Object3D, translationVector: Vector3, colliders: Object3D[]) => {
-  for (const collider of colliders) {
+const findCollision = (object: Object3D, translationVector: Vector3) => {
+  for (const collider of object.colliders) {
     const overlap = continuousAABBCollisionDetection(object.aabb, collider.aabb, translationVector)
     if (overlap) {
       return overlap
@@ -164,11 +170,8 @@ followObject(player.node)
 let i = 0
 const angle = Math.PI / 10
 const power = 170
-const direction = Vector3.one()
 const speed = 6
 const dt = 0.15
-const colliders = [net, npc]
-const translationVector = Vector3.zero()
 
 const update = () => {
   const movingVector = Vector3.zero()
@@ -182,57 +185,59 @@ const update = () => {
 
   if (!movingVector.equal(Vector3.zero())) {
     movingVector.normalize().multiplyScalar(speed)
-    move(player, movingVector, colliders)
+    move(player, movingVector)
   }
 
-  const radius = ball.aabb.max.clone().subtract(ball.aabb.min).length() / 8000
-  const forces = calculateForces(ball, radius)
-  const acceleration = forces.divideScalar(ball.mass)
-  const deltaVelocity = acceleration.multiplyScalar(dt)
-  ball.velocity.add(deltaVelocity)
-
-  const dx = ball.velocity.clone().multiplyScalar(dt)
-  translationVector.copy(dx)
-
-  ;[court, net].forEach((object) => {
-    const overlap = continuousAABBCollisionDetection(ball.aabb, object.aabb, dx)
-    if (!overlap) {
+  scene.objects.forEach((rigidBody) => {
+    if (!rigidBody.isMovable) {
       return
     }
-    const n = overlap.clone().normalize()
-    const reducedMass = ball.mass * object.mass / (ball.mass + object.mass)
-    const impactSpeed = n.dot(ball.velocity.clone().subtract(object.velocity))
-    const impulseMagnitude = (1 + ball.restitution * object.restitution) * reducedMass * impactSpeed
-    const deltaBallVelocity = n.clone().multiplyScalar(-impulseMagnitude / ball.mass)
-    const deltaObjectVelocity = n.clone().multiplyScalar(impulseMagnitude / object.mass)
-    ball.velocity.add(deltaBallVelocity)
-    object.velocity.add(deltaObjectVelocity)
-    translationVector.subtract(overlap)
+
+    const radius = rigidBody.aabb.max.clone().subtract(rigidBody.aabb.min).length() / 8000
+    const forces = calculateForces(rigidBody, radius)
+    const acceleration = forces.divideScalar(rigidBody.mass)
+    const deltaVelocity = acceleration.multiplyScalar(dt)
+    rigidBody.velocity.add(deltaVelocity)
+    const dx = rigidBody.velocity.clone().multiplyScalar(dt)
+    rigidBody.node.localMatrix.translateByVector(dx)
+
+    rigidBody.colliders.forEach((collider) => {
+      const overlap = continuousAABBCollisionDetection(rigidBody.aabb, collider.aabb, dx)
+      if (!overlap) {
+        return
+      }
+      const contactNormal = overlap.clone().normalize()
+      const reducedMass = rigidBody.mass * collider.mass / (rigidBody.mass + collider.mass)
+      const impactSpeed = contactNormal.dot(rigidBody.velocity.clone().subtract(collider.velocity))
+      const impulseMagnitude = (1 + rigidBody.restitution * collider.restitution) * reducedMass * impactSpeed
+      const deltaRigidBodyVelocity = contactNormal.clone().multiplyScalar(-impulseMagnitude / rigidBody.mass)
+      const deltaColliderVelocity = contactNormal.multiplyScalar(impulseMagnitude / collider.mass)
+
+      rigidBody.velocity.add(deltaRigidBodyVelocity)
+      rigidBody.node.localMatrix.translateByVector(overlap.negate())
+
+      collider.velocity.add(deltaColliderVelocity)
+    })
   })
 
-  const npcOverlap = continuousAABBCollisionDetection(ball.aabb, npc.aabb, dx, [new Vector3(0, 0, 1)])
-  if (npcOverlap) {
-    direction.reflect(npcOverlap)
-    translationVector.subtract(npcOverlap)
-
-    ball.velocity.set(0, Math.sin(angle), Math.cos(angle)).multiply(direction).multiplyScalar(power)
+  if (ball.aabb.collide(npc.aabb)) {
+    ball.velocity.set(0, Math.sin(angle), Math.cos(angle)).multiplyScalar(power)
     ball.angularVelocity.set(0, 5000 * (Math.random() - 0.5), 0)
   }
 
-  const approachSpeed = movingVector.clone().negate().add(dx)
-  const playerOverlap = continuousAABBCollisionDetection(player.aabb, ball.aabb, approachSpeed, [new Vector3(0, 0, 1)])
-  if (playerOverlap) {
-    direction.reflect(playerOverlap)
-    translationVector.subtract(playerOverlap)
-
-    ball.velocity.set(0, Math.sin(angle), Math.cos(angle)).multiply(direction).multiplyScalar(power)
+  if (ball.aabb.collide(player.aabb)) {
+    ball.velocity.set(0, Math.sin(angle), -Math.cos(angle)).multiplyScalar(power)
     ball.angularVelocity.set(0, 5000 * (Math.random() - 0.5), 0)
   }
 
-  // Assume, that if velocity magnitude less than 1, the ball stops
+  scene.objects.forEach((rigidBody) => {
+    // Assume, that if velocity magnitude less than 1, the body is not moving
+    if (rigidBody.velocity.lengthSquared() > 1) {
+      rigidBody.updateWorldMatrix()
+    }
+  })
+
   if (ball.velocity.lengthSquared() > 1) {
-    ball.node.localMatrix.translateByVector(translationVector)
-    ball.updateWorldMatrix()
     followBall()
   }
 
