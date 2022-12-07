@@ -5,7 +5,7 @@ import { ShadowMap, ShadowMapRenderer } from "@webgl/renderer/shadow"
 import { RenderState } from "@webgl/utils/state"
 import { Mesh } from "@core/mesh"
 import { RenderCache } from "@webgl/renderer/cache"
-import { Object3D } from "@core/object3d"
+import { RenderObject } from "@core/object3d"
 
 export class MeshRenderer {
   private readonly gl: WebGLRenderingContext
@@ -26,7 +26,7 @@ export class MeshRenderer {
     this.shadowMapRenderer = shadowRenderer
   }
 
-  public render(renderStack: Object3D[], scene: Scene, camera: Camera): void {
+  public render(renderStack: RenderObject[], scene: Scene, camera: Camera): void {
     const shadowMap = this.shadowMapRenderer.create(scene)
 
     this.gl.depthMask(true)

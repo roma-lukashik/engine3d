@@ -1,15 +1,15 @@
 import { Scene } from "@webgl/scene"
 import { Matrix4 } from "@math/matrix4"
 import { Frustum } from "@geometry/frustum"
-import { Object3D } from "@core/object3d"
+import { RenderObject } from "@core/object3d"
 
 type CameraLike = {
   projectionMatrix: Matrix4
 }
 
-export const getRenderStack = (scene: Scene, camera: CameraLike): Object3D[] => {
+export const getRenderStack = (scene: Scene, camera: CameraLike): RenderObject[] => {
   const frustum = Frustum.fromProjectionMatrix(camera.projectionMatrix)
-  const renderStack: Object3D[] = []
+  const renderStack: RenderObject[] = []
   scene.objects.forEach((object) => {
     if (!object.frustumCulled || frustum.intersectAABB(object.aabb)) {
       renderStack.push(object)

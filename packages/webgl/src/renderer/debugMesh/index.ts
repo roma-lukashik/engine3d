@@ -7,7 +7,7 @@ import { BufferViewTarget } from "@core/loaders/types"
 import { Vector3 } from "@math/vector3"
 import { Quaternion } from "@math/quaternion"
 import { indexes, positions } from "@webgl/renderer/debugMesh/data"
-import { Object3D } from "@core/object3d"
+import { RenderObject } from "@core/object3d"
 import { RGB } from "@core/color/rgb"
 
 export class DebugMeshRenderer {
@@ -36,7 +36,7 @@ export class DebugMeshRenderer {
     })
   }
 
-  public render(object: Object3D, camera: Camera): void {
+  public render(object: RenderObject, camera: Camera): void {
     const min = object.aabb.min
     const max = object.aabb.max
     const translation = max.clone().add(min).divideScalar(2)
