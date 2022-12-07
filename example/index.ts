@@ -13,7 +13,7 @@ import { Vector3 } from "@math/vector3"
 import { Matrix4 } from "@math/matrix4"
 import { Object3D } from "@core/object3d"
 
-import { calculateForces } from "./physics"
+import { Physics } from "./physics"
 import { continuousAABBCollisionDetection } from "./sat"
 
 const camera = new PerspectiveCamera({
@@ -69,19 +69,18 @@ const net = await loadModel("models/net.glb")
 court.frustumCulled = false
 court.isMovable = false
 court.restitution = 1
-court.mass = 1e10
 court.node.localMatrix = Matrix4.scaling(100, 100, 100).rotateY(Math.PI / 2)
 court.updateWorldMatrix()
 
 net.isMovable = false
 net.restitution = 0.15
-net.mass = 1e10
 net.node.localMatrix = Matrix4.scaling(4.5, 2.5, 3).translate(5, 0, 0).rotateY(Math.PI / 2)
 net.updateWorldMatrix()
 
 ball.mass = 0.1
+ball.airFriction = 0.001
 ball.restitution = 0.6
-ball.colliders = [court, net, ...wall]
+ball.colliders = [court, net]
 ball.node.children[0].localMatrix.scale(7, 7, 7)
 ball.node.localMatrix = Matrix4.translation(0, 8, 1085)
 ball.updateWorldMatrix()
@@ -193,8 +192,7 @@ const update = () => {
       return
     }
 
-    const radius = rigidBody.aabb.max.clone().subtract(rigidBody.aabb.min).length() / 8000
-    const forces = calculateForces(rigidBody, radius)
+    const forces = physics.calculateForces(rigidBody)
     const acceleration = forces.divideScalar(rigidBody.mass)
     const deltaVelocity = acceleration.multiplyScalar(dt)
     rigidBody.velocity.add(deltaVelocity)
@@ -222,17 +220,17 @@ const update = () => {
 
   if (ball.aabb.collide(npc.aabb)) {
     ball.velocity.set(0, Math.sin(angle), Math.cos(angle)).multiplyScalar(power)
-    ball.angularVelocity.set(0, 5000 * (Math.random() - 0.5), 0)
+    ball.angularVelocity.set(0, 50 * (Math.random() - 0.5), 0)
   }
 
   if (ball.aabb.collide(player.aabb)) {
     ball.velocity.set(0, Math.sin(angle), -Math.cos(angle)).multiplyScalar(power)
-    ball.angularVelocity.set(0, 5000 * (Math.random() - 0.5), 0)
+    ball.angularVelocity.set(0, 50 * (Math.random() - 0.5), 0)
   }
 
   scene.objects.forEach((rigidBody) => {
     // Assume, that if velocity magnitude less than 1, the body is not moving
-    if (rigidBody.velocity.lengthSquared() > 1) {
+    if (rigidBody.isMovable && rigidBody.velocity.lengthSquared() > 1) {
       rigidBody.updateWorldMatrix()
     }
   })

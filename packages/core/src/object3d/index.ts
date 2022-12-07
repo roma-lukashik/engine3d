@@ -24,6 +24,8 @@ export type RigidBody = {
   colliders: RigidBody[]
   mass: number
   restitution: number
+  friction: number
+  airFriction: number
 }
 
 export class Object3D<AnimationKeys extends string = string> implements RenderObject, RigidBody {
@@ -38,6 +40,8 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
   public isMovable: boolean = true
   public mass: number = Number.MAX_VALUE
   public restitution: number = 0
+  public friction: number = 0.01
+  public airFriction: number = 0.001
   public colliders: RigidBody[] = []
 
   private readonly animations: Record<AnimationKeys, Animation>
