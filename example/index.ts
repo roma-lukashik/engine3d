@@ -43,6 +43,8 @@ renderer.gl.canvas.onclick = () => {
   new CameraControl({ camera, element: renderer.gl.canvas, speed: 0.7 })
 }
 
+const physics = new PhysicsEngine()
+
 const keyboard = new KeyboardManager()
 
 type PlayerAnimations =
@@ -81,18 +83,19 @@ net.updateWorldMatrix()
 ball.mass = 0.1
 ball.airFriction = 0.001
 ball.restitution = 0.6
-ball.colliders = [court, net]
+ball.colliders = [court, net, ...wall]
 ball.node.children[0].localMatrix.scale(7, 7, 7)
 ball.node.localMatrix = Matrix4.translation(0, 8, 1085)
 ball.updateWorldMatrix()
 
 player.frustumCulled = false
-player.isMovable = false
-player.colliders = [net, npc]
+player.mass = 70
+player.colliders = [net, npc, court]
 player.node.localMatrix = Matrix4.translation(0, 88, 1200).rotateY(Math.PI)
 player.updateWorldMatrix()
 
-npc.isMovable = false
+npc.mass = 70
+npc.colliders = [court]
 npc.node.localMatrix = Matrix4.translation(0, 88, -1200)
 npc.updateWorldMatrix()
 
@@ -145,48 +148,27 @@ const followBall = () => {
   npc.updateWorldMatrix()
 }
 
-const move = (object: Object3D, translationVector: Vector3) => {
-  const collision = findCollision(object, translationVector.clone().negate())
-  if (collision) {
-    object.node.localMatrix.translateByVector(collision.add(translationVector))
-  } else {
-    object.node.localMatrix.translateByVector(translationVector)
-  }
-  object.updateWorldMatrix()
-}
-
-const findCollision = (object: Object3D, translationVector: Vector3) => {
-  for (const collider of object.colliders) {
-    const overlap = continuousAABBCollisionDetection(object.aabb, collider.aabb, translationVector)
-    if (overlap) {
-      return overlap
-    }
-  }
-  return
-}
-
 followObject(player.node)
 
 let i = 0
 const angle = Math.PI / 10
 const power = 170
-const speed = 6
+const speed = 30
 const dt = 0.15
 
 const update = () => {
-  const movingVector = Vector3.zero()
+  player.velocity.set(0, 0, 0)
 
-  if (keyboard.isPressed("KeyW")) movingVector.add(new Vector3(0, 0, 1))
-  if (keyboard.isPressed("KeyS")) movingVector.add(new Vector3(0, 0, -1))
-  if (keyboard.isPressed("KeyA")) movingVector.add(new Vector3(1, 0, 0))
-  if (keyboard.isPressed("KeyD")) movingVector.add(new Vector3(-1, 0, 0))
+  if (keyboard.isPressed("KeyW")) player.velocity.add(new Vector3(0, 0, 1))
+  if (keyboard.isPressed("KeyS")) player.velocity.add(new Vector3(0, 0, -1))
+  if (keyboard.isPressed("KeyA")) player.velocity.add(new Vector3(1, 0, 0))
+  if (keyboard.isPressed("KeyD")) player.velocity.add(new Vector3(-1, 0, 0))
+
+  if (!player.velocity.equal(Vector3.zero())) {
+    player.velocity.normalize().multiplyScalar(speed)
+  }
 
   player.animate(getAnimation(), i += 0.02)
-
-  if (!movingVector.equal(Vector3.zero())) {
-    movingVector.normalize().multiplyScalar(speed)
-    move(player, movingVector)
-  }
 
   scene.objects.forEach((rigidBody) => {
     if (!rigidBody.isMovable) {
