@@ -1,12 +1,12 @@
-import { Vector3 } from "@engine3d/math/src/vector3"
 import { RigidBody } from "@core/object3d"
+import { Vector3 } from "@math/vector3"
 
 type Props = {
   gravity?: Vector3
   airDensity?: number
 }
 
-export class Physics {
+export class PhysicsEngine {
   private readonly gravity: Vector3
   private airDensity: number
 

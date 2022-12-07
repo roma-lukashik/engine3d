@@ -13,7 +13,8 @@ import { Vector3 } from "@math/vector3"
 import { Matrix4 } from "@math/matrix4"
 import { Object3D } from "@core/object3d"
 
-import { Physics } from "./physics"
+import { PhysicsEngine } from "@physics/engine"
+
 import { continuousAABBCollisionDetection } from "./sat"
 
 const camera = new PerspectiveCamera({

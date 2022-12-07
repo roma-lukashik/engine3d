@@ -66,6 +66,9 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
   }
 
   public animate(key: AnimationKeys, time: number): void {
+    if (!this.animations[key]) {
+      return
+    }
     this.animations[key].update(time)
     this.meshes.forEach((mesh) => mesh.updateSkeleton())
     this.updateWorldMatrix()

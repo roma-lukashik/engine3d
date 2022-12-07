@@ -8,6 +8,7 @@
       "@webgl/*": ["../packages/webgl/src/*"],
       "@core/*": ["../packages/core/src/*"],
       "@math/*": ["../packages/math/src/*"],
+      "@physics/*": ["../packages/physics/src/*"],
       "@geometry/*": ["../packages/geometry/src/*"],
       "@utils/*": ["../packages/utils/src/*"]
     },
