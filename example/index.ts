@@ -15,8 +15,6 @@ import { Object3D } from "@core/object3d"
 
 import { PhysicsEngine } from "@physics/engine"
 
-import { continuousAABBCollisionDetection } from "./sat"
-
 const camera = new PerspectiveCamera({
   aspect: window.innerWidth / window.innerHeight,
   fovy: toRadian(30),
@@ -43,7 +41,7 @@ renderer.gl.canvas.onclick = () => {
   new CameraControl({ camera, element: renderer.gl.canvas, speed: 0.7 })
 }
 
-const physics = new PhysicsEngine()
+const physics = new PhysicsEngine({ deltaTime: 0.2 })
 
 const keyboard = new KeyboardManager()
 
@@ -68,6 +66,20 @@ const npc = await loadModel<PlayerAnimations>("models/player.glb")
 const court = await loadModel("models/court.glb")
 const ball = await loadModel("models/ball.glb")
 const net = await loadModel("models/net.glb")
+const box = await loadModel("models/box.glb")
+const box2 = await loadModel("models/box.glb")
+const box3 = await loadModel("models/box.glb")
+const box4 = await loadModel("models/box.glb")
+const box5 = await loadModel("models/box.glb")
+const box6 = await loadModel("models/box.glb")
+const box7 = await loadModel("models/box.glb")
+const box8 = await loadModel("models/box.glb")
+const box9 = await loadModel("models/box.glb")
+
+const wall = [
+  box, box2, box3, box4,
+  box5, box6, box7, box8, box9,
+]
 
 court.frustumCulled = false
 court.isMovable = false
@@ -91,13 +103,29 @@ ball.updateWorldMatrix()
 player.frustumCulled = false
 player.mass = 70
 player.colliders = [net, npc, court]
-player.node.localMatrix = Matrix4.translation(0, 88, 1200).rotateY(Math.PI)
+player.node.children[0].localMatrix.rotateY(Math.PI)
+player.node.localMatrix = Matrix4.translation(0, 88, 1200)
 player.updateWorldMatrix()
 
 npc.mass = 70
 npc.colliders = [court]
 npc.node.localMatrix = Matrix4.translation(0, 88, -1200)
 npc.updateWorldMatrix()
+
+box.node.localMatrix.translate(0, 0, 100)
+box2.node.localMatrix.translate(20, 0, 100)
+box3.node.localMatrix.translate(-20, 0, 100)
+box4.node.localMatrix.translate(-20, 20, 100)
+box5.node.localMatrix.translate(20, 20, 100)
+box6.node.localMatrix.translate(0, 20, 100)
+box7.node.localMatrix.translate(-20, 40, 100)
+box8.node.localMatrix.translate(20, 40, 100)
+box9.node.localMatrix.translate(0, 40, 100)
+wall.forEach((b) => {
+  b.mass = 0.05
+  b.colliders = [court, net, ball, ...wall.filter((x) => x !== b)]
+  b.updateWorldMatrix()
+})
 
 const scene = new Scene()
 scene.addLight(
@@ -110,6 +138,7 @@ scene.addObject(net)
 scene.addObject(player)
 scene.addObject(npc)
 scene.addObject(ball)
+wall.forEach((box) => scene.addObject(box))
 
 keyboard.registerKeyPres("Space", () => followObject(player.node))
 
@@ -128,7 +157,7 @@ const getAnimation = (): PlayerAnimations => {
 const followObject = (node: Node): void => {
   const nodePosition = node.getWorldPosition()
   const nodeRotation = node.getWorldRotation()
-  const from = new Vector3(0, 700, -1500)
+  const from = new Vector3(0, 700, 1500)
   const up = new Vector3(0, 150, 0)
   camera.setPosition(from.rotateByQuaternion(nodeRotation).add(nodePosition))
   camera.lookAt(up.add(nodePosition))
@@ -154,15 +183,14 @@ let i = 0
 const angle = Math.PI / 10
 const power = 170
 const speed = 30
-const dt = 0.15
 
 const update = () => {
   player.velocity.set(0, 0, 0)
 
-  if (keyboard.isPressed("KeyW")) player.velocity.add(new Vector3(0, 0, 1))
-  if (keyboard.isPressed("KeyS")) player.velocity.add(new Vector3(0, 0, -1))
-  if (keyboard.isPressed("KeyA")) player.velocity.add(new Vector3(1, 0, 0))
-  if (keyboard.isPressed("KeyD")) player.velocity.add(new Vector3(-1, 0, 0))
+  if (keyboard.isPressed("KeyW")) player.velocity.add(new Vector3(0, 0, -1))
+  if (keyboard.isPressed("KeyS")) player.velocity.add(new Vector3(0, 0, 1))
+  if (keyboard.isPressed("KeyA")) player.velocity.add(new Vector3(-1, 0, 0))
+  if (keyboard.isPressed("KeyD")) player.velocity.add(new Vector3(1, 0, 0))
 
   if (!player.velocity.equal(Vector3.zero())) {
     player.velocity.normalize().multiplyScalar(speed)
@@ -170,36 +198,9 @@ const update = () => {
 
   player.animate(getAnimation(), i += 0.02)
 
-  scene.objects.forEach((rigidBody) => {
-    if (!rigidBody.isMovable) {
-      return
-    }
-
-    const forces = physics.calculateForces(rigidBody)
-    const acceleration = forces.divideScalar(rigidBody.mass)
-    const deltaVelocity = acceleration.multiplyScalar(dt)
-    rigidBody.velocity.add(deltaVelocity)
-    const dx = rigidBody.velocity.clone().multiplyScalar(dt)
-    rigidBody.node.localMatrix.translateByVector(dx)
-
-    rigidBody.colliders.forEach((collider) => {
-      const overlap = continuousAABBCollisionDetection(rigidBody.aabb, collider.aabb, dx)
-      if (!overlap) {
-        return
-      }
-      const contactNormal = overlap.clone().normalize()
-      const reducedMass = rigidBody.mass * collider.mass / (rigidBody.mass + collider.mass)
-      const impactSpeed = contactNormal.dot(rigidBody.velocity.clone().subtract(collider.velocity))
-      const impulseMagnitude = (1 + rigidBody.restitution * collider.restitution) * reducedMass * impactSpeed
-      const deltaRigidBodyVelocity = contactNormal.clone().multiplyScalar(-impulseMagnitude / rigidBody.mass)
-      const deltaColliderVelocity = contactNormal.multiplyScalar(impulseMagnitude / collider.mass)
-
-      rigidBody.velocity.add(deltaRigidBodyVelocity)
-      rigidBody.node.localMatrix.translateByVector(overlap.negate())
-
-      collider.velocity.add(deltaColliderVelocity)
-    })
-  })
+  if (ball.velocity.lengthSquared() > 1) {
+    followBall()
+  }
 
   if (ball.aabb.collide(npc.aabb)) {
     ball.velocity.set(0, Math.sin(angle), Math.cos(angle)).multiplyScalar(power)
@@ -211,17 +212,7 @@ const update = () => {
     ball.angularVelocity.set(0, 50 * (Math.random() - 0.5), 0)
   }
 
-  scene.objects.forEach((rigidBody) => {
-    // Assume, that if velocity magnitude less than 1, the body is not moving
-    if (rigidBody.isMovable && rigidBody.velocity.lengthSquared() > 1) {
-      rigidBody.updateWorldMatrix()
-    }
-  })
-
-  if (ball.velocity.lengthSquared() > 1) {
-    followBall()
-  }
-
+  physics.run(scene.objects)
   renderer.render(scene, camera)
   requestAnimationFrame(update)
 }

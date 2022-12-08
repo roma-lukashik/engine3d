@@ -17,6 +17,7 @@ export type RenderObject = {
 }
 
 export type RigidBody = {
+  readonly node: Node
   readonly velocity: Vector3
   readonly angularVelocity: Vector3
   readonly aabb: AABB
@@ -26,6 +27,7 @@ export type RigidBody = {
   restitution: number
   friction: number
   airFriction: number
+  updateWorldMatrix(): void
 }
 
 export class Object3D<AnimationKeys extends string = string> implements RenderObject, RigidBody {

@@ -1,6 +1,6 @@
-import { Vector3 } from "@engine3d/math/src/vector3"
-import { AABB } from "@engine3d/geometry/src/bbox/aabb"
-import { gte, lte, neq } from "@engine3d/math/src/operators"
+import { Vector3 } from "@math/vector3"
+import { AABB } from "@geometry/bbox/aabb"
+import { gte, lte, neq } from "@math/operators"
 import { EPS } from "@math/constants"
 
 const axes = [
