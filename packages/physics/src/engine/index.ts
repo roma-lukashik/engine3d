@@ -1,6 +1,7 @@
 import { RigidBody } from "@core/object3d"
 import { Vector3 } from "@math/vector3"
 import { continuousAABBCollisionDetection } from "@physics/sat"
+import { lt } from "@math/operators"
 
 type Props = {
   gravity?: Vector3
@@ -35,11 +36,8 @@ export class PhysicsEngine {
           return
         }
         const contactNormal = penetration.clone().normalize()
-        const impulseMagnitude = this.calculateImpulseMagnitude(rigidBody, collider, contactNormal)
-        const deltaRigidBodyVelocity = contactNormal.clone().multiplyScalar(-impulseMagnitude / rigidBody.mass)
-        const deltaColliderVelocity = contactNormal.multiplyScalar(impulseMagnitude / collider.mass)
-        rigidBody.velocity.add(deltaRigidBodyVelocity)
-        collider.velocity.add(deltaColliderVelocity)
+        this.applyImpulse(rigidBody, collider, contactNormal)
+        this.applyFrictionImpulse(rigidBody, collider, contactNormal)
         deltaPosition.subtract(penetration)
       })
       rigidBody.node.localMatrix.translateByVector(deltaPosition)
@@ -91,9 +89,34 @@ export class PhysicsEngine {
       .multiplyScalar(0.01 * airFriction * this.airDensity)
   }
 
-  private calculateImpulseMagnitude(rigidBodyA: RigidBody, rigidBodyB: RigidBody, contactNormal: Vector3): number {
-    const reducedMass = rigidBodyA.mass * rigidBodyB.mass / (rigidBodyA.mass + rigidBodyB.mass)
-    const impactSpeed = contactNormal.dot(rigidBodyA.velocity.clone().subtract(rigidBodyB.velocity))
-    return (1 + rigidBodyA.restitution * rigidBodyB.restitution) * reducedMass * impactSpeed
+  private applyImpulse(a: RigidBody, b: RigidBody, contactNormal: Vector3): void {
+    const relativeVelocity = a.velocity.clone().subtract(b.velocity)
+    const impactSpeed = contactNormal.dot(relativeVelocity)
+    const commonRestitution = 1 + a.restitution * b.restitution
+    const reducedMass = a.invMass + b.invMass
+    const impulseMagnitude = commonRestitution * impactSpeed / reducedMass
+    const impulse = contactNormal.clone().multiplyScalar(impulseMagnitude)
+
+    a.velocity.subtract(impulse.clone().multiplyScalar(a.invMass))
+    b.velocity.add(impulse.clone().multiplyScalar(b.invMass))
+  }
+
+  private applyFrictionImpulse(a: RigidBody, b: RigidBody, contactNormal: Vector3): void {
+    const relativeVelocity = b.velocity.clone().subtract(a.velocity)
+    const tangent = relativeVelocity.clone().cross(contactNormal).cross(contactNormal).normalize()
+    const reducedMass = a.invMass + b.invMass
+    const impulseMagnitude = tangent.dot(relativeVelocity) / reducedMass
+    const commonStaticFriction = a.staticFriction * b.staticFriction
+    const frictionImpulse = Vector3.zero()
+    // Should be: Math.abs(impulseMagnitude) < impulse * commonStaticFriction
+    if (lt(Math.abs(impulseMagnitude), impulseMagnitude * commonStaticFriction)) {
+      frictionImpulse.copy(tangent.multiplyScalar(impulseMagnitude))
+    } else {
+      const commonDynamicFriction = a.friction * b.friction
+      frictionImpulse.copy(tangent.multiplyScalar(-commonDynamicFriction * impulseMagnitude))
+    }
+
+    a.velocity.subtract(frictionImpulse.clone().multiplyScalar(a.invMass))
+    b.velocity.add(frictionImpulse.clone().multiplyScalar(b.invMass))
   }
 }

@@ -15,6 +15,8 @@ import { Object3D } from "@core/object3d"
 
 import { PhysicsEngine } from "@physics/engine"
 
+import { timesMap } from "@utils/array"
+
 const camera = new PerspectiveCamera({
   aspect: window.innerWidth / window.innerHeight,
   fovy: toRadian(30),
@@ -66,20 +68,7 @@ const npc = await loadModel<PlayerAnimations>("models/player.glb")
 const court = await loadModel("models/court.glb")
 const ball = await loadModel("models/ball.glb")
 const net = await loadModel("models/net.glb")
-const box = await loadModel("models/box.glb")
-const box2 = await loadModel("models/box.glb")
-const box3 = await loadModel("models/box.glb")
-const box4 = await loadModel("models/box.glb")
-const box5 = await loadModel("models/box.glb")
-const box6 = await loadModel("models/box.glb")
-const box7 = await loadModel("models/box.glb")
-const box8 = await loadModel("models/box.glb")
-const box9 = await loadModel("models/box.glb")
-
-const wall = [
-  box, box2, box3, box4,
-  box5, box6, box7, box8, box9,
-]
+const wall = await Promise.all(timesMap(9, () => loadModel("models/box.glb")))
 
 court.frustumCulled = false
 court.isMovable = false
@@ -92,7 +81,7 @@ net.restitution = 0.15
 net.node.localMatrix = Matrix4.scaling(4.5, 2.5, 3).translate(5, 0, 0).rotateY(Math.PI / 2)
 net.updateWorldMatrix()
 
-ball.mass = 0.1
+ball.setMass(0.1)
 ball.airFriction = 0.001
 ball.restitution = 0.6
 ball.colliders = [court, net, ...wall]
@@ -101,28 +90,30 @@ ball.node.localMatrix = Matrix4.translation(0, 8, 1085)
 ball.updateWorldMatrix()
 
 player.frustumCulled = false
-player.mass = 70
+player.setMass(70)
 player.colliders = [net, npc, court]
 player.node.children[0].localMatrix.rotateY(Math.PI)
 player.node.localMatrix = Matrix4.translation(0, 88, 1200)
 player.updateWorldMatrix()
 
-npc.mass = 70
+npc.setMass(70)
 npc.colliders = [court]
 npc.node.localMatrix = Matrix4.translation(0, 88, -1200)
 npc.updateWorldMatrix()
 
-box.node.localMatrix.translate(0, 0, 100)
-box2.node.localMatrix.translate(20, 0, 100)
-box3.node.localMatrix.translate(-20, 0, 100)
-box4.node.localMatrix.translate(-20, 20, 100)
-box5.node.localMatrix.translate(20, 20, 100)
-box6.node.localMatrix.translate(0, 20, 100)
-box7.node.localMatrix.translate(-20, 40, 100)
-box8.node.localMatrix.translate(20, 40, 100)
-box9.node.localMatrix.translate(0, 40, 100)
+wall[0].node.localMatrix.translate(0, 0, 100)
+wall[1].node.localMatrix.translate(20, 0, 100)
+wall[2].node.localMatrix.translate(-20, 0, 100)
+wall[3].node.localMatrix.translate(-20, 20, 100)
+wall[4].node.localMatrix.translate(20, 20, 100)
+wall[5].node.localMatrix.translate(0, 20, 100)
+wall[6].node.localMatrix.translate(-20, 40, 100)
+wall[7].node.localMatrix.translate(20, 40, 100)
+wall[8].node.localMatrix.translate(0, 40, 100)
 wall.forEach((b) => {
-  b.mass = 0.05
+  b.setMass(0.05)
+  b.friction = 0.5
+  b.staticFriction = 0.8
   b.colliders = [court, net, ball, ...wall.filter((x) => x !== b)]
   b.updateWorldMatrix()
 })

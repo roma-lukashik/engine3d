@@ -121,6 +121,10 @@ describe("Vector3", () => {
     expect(a.normalize()).toValueEqual([0.267, 0.534, 0.802])
   })
 
+  it("normalize of zero vector is zero vector", () => {
+    expect(Vector3.zero().normalize()).toValueEqual([0, 0, 0])
+  })
+
   it("negate", () => {
     expect(a.negate()).toValueEqual([-1, -2, -3])
   })

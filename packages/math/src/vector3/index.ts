@@ -1,4 +1,4 @@
-import { eq } from "@math/operators"
+import { eq, zero } from "@math/operators"
 import type { Matrix4 } from "@math/matrix4"
 import type { Quaternion } from "@math/quaternion"
 
@@ -137,7 +137,8 @@ export class Vector3 {
   }
 
   public normalize(): this {
-    return this.divideScalar(this.length())
+    const length = this.length()
+    return zero(length) ? this.set(0) : this.divideScalar(length)
   }
 
   public negate(): this {

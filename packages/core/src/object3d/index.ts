@@ -7,6 +7,7 @@ import { TypedArray } from "@core/types"
 import { Geometry } from "@core/geometry"
 import { TypedArrayByComponentType } from "@core/bufferAttribute/utils"
 import { Vector3 } from "@math/vector3"
+import { zero } from "@math/operators"
 
 export type RenderObject = {
   readonly node: Node
@@ -21,12 +22,15 @@ export type RigidBody = {
   readonly velocity: Vector3
   readonly angularVelocity: Vector3
   readonly aabb: AABB
+  readonly mass: number
+  readonly invMass: number
   isMovable: boolean
   colliders: RigidBody[]
-  mass: number
   restitution: number
   friction: number
+  staticFriction: number
   airFriction: number
+  setMass(mass: number): void
   updateWorldMatrix(): void
 }
 
@@ -41,8 +45,10 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
   public readonly angularVelocity: Vector3 = Vector3.zero()
   public isMovable: boolean = true
   public mass: number = Number.MAX_SAFE_INTEGER
+  public invMass: number = 1 / this.mass
   public restitution: number = 0
-  public friction: number = 0.01
+  public friction: number = 0.1
+  public staticFriction: number = 0.5
   public airFriction: number = 0.001
   public colliders: RigidBody[] = []
 
@@ -65,6 +71,11 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
       }
     })
     this.updateAABB()
+  }
+
+  public setMass(mass: number): void {
+    this.mass = mass
+    this.invMass = zero(mass) ? 0 : (1 / mass)
   }
 
   public animate(key: AnimationKeys, time: number): void {
