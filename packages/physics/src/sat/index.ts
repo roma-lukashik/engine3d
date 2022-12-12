@@ -9,12 +9,17 @@ const axes = [
   new Vector3(0, 0, 1),
 ]
 
+type Manifold = {
+  penetration: number
+  axis: Vector3
+}
+
 export const continuousAABBCollisionDetection = (
   movableBox: AABB,
   staticBox: AABB,
   movementVector: Vector3,
   resolvingAxes: Vector3[] = [movementVector],
-): Vector3 | undefined => {
+): Manifold | undefined => {
   const expandedMovableBox = expandBoxTowardMovementVector(movableBox, movementVector)
   const tests = []
   for (let i = 0; i < axes.length; i++) {
@@ -37,7 +42,7 @@ export const continuousAABBCollisionDetection = (
     return
   }
   const { axis, overlap } = tests.reduce((a, b) => a.overlap < b.overlap ? a : b)
-  return axis.clone().multiplyScalar(overlap * (1 + EPS))
+  return { axis, penetration: overlap * (1 + EPS) }
 }
 
 const expandBoxTowardMovementVector = (box: AABB, movementVector: Vector3): AABB => {

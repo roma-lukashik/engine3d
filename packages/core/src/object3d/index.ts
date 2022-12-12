@@ -48,7 +48,7 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
   public invMass: number = 1 / this.mass
   public restitution: number = 0
   public friction: number = 0.1
-  public staticFriction: number = 0.5
+  public staticFriction: number = 0.2
   public airFriction: number = 0.001
   public colliders: RigidBody[] = []
 

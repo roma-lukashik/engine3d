@@ -113,7 +113,7 @@ wall[8].node.localMatrix.translate(0, 40, 100)
 wall.forEach((b) => {
   b.setMass(0.05)
   b.friction = 0.5
-  b.staticFriction = 0.8
+  b.staticFriction = 0.9
   b.colliders = [court, net, ball, ...wall.filter((x) => x !== b)]
   b.updateWorldMatrix()
 })
@@ -195,12 +195,12 @@ const update = () => {
 
   if (ball.aabb.collide(npc.aabb)) {
     ball.velocity.set(0, Math.sin(angle), Math.cos(angle)).multiplyScalar(power)
-    ball.angularVelocity.set(0, 50 * (Math.random() - 0.5), 0)
+    // ball.angularVelocity.set(0, 50 * (Math.random() - 0.5), 0)
   }
 
   if (ball.aabb.collide(player.aabb)) {
     ball.velocity.set(0, Math.sin(angle), -Math.cos(angle)).multiplyScalar(power)
-    ball.angularVelocity.set(0, 50 * (Math.random() - 0.5), 0)
+    // ball.angularVelocity.set(0, 50 * (Math.random() - 0.5), 0)
   }
 
   physics.run(scene.objects)
