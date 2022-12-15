@@ -292,7 +292,7 @@ export class Matrix4 {
 
     const det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06
     if (!det) {
-      return this.set(zero)
+      return this.zero()
     }
     const invDet = 1.0 / det
     this.array[0] = (a11 * b11 - a12 * b10 + a13 * b09) * invDet
@@ -384,15 +384,15 @@ export class Matrix4 {
   }
 
   public rotateX(rad: number): this {
-    return this.multiply(Matrix4.rotationX(rad))
+    return this.multiply(matrixTemp.rotationX(rad))
   }
 
   public rotateY(rad: number): this {
-    return this.multiply(Matrix4.rotationY(rad))
+    return this.multiply(matrixTemp.rotationY(rad))
   }
 
   public rotateZ(rad: number): this {
-    return this.multiply(Matrix4.rotationZ(rad))
+    return this.multiply(matrixTemp.rotationZ(rad))
   }
 
   public translate(x: number, y: number, z: number): this {
@@ -433,7 +433,7 @@ export class Matrix4 {
     const [sx, sy, sz] = this.scalingVector().elements
 
     return Quaternion.fromRotationMatrix(
-      new Matrix4([
+      matrixTemp.fromArray([
         this.array[0] / sx, this.array[1] / sx, this.array[2] / sx, this.array[3],
         this.array[4] / sy, this.array[5] / sy, this.array[6] / sy, this.array[7],
         this.array[8] / sz, this.array[9] / sz, this.array[10] / sz, this.array[11],
@@ -455,3 +455,5 @@ export class Matrix4 {
     )
   }
 }
+
+const matrixTemp = new Matrix4()

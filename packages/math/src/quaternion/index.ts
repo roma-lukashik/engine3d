@@ -142,7 +142,7 @@ export class Quaternion {
       scale1 = t
     }
 
-    return this.multiplyScalar(scale0).add(q.clone().multiplyScalar(scale1 * Math.sign(dot)))
+    return this.multiplyScalar(scale0).add(quaternionTemp.copy(q).multiplyScalar(scale1 * Math.sign(dot)))
   }
 
   private add(q: Quaternion): this {
@@ -165,3 +165,5 @@ export class Quaternion {
     return this.x * q.x + this.y * q.y + this.z * q.z + this.w * q.w
   }
 }
+
+const quaternionTemp = new Quaternion()

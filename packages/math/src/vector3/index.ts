@@ -139,7 +139,7 @@ export class Vector3 {
   }
 
   public distanceSquared(v: Vector3): number {
-    return this.clone().subtract(v).lengthSquared()
+    return vectorTemp.copy(v).subtract(this).lengthSquared()
   }
 
   public distance(v: Vector3): number {
@@ -156,7 +156,7 @@ export class Vector3 {
   }
 
   public reflect(v: Vector3): this {
-    const n = v.clone().normalize()
+    const n = vectorTemp.copy(v).normalize()
     return this.subtract(n.multiplyScalar(2 * this.dot(n)))
   }
 
@@ -172,7 +172,7 @@ export class Vector3 {
   }
 
   public lerp(v: Vector3, t: number): this {
-    return this.add(v.clone().subtract(this).multiplyScalar(t))
+    return this.add(vectorTemp.copy(v).subtract(this).multiplyScalar(t))
   }
 
   public transformMatrix4(matrix: Matrix4): this {
@@ -188,7 +188,7 @@ export class Vector3 {
 
   public rotateByQuaternion(q: Quaternion): this {
     const v = new Vector3(q.x, q.y, q.z)
-    const u = v.clone().cross(this)
+    const u = vectorTemp.copy(v).cross(this)
     const uu = v.cross(u).multiplyScalar(2)
     return this.add(u.multiplyScalar(q.w * 2)).add(uu)
   }
@@ -209,3 +209,5 @@ export class Vector3 {
     return eq(this.x, v.x) && eq(this.y, v.y) && eq(this.z, v.z)
   }
 }
+
+const vectorTemp = new Vector3()

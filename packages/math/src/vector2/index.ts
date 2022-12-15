@@ -114,7 +114,7 @@ export class Vector2 {
   }
 
   public distanceSquared(v: Vector2): number {
-    return this.clone().subtract(v).lengthSquared()
+    return vectorTemp.copy(v).subtract(this).lengthSquared()
   }
 
   public distance(v: Vector2): number {
@@ -149,3 +149,5 @@ export class Vector2 {
     return eq(this.x, v.x) && eq(this.y, v.y)
   }
 }
+
+const vectorTemp = new Vector2()
