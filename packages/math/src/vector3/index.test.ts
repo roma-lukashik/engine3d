@@ -48,16 +48,24 @@ describe("Vector3", () => {
   })
 
   it("zero", () => {
-    expect(Vector3.zero()).toValueEqual([0, 0, 0])
+    const zero = [0, 0, 0]
+    expect(Vector3.zero()).toValueEqual(zero)
+    expect(a.zero()).toValueEqual(zero)
   })
 
   it("one", () => {
-    expect(Vector3.one()).toValueEqual([1, 1, 1])
+    const one = [1, 1, 1]
+    expect(Vector3.one()).toValueEqual(one)
+    expect(a.one()).toValueEqual(one)
   })
 
   it("fromArray", () => {
-    expect(Vector3.fromArray([0, 1, 2, 3, 4, 5])).toValueEqual([0, 1, 2])
-    expect(Vector3.fromArray([0, 1, 2, 3, 4, 5], 3)).toValueEqual([3, 4, 5])
+    const raw = [0, 1, 2, 3, 4, 5]
+    expect(Vector3.fromArray(raw)).toValueEqual([0, 1, 2])
+    expect(Vector3.fromArray(raw, 3)).toValueEqual([3, 4, 5])
+
+    expect(a.fromArray(raw)).toValueEqual([0, 1, 2])
+    expect(a.fromArray(raw, 3)).toValueEqual([3, 4, 5])
   })
 
   it("clone", () => {
@@ -71,10 +79,6 @@ describe("Vector3", () => {
 
   it("set(0, 1, 2)", () => {
     expect(a.set(0, 1, 2)).toValueEqual([0, 1, 2])
-  })
-
-  it("set(2)", () => {
-    expect(a.set(2)).toValueEqual([2, 2, 2])
   })
 
   it("add", () => {
@@ -162,6 +166,14 @@ describe("Vector3", () => {
   it("rotateByQuaternion", () => {
     const q = Quaternion.fromAxisAngle(Vector3.one(), PI / 4)
     expect(a.rotateByQuaternion(q)).toValueEqual([2.586, 0.586, 2.828])
+  })
+
+  it("min", () => {
+    expect(a.min(b)).toValueEqual([1, 2, 1])
+  })
+
+  it("max", () => {
+    expect(a.max(b)).toValueEqual([2, 3, 3])
   })
 
   it("elements", () => {

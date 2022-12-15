@@ -2,7 +2,7 @@ import { OrthographicCamera } from "@core/camera/orthographic"
 import { Vector3 } from "@math/vector3"
 
 describe("OrthographicCamera", () => {
-  describe("with default options", () => {
+  describe("has correct default options", () => {
     const camera = new OrthographicCamera({
       left: -5,
       right: 5,
@@ -85,6 +85,44 @@ describe("OrthographicCamera", () => {
         -0.071, 0.041, -0.012, 0,
         0, 0, -0.967, 1,
       ])
+    })
+  })
+
+  describe("setPosition", () => {
+    let camera: OrthographicCamera
+    beforeEach(() => {
+      camera = new OrthographicCamera({
+        left: -5,
+        right: 5,
+        top: -5,
+        bottom: 5,
+      })
+    })
+    
+    it("copies position by value", () => {
+      const position = Vector3.one()
+      camera.setPosition(position)
+      position.set(1, 2, 3)
+      expect(camera.position).toValueEqual([1, 1, 1])
+    })
+  })
+
+  describe("lookAt", () => {
+    let camera: OrthographicCamera
+    beforeEach(() => {
+      camera = new OrthographicCamera({
+        left: -5,
+        right: 5,
+        top: -5,
+        bottom: 5,
+      })
+    })
+
+    it("copies target by value", () => {
+      const target = Vector3.one()
+      camera.lookAt(target)
+      target.set(1, 2, 3)
+      expect(camera.target).toValueEqual([1, 1, 1])
     })
   })
 })

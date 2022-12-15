@@ -2,7 +2,7 @@ import { lt } from "@math/operators"
 import type { Matrix4 } from "@math/matrix4"
 import type { Vector3 } from "@math/vector3"
 
-export type QuaternionTuple = [x: number, y: number, z: number, w: number]
+export type QuaternionTuple = Readonly<[x: number, y: number, z: number, w: number]>
 
 export class QuaternionArray extends Float32Array {
   public constructor() {
@@ -99,6 +99,14 @@ export class Quaternion {
 
   public static fromArray(array: ArrayLike<number>, offset: number = 0): Quaternion {
     return new Quaternion(array[offset], array[offset + 1], array[offset + 2], array[offset + 3])
+  }
+
+  public identity(): this {
+    return this.set(0, 0, 0, 1)
+  }
+
+  public fromArray(array: ArrayLike<number>, offset: number = 0): this {
+    return this.set(array[offset], array[offset + 1], array[offset + 2], array[offset + 3])
   }
 
   public set(x: number, y: number, z: number, w: number): this {

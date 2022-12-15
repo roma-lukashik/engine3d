@@ -2,7 +2,7 @@ import { eq, zero } from "@math/operators"
 import type { Matrix4 } from "@math/matrix4"
 import type { Quaternion } from "@math/quaternion"
 
-export type Vector3Tuple = [x: number, y: number, z: number]
+export type Vector3Tuple = Readonly<[x: number, y: number, z: number]>
 
 export class Vector3Array extends Float32Array {
   public constructor() {
@@ -61,9 +61,19 @@ export class Vector3 {
     this.array[2] = z
   }
 
-  public set(x: number): this
-  public set(x: number, y: number, z: number): this
-  public set(x: number, y: number = x, z: number = x): this {
+  public zero(): this {
+    return this.set(0, 0, 0)
+  }
+
+  public one(): this {
+    return this.set(1, 1, 1)
+  }
+
+  public fromArray(array: ArrayLike<number>, offset: number = 0): this {
+    return this.set(array[offset], array[offset + 1], array[offset + 2])
+  }
+
+  public set(x: number, y: number, z: number): this {
     this.array[0] = x
     this.array[1] = y
     this.array[2] = z
@@ -138,18 +148,11 @@ export class Vector3 {
 
   public normalize(): this {
     const length = this.length()
-    return zero(length) ? this.set(0) : this.divideScalar(length)
+    return zero(length) ? this.zero() : this.divideScalar(length)
   }
 
   public negate(): this {
     return this.multiplyScalar(-1)
-  }
-
-  public abs(): this {
-    this.x = Math.abs(this.x)
-    this.y = Math.abs(this.y)
-    this.z = Math.abs(this.z)
-    return this
   }
 
   public reflect(v: Vector3): this {
@@ -190,21 +193,12 @@ export class Vector3 {
     return this.add(u.multiplyScalar(q.w * 2)).add(uu)
   }
 
-  // TODO tests
   public min(v: Vector3): this {
-    return this.set(
-      Math.min(this.x, v.x),
-      Math.min(this.y, v.y),
-      Math.min(this.z, v.z),
-    )
+    return this.set(Math.min(this.x, v.x), Math.min(this.y, v.y), Math.min(this.z, v.z))
   }
 
   public max(v: Vector3): this {
-    return this.set(
-      Math.max(this.x, v.x),
-      Math.max(this.y, v.y),
-      Math.max(this.z, v.z),
-    )
+    return this.set(Math.max(this.x, v.x), Math.max(this.y, v.y), Math.max(this.z, v.z))
   }
 
   public sign(): this {

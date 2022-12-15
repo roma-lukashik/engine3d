@@ -76,4 +76,32 @@ describe("PerspectiveCamera", () => {
       ])
     })
   })
+
+  describe("setPosition", () => {
+    let camera: PerspectiveCamera
+    beforeEach(() => {
+      camera = new PerspectiveCamera()
+    })
+
+    it("copies position by value", () => {
+      const position = Vector3.one()
+      camera.setPosition(position)
+      position.set(1, 2, 3)
+      expect(camera.position).toValueEqual([1, 1, 1])
+    })
+  })
+
+  describe("lookAt", () => {
+    let camera: PerspectiveCamera
+    beforeEach(() => {
+      camera = new PerspectiveCamera()
+    })
+
+    it("copies target by value", () => {
+      const target = Vector3.one()
+      camera.lookAt(target)
+      target.set(1, 2, 3)
+      expect(camera.target).toValueEqual([1, 1, 1])
+    })
+  })
 })

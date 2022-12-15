@@ -27,15 +27,21 @@ describe("Vector2", () => {
 
   it("zero", () => {
     expect(Vector2.zero()).toValueEqual([0, 0])
+    expect(a.zero()).toValueEqual([0, 0])
   })
 
   it("one", () => {
     expect(Vector2.one()).toValueEqual([1, 1])
+    expect(a.one()).toValueEqual([1, 1])
   })
 
   it("fromArray", () => {
-    expect(Vector2.fromArray([0, 1, 2, 3, 4])).toValueEqual([0, 1])
-    expect(Vector2.fromArray([0, 1, 2, 3, 4], 3)).toValueEqual([3, 4])
+    const raw = [0, 1, 2, 3, 4]
+    expect(Vector2.fromArray(raw)).toValueEqual([0, 1])
+    expect(Vector2.fromArray(raw, 3)).toValueEqual([3, 4])
+
+    expect(a.fromArray(raw)).toValueEqual([0, 1])
+    expect(a.fromArray(raw, 3)).toValueEqual([3, 4])
   })
 
   it("clone", () => {
@@ -49,10 +55,6 @@ describe("Vector2", () => {
 
   it("set(0, 1)", () => {
     expect(a.set(0, 1)).toValueEqual([0, 1])
-  })
-
-  it("set(2)", () => {
-    expect(a.set(2)).toValueEqual([2, 2])
   })
 
   it("add", () => {

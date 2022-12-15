@@ -11,7 +11,7 @@ export const gte = (a: number, b: number, eps = EPS): boolean => {
   return diff > eps || zero(diff, eps)
 }
 
-export const lt = (a: number, b: number, eps = EPS): boolean => b - a > eps
+export const lt = (a: number, b: number, eps = EPS): boolean => gt(b, a, eps)
 
 export const lte = (a: number, b: number, eps = EPS): boolean => gte(b, a, eps)
 

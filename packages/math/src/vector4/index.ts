@@ -1,6 +1,6 @@
 import { eq } from "@math/operators"
 
-export type Vector4Tuple = [x: number, Y: number, z: number, w: number]
+export type Vector4Tuple = Readonly<[x: number, Y: number, z: number, w: number]>
 
 export class Vector4Array extends Float32Array {
   public constructor() {
@@ -51,9 +51,19 @@ export class Vector4 {
     return this.array[3]
   }
 
-  public set(x: number): this
-  public set(x: number, y: number, z: number, w: number): this
-  public set(x: number, y: number = x, z: number = x, w: number = x): this {
+  public zero(): this {
+    return this.set(0, 0, 0, 0)
+  }
+
+  public one(): this {
+    return this.set(1, 1, 1, 1)
+  }
+
+  public fromArray(array: ArrayLike<number>, offset: number = 0): this {
+    return this.set(array[offset], array[offset + 1], array[offset + 2], array[offset + 3])
+  }
+
+  public set(x: number, y: number, z: number, w: number): this {
     this.array[0] = x
     this.array[1] = y
     this.array[2] = z

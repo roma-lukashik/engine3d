@@ -13,11 +13,12 @@ type Props = {
 }
 
 export class OrthographicCamera implements Camera {
-  public position: Vector3 = Vector3.zero()
-  public target: Vector3 = Vector3.zero()
-  public projectionMatrix: Matrix4 = Matrix4.identity()
-  public viewMatrix: Matrix4 = Matrix4.identity()
+  public readonly position: Vector3 = Vector3.zero()
+  public readonly target: Vector3 = Vector3.zero()
+  public readonly projectionMatrix: Matrix4 = Matrix4.identity()
+  public readonly viewMatrix: Matrix4 = Matrix4.identity()
 
+  private readonly orthographicMatrix: Matrix4 = Matrix4.identity()
   private left: number
   private right: number
   private top: number
@@ -26,7 +27,6 @@ export class OrthographicCamera implements Camera {
   private near: number
   private far: number
   private up: Vector3 = new Vector3(0, 1, 0)
-  private orthographicMatrix: Matrix4 = Matrix4.identity()
 
   public constructor({
     left,
@@ -41,12 +41,12 @@ export class OrthographicCamera implements Camera {
   }
 
   public setPosition(cameraPosition: Vector3): void {
-    this.position = cameraPosition
+    this.position.copy(cameraPosition)
     this.updateProjectionMatrix()
   }
 
   public lookAt(target: Vector3): void {
-    this.target = target
+    this.target.copy(target)
     this.updateProjectionMatrix()
   }
 
@@ -58,15 +58,15 @@ export class OrthographicCamera implements Camera {
 
   private updateProjectionMatrix(): void {
     if (this.position.equal(this.target)) {
-      this.projectionMatrix = Matrix4.identity()
+      this.projectionMatrix.identity()
     } else {
-      this.viewMatrix = Matrix4.lookAt(this.position, this.target, this.up).invert()
+      this.viewMatrix.lookAt(this.position, this.target, this.up).invert()
       this.projectionMatrix.copy(this.orthographicMatrix).multiply(this.viewMatrix)
     }
   }
 
   private updateOrthographicMatrix(): void {
-    this.orthographicMatrix = Matrix4.orthographic(
+    this.orthographicMatrix.orthographic(
       this.left / this.zoom,
       this.right / this.zoom,
       this.top / this.zoom,

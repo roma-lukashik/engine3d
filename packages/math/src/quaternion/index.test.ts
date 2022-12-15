@@ -19,12 +19,18 @@ describe("Quaternion", () => {
   })
 
   it("identity", () => {
-    expect(Quaternion.identity()).toValueEqual([0, 0, 0, 1])
+    const identity = [0, 0, 0, 1]
+    expect(Quaternion.identity()).toValueEqual(identity)
+    expect(q.identity()).toValueEqual(identity)
   })
 
   it("fromArray", () => {
-    expect(Quaternion.fromArray([0, 1, 2, 3, 4, 5, 6])).toValueEqual([0, 1, 2, 3])
-    expect(Quaternion.fromArray([0, 1, 2, 3, 4, 5, 6], 3)).toValueEqual([3, 4, 5, 6])
+    const raw = [0, 1, 2, 3, 4, 5, 6]
+    expect(Quaternion.fromArray(raw)).toValueEqual([0, 1, 2, 3])
+    expect(Quaternion.fromArray(raw, 3)).toValueEqual([3, 4, 5, 6])
+
+    expect(q.fromArray(raw)).toValueEqual([0, 1, 2, 3])
+    expect(q.fromArray(raw, 3)).toValueEqual([3, 4, 5, 6])
   })
 
   it("fromAxisAngle", () => {

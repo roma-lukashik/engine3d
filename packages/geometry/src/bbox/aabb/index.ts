@@ -39,8 +39,8 @@ export class AABB {
 
   // TODO Unit tests
   public reset(): void {
-    this.min.set(Infinity)
-    this.max.set(-Infinity)
+    this.min.set(Infinity, Infinity, Infinity)
+    this.max.set(-Infinity, -Infinity, -Infinity)
   }
 
   private calculateMinMax(array: ArrayLike<number>): void {

@@ -12,17 +12,17 @@ type Props = {
 }
 
 export class PerspectiveCamera implements Camera {
-  public position: Vector3 = Vector3.zero()
-  public target: Vector3 = Vector3.zero()
-  public projectionMatrix: Matrix4 = Matrix4.identity()
-  public viewMatrix: Matrix4 = Matrix4.identity()
+  public readonly position: Vector3 = Vector3.zero()
+  public readonly target: Vector3 = Vector3.zero()
+  public readonly projectionMatrix: Matrix4 = Matrix4.identity()
+  public readonly viewMatrix: Matrix4 = Matrix4.identity()
 
+  private readonly perspectiveMatrix: Matrix4 = Matrix4.identity()
   private near: number
   private far: number
   private aspect: number
   private fovy: number
   private up: Vector3
-  private perspectiveMatrix: Matrix4 = Matrix4.identity()
 
   public constructor({
     up = new Vector3(0, 1, 0),
@@ -35,12 +35,12 @@ export class PerspectiveCamera implements Camera {
   }
 
   public setPosition(cameraPosition: Vector3): void {
-    this.position = cameraPosition
+    this.position.copy(cameraPosition)
     this.updateProjectionMatrix()
   }
 
   public lookAt(target: Vector3): void {
-    this.target = target
+    this.target.copy(target)
     this.updateProjectionMatrix()
   }
 
@@ -52,14 +52,14 @@ export class PerspectiveCamera implements Camera {
 
   private updateProjectionMatrix(): void {
     if (this.position.equal(this.target)) {
-      this.projectionMatrix = Matrix4.identity()
+      this.projectionMatrix.identity()
     } else {
-      this.viewMatrix = Matrix4.lookAt(this.position, this.target, this.up).invert()
+      this.viewMatrix.lookAt(this.position, this.target, this.up).invert()
       this.projectionMatrix.copy(this.perspectiveMatrix).multiply(this.viewMatrix)
     }
   }
 
   private updatePerspectiveMatrix(): void {
-    this.perspectiveMatrix = Matrix4.perspective(this.fovy, this.aspect, this.near, this.far)
+    this.perspectiveMatrix.perspective(this.fovy, this.aspect, this.near, this.far)
   }
 }

@@ -47,128 +47,157 @@ describe("Matrix4", () => {
   })
 
   it("identity", () => {
-    expect(Matrix4.identity()).toValueEqual([
+    const identity = [
       1, 0, 0, 0,
       0, 1, 0, 0,
       0, 0, 1, 0,
       0, 0, 0, 1,
-    ])
+    ]
+    expect(Matrix4.identity()).toValueEqual(identity)
+    expect(a.identity()).toValueEqual(identity)
   })
 
   it("zero", () => {
-    expect(Matrix4.zero()).toValueEqual([
+    const zero = [
       0, 0, 0, 0,
       0, 0, 0, 0,
       0, 0, 0, 0,
       0, 0, 0, 0,
-    ])
+    ]
+    expect(Matrix4.zero()).toValueEqual(zero)
+    expect(a.zero()).toValueEqual(zero)
   })
 
-  it("rotationX", () => {
-    expect(Matrix4.rotationX(PI / 3)).toValueEqual([
+  it("Matrix4.rotationX", () => {
+    const rotationX = [
       1, 0, 0, 0,
       0, 0.5, -0.866, 0,
       0, 0.866, 0.5, 0,
       0, 0, 0, 1,
-    ])
+    ]
+    const angle = PI / 3
+    expect(Matrix4.rotationX(angle)).toValueEqual(rotationX)
+    expect(a.rotationX(angle)).toValueEqual(rotationX)
   })
 
   it("rotationY", () => {
-    expect(Matrix4.rotationY(PI / 3)).toValueEqual([
+    const rotationY = [
       0.5, 0, 0.866, 0,
       0, 1, 0, 0,
       -0.866, 0, 0.5, 0,
       0, 0, 0, 1,
-    ])
+    ]
+    const angle = PI / 3
+    expect(Matrix4.rotationY(angle)).toValueEqual(rotationY)
+    expect(a.rotationY(angle)).toValueEqual(rotationY)
   })
 
   it("rotationZ", () => {
-    expect(Matrix4.rotationZ(PI / 3)).toValueEqual([
+    const rotationZ = [
       0.5, -0.866, 0, 0,
       0.866, 0.5, 0, 0,
       0, 0, 1, 0,
       0, 0, 0, 1,
-    ])
+    ]
+    const angle = PI / 3
+    expect(Matrix4.rotationZ(angle)).toValueEqual(rotationZ)
+    expect(a.rotationZ(angle)).toValueEqual(rotationZ)
   })
 
   it("translation", () => {
-    expect(Matrix4.translation(2, 4, 6)).toValueEqual([
+    const translation = [
       1, 0, 0, 0,
       0, 1, 0, 0,
       0, 0, 1, 0,
       2, 4, 6, 1,
-    ])
+    ]
+    expect(Matrix4.translation(2, 4, 6)).toValueEqual(translation)
+    expect(a.translation(2, 4, 6)).toValueEqual(translation)
   })
 
   it("scaling", () => {
-    expect(Matrix4.scaling(2, 4, 6)).toValueEqual([
+    const scaling = [
       2, 0, 0, 0,
       0, 4, 0, 0,
       0, 0, 6, 0,
       0, 0, 0, 1,
-    ])
+    ]
+    expect(Matrix4.scaling(2, 4, 6)).toValueEqual(scaling)
+    expect(a.scaling(2, 4, 6)).toValueEqual(scaling)
   })
 
   it("perspective", () => {
-    expect(Matrix4.perspective(Math.PI / 2, 1, 0.1, 100)).toValueEqual([
+    const perspective = [
       1, 0, 0, 0,
       0, 1, 0, 0,
       0, 0, -1.002, -1,
       0, 0, -0.2002, 0,
-    ])
+    ]
+    expect(Matrix4.perspective(Math.PI / 2, 1, 0.1, 100)).toValueEqual(perspective)
+    expect(a.perspective(Math.PI / 2, 1, 0.1, 100)).toValueEqual(perspective)
   })
 
   it("orthographic", () => {
-    expect(Matrix4.orthographic(-10, 10, -10, 10, 1, 100)).toValueEqual([
+    const orthographic = [
       0.1, 0, 0, 0,
       0, -0.1, 0, 0,
       0, 0, -0.02, 0,
       0, 0, -1.02, 1,
-    ])
+    ]
+    expect(Matrix4.orthographic(-10, 10, -10, 10, 1, 100)).toValueEqual(orthographic)
+    expect(a.orthographic(-10, 10, -10, 10, 1, 100)).toValueEqual(orthographic)
   })
 
   it("lookAt", () => {
-    const eye = new Vector3(1, 1, 1)
-    const target = Vector3.zero()
-    const up = new Vector3(0, 1, 0)
-    expect(Matrix4.lookAt(eye, target, up)).toValueEqual([
+    const lookAt = [
       0.707, 0, -0.707, 0,
       -0.408, 0.816, -0.408, 0,
       0.577, 0.577, 0.577, 0,
       1, 1, 1, 1,
-    ])
+    ]
+    const eye = new Vector3(1, 1, 1)
+    const target = Vector3.zero()
+    const up = new Vector3(0, 1, 0)
+    expect(Matrix4.lookAt(eye, target, up)).toValueEqual(lookAt)
+    expect(a.lookAt(eye, target, up)).toValueEqual(lookAt)
   })
 
   it("compose", () => {
-    const m = Matrix4.compose(
-      new Quaternion(0, 0.9238795292366128, 0, 0.38268342717215614),
-      new Vector3(2, 3, 4),
-      new Vector3(2, 3, 4),
-    )
-    expect(m).toValueEqual([
+    const compose = [
       -1.414, 0, -1.414, 0,
       0, 3, 0, 0,
       2.828, 0, -2.828, 0,
       2, 3, 4, 1,
-    ])
+    ]
+    const q = new Quaternion(0, 0.9238795292366128, 0, 0.38268342717215614)
+    const t = new Vector3(2, 3, 4)
+    const s = new Vector3(2, 3, 4)
+    expect(Matrix4.compose(q, t, s)).toValueEqual(compose)
+    expect(a.compose(q, t, s)).toValueEqual(compose)
   })
 
   it("fromArray with no offset", () => {
-    expect(Matrix4.fromArray([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 2, 3, 4, 1])).toValueEqual([
+    const fromArray = [
       1, 0, 0, 0,
       0, 1, 0, 0,
       0, 0, 1, 0,
       0, 0, 0, 1,
-    ])
+    ]
+    const raw = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 2, 3, 4, 1]
+    expect(Matrix4.fromArray(raw)).toValueEqual(fromArray)
+    expect(a.fromArray(raw)).toValueEqual(fromArray)
   })
 
   it("fromArray with offset", () => {
-    expect(Matrix4.fromArray([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 2, 3, 4, 1], 4)).toValueEqual([
+    const fromArray = [
       0, 1, 0, 0,
       0, 0, 1, 0,
       0, 0, 0, 1,
       2, 3, 4, 1,
-    ])
+    ]
+    const raw = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 2, 3, 4, 1]
+    expect(Matrix4.fromArray(raw, 4)).toValueEqual(fromArray)
+    expect(a.fromArray(raw, 4)).toValueEqual(fromArray)
   })
 
   it("clone", () => {
