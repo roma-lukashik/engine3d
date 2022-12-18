@@ -87,19 +87,17 @@ export const expectedGltf = (): Node => {
     roughness: 0.1,
   })
   const mesh = new Mesh({ geometry, material })
-
-  const skeleton = new Skeleton({
-    bones: [child2, child21],
-    boneInverses: [
-      Matrix4.identity(),
-      new Matrix4([
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 1, 0,
-        0, -1, 0, 1,
-      ]),
-    ],
-  })
+  const bones = [child2, child21]
+  const boneInverses = [
+    Matrix4.identity(),
+    new Matrix4([
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      0, -1, 0, 1,
+    ]),
+  ]
+  const skeleton = new Skeleton(bones, boneInverses)
 
   root.add([child1, child2])
   child1.add([mesh])

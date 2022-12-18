@@ -26,10 +26,7 @@ describe("Mesh", () => {
 
   it("bind skeleton", () => {
     const mesh = new Mesh({ geometry, material })
-    const skeleton = new Skeleton({
-      bones: [],
-      boneInverses: [],
-    })
+    const skeleton = new Skeleton([], [])
     mesh.bindSkeleton(skeleton)
     expect(mesh.skeleton).toBe(skeleton)
   })
