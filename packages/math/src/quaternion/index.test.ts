@@ -36,7 +36,9 @@ describe("Quaternion", () => {
   it("fromAxisAngle", () => {
     const axis = new Vector3(0.802, 0.267, 0.534)
     const angle = PI / 4
-    expect(Quaternion.fromAxisAngle(axis, angle)).toValueEqual([0.307, 0.102, 0.204, 0.924])
+    const expected = [0.307, 0.102, 0.204, 0.924]
+    expect(Quaternion.fromAxisAngle(axis, angle)).toValueEqual(expected)
+    expect(q.fromAxisAngle(axis, angle)).toValueEqual(expected)
   })
 
   it.each<[Matrix4, [number, number, number, number]]>([
@@ -46,6 +48,7 @@ describe("Quaternion", () => {
     [Matrix4.rotationZ(4 * PI / 3), [0, 0, 0.866, 0.5]],
   ])("fromRotationMatrix", (matrix, result) => {
     expect(Quaternion.fromRotationMatrix(matrix)).toValueEqual(result)
+    expect(q.fromRotationMatrix(matrix)).toValueEqual(result)
   })
 
   it("x", () => {

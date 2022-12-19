@@ -46,14 +46,29 @@ export class Quaternion {
   }
 
   public static fromAxisAngle(axis: Vector3, angle: number): Quaternion {
-    const halfTheta = angle / 2
-    const sin = Math.sin(halfTheta)
-    const cos = Math.cos(halfTheta)
-    const vec = axis.clone().multiplyScalar(sin)
-    return new Quaternion(vec.x, vec.y, vec.z, cos)
+    return new Quaternion().fromAxisAngle(axis, angle)
   }
 
   public static fromRotationMatrix(m: Matrix4): Quaternion {
+    return new Quaternion().fromRotationMatrix(m)
+  }
+
+  public static fromArray(array: ArrayLike<number>, offset: number = 0): Quaternion {
+    return new Quaternion(array[offset], array[offset + 1], array[offset + 2], array[offset + 3])
+  }
+
+  public identity(): this {
+    return this.set(0, 0, 0, 1)
+  }
+
+  public fromAxisAngle(axis: Vector3, angle: number): this {
+    const halfTheta = angle / 2
+    const sin = Math.sin(halfTheta)
+    const cos = Math.cos(halfTheta)
+    return this.set(axis.x * sin, axis.y * sin, axis.z * sin, cos)
+  }
+
+  public fromRotationMatrix(m: Matrix4): this {
     const [
       a11, a12, a13, ,
       a21, a22, a23, ,
@@ -64,7 +79,7 @@ export class Quaternion {
 
     if (trace > 0) {
       const s = 2 * Math.sqrt(trace + 1.0)
-      return new Quaternion(
+      return this.set(
         (a23 - a32) / s,
         (a31 - a13) / s,
         (a12 - a21) / s,
@@ -72,7 +87,7 @@ export class Quaternion {
       )
     } else if (a11 > a22 && a11 > a33) {
       const s = 2 * Math.sqrt(1.0 + a11 - a22 - a33)
-      return new Quaternion(
+      return this.set(
         0.25 * s,
         (a12 + a21) / s,
         (a31 + a13) / s,
@@ -80,7 +95,7 @@ export class Quaternion {
       )
     } else if (a22 > a33) {
       const s = 2 * Math.sqrt(1.0 + a22 - a11 - a33)
-      return new Quaternion(
+      return this.set(
         (a12 + a21) / s,
         0.25 * s,
         (a23 + a32) / s,
@@ -88,21 +103,13 @@ export class Quaternion {
       )
     } else {
       const s = 2 * Math.sqrt(1.0 + a33 - a11 - a22)
-      return new Quaternion(
+      return this.set(
         (a31 + a13) / s,
         (a23 + a32) / s,
         0.25 * s,
         (a12 - a21) / s,
       )
     }
-  }
-
-  public static fromArray(array: ArrayLike<number>, offset: number = 0): Quaternion {
-    return new Quaternion(array[offset], array[offset + 1], array[offset + 2], array[offset + 3])
-  }
-
-  public identity(): this {
-    return this.set(0, 0, 0, 1)
   }
 
   public fromArray(array: ArrayLike<number>, offset: number = 0): this {
