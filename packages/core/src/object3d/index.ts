@@ -75,8 +75,8 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
         }
       }
     })
-    this.updateOOBB()
     this.updateAABB()
+    this.updateOOBB()
   }
 
   public setPosition(position: Vector3): this {
@@ -100,16 +100,18 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
   }
 
   public setScale(scale: Vector3): this {
-    const delta = scale.clone().subtract(this.node.scale)
+    const delta = scale.clone().divide(this.node.scale)
     this.node.scale.copy(scale)
-
-    // Update AABB
-    const deltaHalfSize = this.aabb.getSize().multiply(delta).divideScalar(2)
-    this.aabb.min.subtract(deltaHalfSize)
-    this.aabb.max.add(deltaHalfSize)
 
     // Update OOBB
     this.oobb.halfSize.multiply(delta)
+
+    // Update AABB
+    const originalSize = this.aabb.getSize()
+    const scaledSize = delta.multiply(originalSize)
+    const deltaHalfSize = scaledSize.subtract(originalSize).divideScalar(2)
+    this.aabb.min.subtract(deltaHalfSize)
+    this.aabb.max.add(deltaHalfSize)
 
     this.node.updateLocalMatrix()
     this.node.updateWorldMatrix()
@@ -126,8 +128,8 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
     this.node.updateLocalMatrix()
     this.node.updateWorldMatrix()
 
-    // Update AABB
-    // Should update after updating matrices
+    // Recalculate whole AABB
+    // Should do after updating matrices
     this.updateAABB()
 
     return this
@@ -144,8 +146,8 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
       return
     }
     this.animations[key].update(time)
-    this.updateOOBB()
     this.updateAABB()
+    this.updateOOBB()
     this.meshes.forEach((mesh) => mesh.updateSkeleton())
   }
 
@@ -156,22 +158,18 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
   }
 
   private updateOOBB(): void {
-    // Reset object matrices
-    this.node.localMatrix.identity()
+    // Reset rotation
+    this.node.localMatrix.compose(Quaternion.identity(), this.node.position, this.node.scale)
     this.node.updateWorldMatrix()
 
-    // Calculate OOBB from non transformed AABB
+    // Calculate OOBB from non rotated AABB
     const aabb = this.calculateAABB()
     this.oobb.fromAABB(aabb)
+    this.oobb.rotation.copy(this.node.rotation)
 
-    // Restore object matrices
+    // Restore object rotation
     this.node.updateLocalMatrix()
     this.node.updateWorldMatrix()
-
-    // Apply object transformations
-    this.oobb.center.copy(this.node.position)
-    this.oobb.halfSize.multiply(this.node.scale)
-    this.oobb.rotation.copy(this.node.rotation)
   }
 
   private calculateAABB(): AABB {
@@ -179,6 +177,9 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
     if (this.skeletons.length) {
       this.skeletons.forEach((skeleton) => {
         skeleton.bones.forEach((bone) => {
+          if (bone.parent) {
+            aabb.expandByPoint(bone.parent.getWorldPosition())
+          }
           aabb.expandByPoint(bone.getWorldPosition())
         })
       })

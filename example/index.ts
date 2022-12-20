@@ -79,6 +79,7 @@ court.setRotation(Quaternion.fromRotationMatrix(Matrix4.rotationY(Math.PI / 2)))
 
 net.isMovable = false
 net.restitution = 0.15
+net.setPosition(new Vector3(30, 0, 0))
 net.setScale(new Vector3(3, 2.5, 4.5))
 net.setRotation(Quaternion.fromRotationMatrix(Matrix4.rotationY(Math.PI / 2)))
 
@@ -87,7 +88,7 @@ ball.restitution = 0.6
 ball.colliders = [court, net, ...wall]
 ball.setMass(0.1)
 ball.setScale(new Vector3(7, 7, 7))
-ball.setPosition(new Vector3(0, 8, 1085))
+ball.setPosition(new Vector3(0, 7, 1085))
 
 player.frustumCulled = false
 player.colliders = [net, npc, court]
@@ -143,16 +144,19 @@ const getAnimation = (): PlayerAnimations => {
 }
 
 const followObject = (node: Node): void => {
-  const nodePosition = node.getWorldPosition()
   const from = new Vector3(0, 700, 1500)
   const up = new Vector3(0, 150, 0)
-  camera.setPosition(from.add(nodePosition))
-  camera.lookAt(up.add(nodePosition))
+  camera.setPosition(from.add(node.position))
+  camera.lookAt(up.add(node.position))
 }
 
 const followBall = () => {
-  const ballPosition = ball.node.getWorldPosition()
-  const npcPosition = npc.node.getWorldPosition()
+  if (ball.velocity.lengthSquared() < 1) {
+    npc.animate("Idle", i)
+    return
+  }
+  const ballPosition = ball.node.position
+  const npcPosition = npc.node.position
   if (ballPosition.x > npcPosition.x) {
     npc.animate("RunLeft", i)
   } else if (ballPosition.x < npcPosition.x) {
@@ -160,9 +164,8 @@ const followBall = () => {
   } else {
     npc.animate("Idle", i)
   }
-  ballPosition.y = npcPosition.y
-  ballPosition.z = npcPosition.z
-  npc.setPosition(ballPosition)
+  npcPosition.x = ballPosition.x
+  npc.setPosition(npcPosition)
 }
 
 followObject(player.node)
@@ -173,7 +176,8 @@ const power = 170
 const speed = 30
 
 const update = () => {
-  player.velocity.set(0, 0, 0)
+  player.velocity.x = 0
+  player.velocity.z = 0
 
   if (keyboard.isPressed("KeyW")) player.velocity.add(new Vector3(0, 0, -1))
   if (keyboard.isPressed("KeyS")) player.velocity.add(new Vector3(0, 0, 1))
@@ -181,14 +185,14 @@ const update = () => {
   if (keyboard.isPressed("KeyD")) player.velocity.add(new Vector3(1, 0, 0))
 
   if (!player.velocity.equal(Vector3.zero())) {
+    const y = player.velocity.y
     player.velocity.normalize().multiplyScalar(speed)
+    player.velocity.y = y
   }
 
   player.animate(getAnimation(), i += 0.02)
 
-  if (ball.velocity.lengthSquared() > 1) {
-    followBall()
-  }
+  followBall()
 
   if (ball.aabb.collide(npc.aabb)) {
     ball.velocity.set(0, Math.sin(angle), Math.cos(angle)).multiplyScalar(power)
