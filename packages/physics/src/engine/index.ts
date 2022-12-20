@@ -39,13 +39,9 @@ export class PhysicsEngine {
         this.applyFrictionImpulse(rigidBody, collider, impulseMagnitude, manifold.axis)
         deltaPosition.subtract(manifold.axis.multiplyScalar(manifold.penetration))
       })
-      rigidBody.node.localMatrix.translateByVector(deltaPosition)
-    }
-
-    for (const rigidBody of rigidBodies) {
       // Assume, that if velocity magnitude less than 1, the body is not moving
-      if (rigidBody.isMovable && rigidBody.velocity.lengthSquared() > 1) {
-        rigidBody.updateWorldMatrix()
+      if (rigidBody.velocity.lengthSquared() > 1) {
+        rigidBody.move(deltaPosition)
       }
     }
   }
@@ -106,7 +102,7 @@ export class PhysicsEngine {
     const relativeVelocity = b.velocity.clone().subtract(a.velocity)
     const tangent = relativeVelocity.clone().cross(contactNormal).cross(contactNormal).normalize()
     const reducedMass = a.invMass + b.invMass
-    const impulseMagnitude = tangent.dot(relativeVelocity) / reducedMass
+    const impulseMagnitude = relativeVelocity.dot(tangent) / reducedMass
     if (zero(impulseMagnitude)) {
       return
     }

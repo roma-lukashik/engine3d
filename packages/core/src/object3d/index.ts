@@ -3,17 +3,17 @@ import { Animation } from "@core/animation"
 import { Mesh } from "@core/mesh"
 import { Skeleton } from "@core/skeleton"
 import { AABB } from "@geometry/bbox/aabb"
-import { TypedArray } from "@core/types"
-import { Geometry } from "@core/geometry"
-import { TypedArrayByComponentType } from "@core/bufferAttribute/utils"
 import { Vector3 } from "@math/vector3"
+import { Quaternion } from "@math/quaternion"
 import { zero } from "@math/operators"
+import { OOBB } from "@geometry/bbox/oobb"
 
 export type RenderObject = {
   readonly node: Node
   readonly skeletons: Skeleton[]
   readonly meshes: Set<Mesh>
   readonly aabb: AABB
+  readonly oobb: OOBB
   frustumCulled: boolean
 }
 
@@ -22,6 +22,7 @@ export type RigidBody = {
   readonly velocity: Vector3
   readonly angularVelocity: Vector3
   readonly aabb: AABB
+  readonly oobb: OOBB
   readonly mass: number
   readonly invMass: number
   isMovable: boolean
@@ -30,8 +31,11 @@ export type RigidBody = {
   friction: number
   staticFriction: number
   airFriction: number
-  setMass(mass: number): void
-  updateWorldMatrix(): void
+  setMass(mass: number): RigidBody
+  setPosition(position: Vector3): RigidBody
+  move(delta: Vector3): RigidBody
+  setScale(scale: Vector3): RigidBody
+  setRotation(rotation: Quaternion): RigidBody
 }
 
 export class Object3D<AnimationKeys extends string = string> implements RenderObject, RigidBody {
@@ -39,6 +43,7 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
   public readonly skeletons: Skeleton[] = []
   public readonly meshes: Set<Mesh> = new Set()
   public readonly aabb: AABB = new AABB()
+  public readonly oobb: OOBB = new OOBB()
   public frustumCulled: boolean = true
 
   public readonly velocity: Vector3 = Vector3.zero()
@@ -70,12 +75,68 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
         }
       }
     })
+    this.updateOOBB()
     this.updateAABB()
   }
 
-  public setMass(mass: number): void {
+  public setPosition(position: Vector3): this {
+    return this.move(position.clone().subtract(this.node.position))
+  }
+
+  public move(delta: Vector3): this {
+    this.node.position.add(delta)
+
+    // Update AABB
+    this.aabb.min.add(delta)
+    this.aabb.max.add(delta)
+
+    // Update OOBB
+    this.oobb.center.add(delta)
+
+    this.node.updateLocalMatrix()
+    this.node.updateWorldMatrix()
+
+    return this
+  }
+
+  public setScale(scale: Vector3): this {
+    const delta = scale.clone().subtract(this.node.scale)
+    this.node.scale.copy(scale)
+
+    // Update AABB
+    const deltaHalfSize = this.aabb.getSize().multiply(delta).divideScalar(2)
+    this.aabb.min.subtract(deltaHalfSize)
+    this.aabb.max.add(deltaHalfSize)
+
+    // Update OOBB
+    this.oobb.halfSize.multiply(delta)
+
+    this.node.updateLocalMatrix()
+    this.node.updateWorldMatrix()
+
+    return this
+  }
+
+  public setRotation(rotation: Quaternion): this {
+    this.node.rotation.copy(rotation)
+
+    // Update OOBB
+    this.oobb.rotation.copy(rotation)
+
+    this.node.updateLocalMatrix()
+    this.node.updateWorldMatrix()
+
+    // Update AABB
+    // Should update after updating matrices
+    this.updateAABB()
+
+    return this
+  }
+
+  public setMass(mass: number): this {
     this.mass = mass
     this.invMass = zero(mass) ? 0 : (1 / mass)
+    return this
   }
 
   public animate(key: AnimationKeys, time: number): void {
@@ -83,46 +144,53 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
       return
     }
     this.animations[key].update(time)
-    this.meshes.forEach((mesh) => mesh.updateSkeleton())
-    this.updateWorldMatrix()
-  }
-
-  public updateWorldMatrix(): void {
-    this.node.updateWorldMatrix()
+    this.updateOOBB()
     this.updateAABB()
+    this.meshes.forEach((mesh) => mesh.updateSkeleton())
   }
 
   private updateAABB(): void {
-    this.aabb.reset()
+    const aabb = this.calculateAABB()
+    this.aabb.min.copy(aabb.min)
+    this.aabb.max.copy(aabb.max)
+  }
+
+  private updateOOBB(): void {
+    // Reset object matrices
+    this.node.localMatrix.identity()
+    this.node.updateWorldMatrix()
+
+    // Calculate OOBB from non transformed AABB
+    const aabb = this.calculateAABB()
+    this.oobb.fromAABB(aabb)
+
+    // Restore object matrices
+    this.node.updateLocalMatrix()
+    this.node.updateWorldMatrix()
+
+    // Apply object transformations
+    this.oobb.center.copy(this.node.position)
+    this.oobb.halfSize.multiply(this.node.scale)
+    this.oobb.rotation.copy(this.node.rotation)
+  }
+
+  private calculateAABB(): AABB {
+    const aabb = new AABB()
     if (this.skeletons.length) {
-      this.skeletons[0].bones.forEach((bone) => {
-        this.aabb.expandByPoint(bone.getWorldPosition())
+      this.skeletons.forEach((skeleton) => {
+        skeleton.bones.forEach((bone) => {
+          aabb.expandByPoint(bone.getWorldPosition())
+        })
       })
     } else {
       this.meshes.forEach((mesh) => {
-        const points = this.getPositionPoints(mesh.geometry)
-        const aabb = new AABB(points)
-        aabb.min.transformMatrix4(mesh.worldMatrix)
-        aabb.max.transformMatrix4(mesh.worldMatrix)
-        this.aabb.expandByPoint(aabb.min)
-        this.aabb.expandByPoint(aabb.max)
+        const box = new AABB(mesh.geometry.positionPoints)
+        box.min.transformMatrix4(mesh.worldMatrix)
+        box.max.transformMatrix4(mesh.worldMatrix)
+        aabb.expandByPoint(box.min)
+        aabb.expandByPoint(box.max)
       })
     }
-  }
-
-  private getPositionPoints(geometry: Geometry): TypedArray {
-    const { position, index } = geometry
-    const TypedArrayConstructor = TypedArrayByComponentType[position.type]
-    if (index) {
-      const points = new TypedArrayConstructor(index.count * position.itemSize)
-      index.forEach(([positionIndex], i) => {
-        points.set(position.getBufferElement(positionIndex), i * position.itemSize)
-      })
-      return points
-    } else {
-      const points = new TypedArrayConstructor(position.count * position.itemSize)
-      position.forEach((pointArray, i) => points.set(pointArray, i * position.itemSize))
-      return points
-    }
+    return aabb
   }
 }

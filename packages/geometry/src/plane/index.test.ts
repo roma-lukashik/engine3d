@@ -2,16 +2,16 @@ import { Plane } from "@geometry/plane"
 import { Vector3 } from "@math/vector3"
 
 describe("Plane", () => {
-  it("to be created", () => {
+  it("to be created by vector and constant", () => {
     const plane = new Plane(new Vector3(0, 1, 0), 2)
     expect(plane.normal).toValueEqual([0, 1, 0])
     expect(plane.constant).toBe(2)
   })
 
-  it("fromComponents", () => {
-    const plane = Plane.fromComponents(1, 2, 3, 4)
-    expect(plane.normal).toValueEqual([1, 2, 3])
-    expect(plane.constant).toBe(4)
+  it("to be created by components", () => {
+    const plane = new Plane(0, 1, 0, 2)
+    expect(plane.normal).toValueEqual([0, 1, 0])
+    expect(plane.constant).toBe(2)
   })
 
   it("copy", () => {

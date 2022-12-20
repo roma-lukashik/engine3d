@@ -5,6 +5,9 @@ export class AABB {
   public readonly min: Vector3 = new Vector3(Infinity, Infinity, Infinity)
   public readonly max: Vector3 = new Vector3(-Infinity, -Infinity, -Infinity)
 
+  private readonly center: Vector3 = Vector3.zero()
+  private readonly size: Vector3 = new Vector3(Infinity, Infinity, Infinity)
+
   public constructor()
   public constructor(min: Vector3, max: Vector3)
   public constructor(points: ArrayLike<number>)
@@ -16,6 +19,14 @@ export class AABB {
       this.min.copy(args[0])
       this.max.copy(args[1])
     }
+  }
+
+  public getCenter(): Vector3 {
+    return this.center.copy(this.max).add(this.min).divideScalar(2)
+  }
+
+  public getSize(): Vector3 {
+    return this.size.copy(this.max).subtract(this.min)
   }
 
   public clone(): AABB {

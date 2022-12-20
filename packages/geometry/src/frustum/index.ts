@@ -51,12 +51,12 @@ export class Frustum {
       a30, a31, a32, a33,
     ] = matrix.elements
     return new Frustum(
-      Plane.fromComponents(a03 + a00, a13 + a10, a23 + a20, a33 + a30).normalize(),
-      Plane.fromComponents(a03 - a00, a13 - a10, a23 - a20, a33 - a30).normalize(),
-      Plane.fromComponents(a03 + a01, a13 + a11, a23 + a21, a33 + a31).normalize(),
-      Plane.fromComponents(a03 - a01, a13 - a11, a23 - a21, a33 - a31).normalize(),
-      Plane.fromComponents(a03 + a02, a13 + a12, a23 + a22, a33 + a32).normalize(),
-      Plane.fromComponents(a03 - a02, a13 - a12, a23 - a22, a33 - a32).normalize(),
+      new Plane(a03 + a00, a13 + a10, a23 + a20, a33 + a30).normalize(),
+      new Plane(a03 - a00, a13 - a10, a23 - a20, a33 - a30).normalize(),
+      new Plane(a03 + a01, a13 + a11, a23 + a21, a33 + a31).normalize(),
+      new Plane(a03 - a01, a13 - a11, a23 - a21, a33 - a31).normalize(),
+      new Plane(a03 + a02, a13 + a12, a23 + a22, a33 + a32).normalize(),
+      new Plane(a03 - a02, a13 - a12, a23 - a22, a33 - a32).normalize(),
     )
   }
 

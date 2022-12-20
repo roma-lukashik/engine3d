@@ -1,8 +1,12 @@
 import { MeshPrimitiveAttributes } from "@core/loaders/types"
 import { BufferAttribute } from "@core/bufferAttribute"
 import { forEachKey } from "@utils/object"
+import { TypedArray } from "@core/types"
+import { TypedArrayByComponentType } from "@core/bufferAttribute/utils"
 
 export class Geometry extends autoImplement<GeometryAttributes>() {
+  public readonly positionPoints: TypedArray
+
   public constructor(data: Partial<Record<keyof MeshPrimitiveAttributes | "index", BufferAttribute>> = {}) {
     super()
     forEachKey(data, (key, bufferAttribute) => {
@@ -11,6 +15,23 @@ export class Geometry extends autoImplement<GeometryAttributes>() {
         this[attributeKey] = bufferAttribute
       }
     })
+    this.positionPoints = this.getPositionPoints()
+  }
+
+  private getPositionPoints(): TypedArray {
+    const { position, index } = this
+    const TypedArrayConstructor = TypedArrayByComponentType[position.type]
+    if (index) {
+      const points = new TypedArrayConstructor(index.count * position.itemSize)
+      index.forEach(([positionIndex], i) => {
+        points.set(position.getBufferElement(positionIndex), i * position.itemSize)
+      })
+      return points
+    } else {
+      const points = new TypedArrayConstructor(position.count * position.itemSize)
+      position.forEach((pointArray, i) => points.set(pointArray, i * position.itemSize))
+      return points
+    }
   }
 }
 

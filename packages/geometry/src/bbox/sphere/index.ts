@@ -29,7 +29,7 @@ export class Sphere {
 
   private fromPoints(points: ArrayLike<number>): void {
     const aabb = new AABB(points)
-    this.center.copy(aabb.max).add(aabb.min).divideScalar(2)
+    this.center.copy(aabb.getCenter())
     this.radius = this.center.distance(aabb.max)
   }
 }

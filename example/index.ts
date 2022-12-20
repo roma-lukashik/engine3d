@@ -4,6 +4,7 @@ import { CameraControl } from "@core/cameraControl"
 import { KeyboardManager } from "@core/controls/keyboard"
 import { parseGltf } from "@core/loaders/gltf"
 import { Node } from "@core/node"
+import { Object3D } from "@core/object3d"
 
 import { Renderer } from "@webgl/renderer"
 import { Scene } from "@webgl/scene"
@@ -11,7 +12,7 @@ import { Scene } from "@webgl/scene"
 import { toRadian } from "@math/angle"
 import { Vector3 } from "@math/vector3"
 import { Matrix4 } from "@math/matrix4"
-import { Object3D } from "@core/object3d"
+import { Quaternion } from "@math/quaternion"
 
 import { PhysicsEngine } from "@physics/engine"
 
@@ -73,49 +74,45 @@ const wall = await Promise.all(timesMap(9, () => loadModel("models/box.glb")))
 court.frustumCulled = false
 court.isMovable = false
 court.restitution = 1
-court.node.localMatrix = Matrix4.scaling(100, 100, 100).rotateY(Math.PI / 2)
-court.updateWorldMatrix()
+court.setScale(new Vector3(100, 100, 100))
+court.setRotation(Quaternion.fromRotationMatrix(Matrix4.rotationY(Math.PI / 2)))
 
 net.isMovable = false
 net.restitution = 0.15
-net.node.localMatrix = Matrix4.scaling(4.5, 2.5, 3).translate(5, 0, 0).rotateY(Math.PI / 2)
-net.updateWorldMatrix()
+net.setScale(new Vector3(3, 2.5, 4.5))
+net.setRotation(Quaternion.fromRotationMatrix(Matrix4.rotationY(Math.PI / 2)))
 
-ball.setMass(0.1)
 ball.airFriction = 0.001
 ball.restitution = 0.6
 ball.colliders = [court, net, ...wall]
-ball.node.children[0].localMatrix.scale(7, 7, 7)
-ball.node.localMatrix = Matrix4.translation(0, 8, 1085)
-ball.updateWorldMatrix()
+ball.setMass(0.1)
+ball.setScale(new Vector3(7, 7, 7))
+ball.setPosition(new Vector3(0, 8, 1085))
 
 player.frustumCulled = false
-player.setMass(70)
 player.colliders = [net, npc, court]
-player.node.children[0].localMatrix.rotateY(Math.PI)
-player.node.localMatrix = Matrix4.translation(0, 88, 1200)
-player.updateWorldMatrix()
+player.setMass(70)
+player.setPosition(new Vector3(0, 88, 1200))
+player.setRotation(Quaternion.fromAxisAngle(Vector3.one().normalize(), -Math.PI / 3))
 
-npc.setMass(70)
 npc.colliders = [court]
-npc.node.localMatrix = Matrix4.translation(0, 88, -1200)
-npc.updateWorldMatrix()
+npc.setMass(70)
+npc.setPosition(new Vector3(0, 88, -1200))
 
-wall[0].node.localMatrix.translate(0, 0, 100)
-wall[1].node.localMatrix.translate(20, 0, 100)
-wall[2].node.localMatrix.translate(-20, 0, 100)
-wall[3].node.localMatrix.translate(-20, 20, 100)
-wall[4].node.localMatrix.translate(20, 20, 100)
-wall[5].node.localMatrix.translate(0, 20, 100)
-wall[6].node.localMatrix.translate(-20, 40, 100)
-wall[7].node.localMatrix.translate(20, 40, 100)
-wall[8].node.localMatrix.translate(0, 40, 100)
+wall[0].setPosition(new Vector3(0, 0, 100))
+wall[1].setPosition(new Vector3(20, 0, 100))
+wall[2].setPosition(new Vector3(-20, 0, 100))
+wall[3].setPosition(new Vector3(-20, 20, 100))
+wall[4].setPosition(new Vector3(20, 20, 100))
+wall[5].setPosition(new Vector3(0, 20, 100))
+wall[6].setPosition(new Vector3(-20, 40, 100))
+wall[7].setPosition(new Vector3(20, 40, 100))
+wall[8].setPosition(new Vector3(0, 40, 100))
 wall.forEach((b) => {
-  b.setMass(0.05)
   b.friction = 0.5
   b.staticFriction = 0.9
   b.colliders = [court, net, ball, ...wall.filter((x) => x !== b)]
-  b.updateWorldMatrix()
+  b.setMass(0.05)
 })
 
 const scene = new Scene()
@@ -147,10 +144,9 @@ const getAnimation = (): PlayerAnimations => {
 
 const followObject = (node: Node): void => {
   const nodePosition = node.getWorldPosition()
-  const nodeRotation = node.getWorldRotation()
   const from = new Vector3(0, 700, 1500)
   const up = new Vector3(0, 150, 0)
-  camera.setPosition(from.rotateByQuaternion(nodeRotation).add(nodePosition))
+  camera.setPosition(from.add(nodePosition))
   camera.lookAt(up.add(nodePosition))
 }
 
@@ -164,8 +160,9 @@ const followBall = () => {
   } else {
     npc.animate("Idle", i)
   }
-  npc.node.localMatrix.translate(ballPosition.x - npcPosition.x, 0, 0)
-  npc.updateWorldMatrix()
+  ballPosition.y = npcPosition.y
+  ballPosition.z = npcPosition.z
+  npc.setPosition(ballPosition)
 }
 
 followObject(player.node)
@@ -195,12 +192,12 @@ const update = () => {
 
   if (ball.aabb.collide(npc.aabb)) {
     ball.velocity.set(0, Math.sin(angle), Math.cos(angle)).multiplyScalar(power)
-    // ball.angularVelocity.set(0, 50 * (Math.random() - 0.5), 0)
+    ball.angularVelocity.set(0, 50 * (Math.random() - 0.5), 0)
   }
 
   if (ball.aabb.collide(player.aabb)) {
     ball.velocity.set(0, Math.sin(angle), -Math.cos(angle)).multiplyScalar(power)
-    // ball.angularVelocity.set(0, 50 * (Math.random() - 0.5), 0)
+    ball.angularVelocity.set(0, 50 * (Math.random() - 0.5), 0)
   }
 
   physics.run(scene.objects)
