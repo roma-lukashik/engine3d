@@ -2,6 +2,7 @@ import { Vector3 } from "@math/vector3"
 import { AABB } from "@geometry/bbox/aabb"
 import { gte, lte, neq } from "@math/operators"
 import { EPS } from "@math/constants"
+import { RigidBody } from "@core/object3d"
 
 const axes = [
   new Vector3(1, 0, 0),
@@ -14,27 +15,29 @@ type Manifold = {
   axis: Vector3
 }
 
-export const continuousAABBCollisionDetection = (
-  movableBox: AABB,
-  staticBox: AABB,
+export const detectContinuousCollision = (
+  movableBody: RigidBody,
+  staticBody: RigidBody,
   movementVector: Vector3,
-  resolvingAxes: Vector3[] = [movementVector],
 ): Manifold | undefined => {
-  const expandedMovableBox = expandBoxTowardMovementVector(movableBox, movementVector)
+  const expandedMovableBox = expandBoxTowardMovementVector(movableBody.aabb, movementVector)
+  if (!expandedMovableBox.collide(staticBody.aabb)) {
+    return
+  }
   const tests = []
   for (let i = 0; i < axes.length; i++) {
     const testResult = testAxis(
       axes[i],
       expandedMovableBox.min.elements[i],
       expandedMovableBox.max.elements[i],
-      staticBox.min.elements[i],
-      staticBox.max.elements[i],
+      staticBody.aabb.min.elements[i],
+      staticBody.aabb.max.elements[i],
       movementVector,
     )
     if (!testResult) {
       return
     }
-    if (resolvingAxes.some((axis) => neq(testResult.axis.dot(axis), 0))) {
+    if (neq(testResult.axis.dot(movementVector), 0)) {
       tests.push(testResult)
     }
   }

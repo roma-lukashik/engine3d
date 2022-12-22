@@ -1,6 +1,6 @@
 import { RigidBody } from "@core/object3d"
 import { Vector3 } from "@math/vector3"
-import { continuousAABBCollisionDetection } from "@physics/sat"
+import { detectContinuousCollision } from "@physics/collision"
 import { lt, zero } from "@math/operators"
 
 type Props = {
@@ -31,7 +31,7 @@ export class PhysicsEngine {
       }
       const deltaPosition = this.explicitEulerMethod(rigidBody)
       rigidBody.colliders.forEach((collider) => {
-        const manifold = continuousAABBCollisionDetection(rigidBody.aabb, collider.aabb, deltaPosition)
+        const manifold = detectContinuousCollision(rigidBody, collider, deltaPosition)
         if (!manifold) {
           return
         }
