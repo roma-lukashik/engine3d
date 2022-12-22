@@ -93,7 +93,7 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
     // Update OOBB
     this.oobb.center.add(delta)
 
-    this.node.updateLocalMatrix()
+    this.node.localMatrix.setTranslation(this.node.position)
     this.node.updateWorldMatrix()
 
     return this
@@ -101,20 +101,20 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
 
   public setScale(scale: Vector3): this {
     const delta = scale.clone().divide(this.node.scale)
+    // Save previous AABB center to calculate translation after scaling.
+    // Find a way to change scale only without recalculation whole AABB.
+    const aabbPosition = this.aabb.getCenter().clone()
+
+    // Update object matrices
     this.node.scale.copy(scale)
+    this.node.updateLocalMatrix()
+    this.node.updateWorldMatrix()
+
+    this.updateAABB()
 
     // Update OOBB
     this.oobb.halfSize.multiply(delta)
-
-    // Update AABB
-    const originalSize = this.aabb.getSize()
-    const scaledSize = delta.multiply(originalSize)
-    const deltaHalfSize = scaledSize.subtract(originalSize).divideScalar(2)
-    this.aabb.min.subtract(deltaHalfSize)
-    this.aabb.max.add(deltaHalfSize)
-
-    this.node.updateLocalMatrix()
-    this.node.updateWorldMatrix()
+    this.oobb.center.add(this.aabb.getCenter().subtract(aabbPosition))
 
     return this
   }
@@ -124,6 +124,7 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
 
     // Update OOBB
     this.oobb.rotation.copy(rotation)
+    this.oobb.center.rotateByQuaternion(rotation)
 
     this.node.updateLocalMatrix()
     this.node.updateWorldMatrix()
@@ -158,14 +159,20 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
   }
 
   private updateOOBB(): void {
-    // Reset rotation
-    this.node.localMatrix.compose(Quaternion.identity(), this.node.position, this.node.scale)
+    const scale = this.node.scale
+    const position = this.node.position
+
+    // Reset object rotation
+    this.node.localMatrix.scaling(scale.x, scale.y, scale.z).setTranslation(position)
     this.node.updateWorldMatrix()
 
     // Calculate OOBB from non rotated AABB
     const aabb = this.calculateAABB()
     this.oobb.fromAABB(aabb)
     this.oobb.rotation.copy(this.node.rotation)
+
+    // Check if this is neededw
+    // this.oobb.center.rotateByQuaternion(this.node.rotation)
 
     // Restore object rotation
     this.node.updateLocalMatrix()

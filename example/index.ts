@@ -11,7 +11,6 @@ import { Scene } from "@webgl/scene"
 
 import { toRadian } from "@math/angle"
 import { Vector3 } from "@math/vector3"
-import { Matrix4 } from "@math/matrix4"
 import { Quaternion } from "@math/quaternion"
 
 import { PhysicsEngine } from "@physics/engine"
@@ -75,13 +74,13 @@ court.frustumCulled = false
 court.isMovable = false
 court.restitution = 1
 court.setScale(new Vector3(100, 100, 100))
-court.setRotation(Quaternion.fromRotationMatrix(Matrix4.rotationY(Math.PI / 2)))
+court.setRotation(Quaternion.fromAxisAngle(new Vector3(0, -1, 0), Math.PI / 2))
 
 net.isMovable = false
 net.restitution = 0.15
-net.setPosition(new Vector3(30, 0, 0))
 net.setScale(new Vector3(3, 2.5, 4.5))
-net.setRotation(Quaternion.fromRotationMatrix(Matrix4.rotationY(Math.PI / 2)))
+net.setRotation(Quaternion.fromAxisAngle(new Vector3(0, -1, 0), Math.PI / 2))
+net.setPosition(new Vector3(31, 0, 0))
 
 ball.airFriction = 0.001
 ball.restitution = 0.6
@@ -93,8 +92,8 @@ ball.setPosition(new Vector3(0, 7, 1085))
 player.frustumCulled = false
 player.colliders = [net, npc, court]
 player.setMass(70)
-player.setPosition(new Vector3(0, 88, 1200))
 player.setRotation(Quaternion.fromAxisAngle(Vector3.one().normalize(), -Math.PI / 3))
+player.setPosition(new Vector3(0, 88, 1200))
 
 npc.colliders = [court]
 npc.setMass(70)

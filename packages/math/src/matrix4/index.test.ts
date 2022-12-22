@@ -339,6 +339,24 @@ describe("Matrix4", () => {
     ])
   })
 
+  it("translateByVector", () => {
+    expect(a.translateByVector(new Vector3(2, 3, 4))).toValueEqual([
+      1, 2,	3, 4,
+      4, 1,	3, 2,
+      4, 3,	2, 1,
+      33, 21,	27, 19,
+    ])
+  })
+
+  it("setTranslation", () => {
+    expect(a.setTranslation(new Vector3(2, 3, 4))).toValueEqual([
+      1, 2,	3, 4,
+      4, 1,	3, 2,
+      4, 3,	2, 1,
+      2, 3,	4, 1,
+    ])
+  })
+
   it("scale", () => {
     expect(a.scale(2, 3, 4)).toValueEqual([
       2, 4, 6, 8,

@@ -234,7 +234,7 @@ export class Matrix4 {
     this.array[8] = (xz + wy) * scale.z
     this.array[9] = (yz - wx) * scale.z
     this.array[10] = (1 - (xx + yy)) * scale.z
-    this.array.set(translation.elements, 12)
+    this.setTranslation(translation)
     return this
   }
 
@@ -405,6 +405,13 @@ export class Matrix4 {
 
   public translateByVector(v: Vector3): this {
     return this.translate(v.x, v.y, v.z)
+  }
+
+  public setTranslation(v: Vector3): this {
+    this.array[12] = v.x
+    this.array[13] = v.y
+    this.array[14] = v.z
+    return this
   }
 
   public scale(x: number, y: number, z: number): this {
