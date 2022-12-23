@@ -1,6 +1,5 @@
-import { DebugLinesProgram } from "@webgl/program/debugLines"
+import { DebugLinesProgram } from "@webgl/debug/programs/lines"
 import { RenderState } from "@webgl/utils/state"
-import { Camera } from "@core/camera"
 import { BufferAttribute } from "@core/bufferAttribute"
 import { Matrix4 } from "@math/matrix4"
 import { BufferViewTarget } from "@core/loaders/types"
@@ -8,10 +7,12 @@ import { range } from "@utils/array"
 import { Vector3 } from "@math/vector3"
 import { RenderObject } from "@core/object3d"
 import { RGB } from "@core/color/rgb"
+import { DebugRenderer } from "@webgl/debug/renderers/types"
+import { Scene } from "@webgl/scene"
 
 const identity = Matrix4.identity()
 
-export class DebugSkeletonRenderer {
+export class DebugSkeletonRenderer implements DebugRenderer {
   private readonly gl: WebGLRenderingContext
   private readonly program: DebugLinesProgram
   private readonly color: RGB
@@ -26,7 +27,21 @@ export class DebugSkeletonRenderer {
     this.program = new DebugLinesProgram(gl, state)
   }
 
-  public render(object: RenderObject, camera: Camera): void {
+  public render(scene: Scene): void {
+    this.program.use()
+    this.gl.disable(this.gl.DEPTH_TEST)
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null)
+    this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height)
+
+    this.program.uniforms.setValues({
+      projectionMatrix: scene.camera.projectionMatrix.elements,
+      color: this.color.elements,
+    })
+
+    scene.getRenderStack().forEach((object) => this.renderSkeleton(object))
+  }
+
+  private renderSkeleton(object: RenderObject): void {
     if (!object.skeletons.length) {
       return
     }
@@ -41,11 +56,6 @@ export class DebugSkeletonRenderer {
       target: BufferViewTarget.ElementArrayBuffer,
     })
 
-    this.program.use()
-    this.gl.disable(this.gl.DEPTH_TEST)
-    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null)
-    this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height)
-
     this.program.attributes.update({
       position: positionAttribute,
       index: indexAttribute,
@@ -53,8 +63,6 @@ export class DebugSkeletonRenderer {
 
     this.program.uniforms.setValues({
       worldMatrix: identity.elements,
-      projectionMatrix: camera.projectionMatrix.elements,
-      color: this.color.elements,
     })
 
     this.gl.drawElements(this.gl.LINES, indexAttribute.count, indexAttribute.type, indexAttribute.offset)

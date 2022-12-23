@@ -17,6 +17,11 @@ import { PhysicsEngine } from "@physics/engine"
 
 import { timesMap } from "@utils/array"
 
+import { DebugLightsRenderer } from "@webgl/debug/renderers/lights"
+import { DebugSkeletonRenderer } from "@webgl/debug/renderers/skeletons"
+import { DebugOOBBRenderer } from "@webgl/debug/renderers/oobb"
+import { DebugAABBRenderer } from "@webgl/debug/renderers/aabb"
+
 const camera = new PerspectiveCamera({
   aspect: window.innerWidth / window.innerHeight,
   fovy: toRadian(30),
@@ -37,6 +42,12 @@ const ambientLight = new AmbientLight({
 const renderer = new Renderer({
   width: window.innerWidth,
   height: window.innerHeight,
+  debugRenderers: [
+    DebugLightsRenderer,
+    DebugSkeletonRenderer,
+    DebugOOBBRenderer,
+    DebugAABBRenderer,
+  ],
 })
 
 renderer.gl.canvas.onclick = () => {
@@ -116,11 +127,8 @@ wall.forEach((b) => {
 })
 
 const scene = new Scene()
-scene.addLight(
-  directionalLight,
-  ambientLight,
-)
-
+scene.addLight(directionalLight, ambientLight)
+scene.addCamera(camera)
 scene.addObject(court)
 scene.addObject(net)
 scene.addObject(player)
@@ -204,7 +212,7 @@ const update = () => {
   }
 
   physics.run(scene.objects)
-  renderer.render(scene, camera)
+  renderer.render(scene)
   requestAnimationFrame(update)
 }
 

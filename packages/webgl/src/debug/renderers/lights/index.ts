@@ -1,14 +1,14 @@
-import { indexes, positions } from "@webgl/renderer/debugLight/data"
-import { DebugLinesProgram } from "@webgl/program/debugLines"
+import { indexes, positions } from "@webgl/debug/renderers/constants"
+import { DebugLinesProgram } from "@webgl/debug/programs/lines"
 import { BufferAttribute } from "@core/bufferAttribute"
 import { BufferViewTarget } from "@core/loaders/types"
-import { Camera } from "@core/camera"
 import { RenderState } from "@webgl/utils/state"
 import { Vector3 } from "@math/vector3"
 import { Scene } from "@webgl/scene"
 import { RGB } from "@core/color/rgb"
+import { DebugRenderer } from "@webgl/debug/renderers/types"
 
-export class DebugLightRenderer {
+export class DebugLightsRenderer implements DebugRenderer {
   private readonly gl: WebGLRenderingContext
   private readonly program: DebugLinesProgram
   private readonly positionAttribute: BufferAttribute
@@ -34,13 +34,13 @@ export class DebugLightRenderer {
     })
   }
 
-  public render(scene: Scene, camera: Camera): void {
+  public render(scene: Scene): void {
     this.program.use()
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null)
     this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height)
 
     this.program.uniforms.setValues({
-      projectionMatrix: camera.projectionMatrix.elements,
+      projectionMatrix: scene.camera.projectionMatrix.elements,
       color: this.color.elements,
     })
     this.program.attributes.update({

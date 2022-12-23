@@ -1,16 +1,18 @@
-import { DebugLinesProgram } from "@webgl/program/debugLines"
+import { DebugLinesProgram } from "@webgl/debug/programs/lines"
 import { RenderState } from "@webgl/utils/state"
-import { Camera } from "@core/camera"
 import { BufferAttribute } from "@core/bufferAttribute"
 import { Matrix4 } from "@math/matrix4"
 import { BufferViewTarget } from "@core/loaders/types"
 import { Vector3 } from "@math/vector3"
-import { Quaternion } from "@math/quaternion"
-import { indexes, positions } from "@webgl/renderer/debugMesh/data"
-import { RenderObject } from "@core/object3d"
+import { indexes, positions } from "@webgl/debug/renderers/constants"
 import { RGB } from "@core/color/rgb"
+import { DebugRenderer } from "@webgl/debug/renderers/types"
+import { Scene } from "@webgl/scene"
+import { RenderObject } from "@core/object3d"
 
-export class DebugMeshRenderer {
+export abstract class DebugBoxRenderer implements DebugRenderer {
+  protected readonly transformMatrix: Matrix4 = Matrix4.identity()
+
   private readonly gl: WebGLRenderingContext
   private readonly program: DebugLinesProgram
   private readonly color: RGB
@@ -20,7 +22,7 @@ export class DebugMeshRenderer {
   public constructor(
     gl: WebGLRenderingContext,
     state: RenderState,
-    color: RGB = new RGB(0xDE3E4B),
+    color: RGB,
   ) {
     this.gl = gl
     this.color = color
@@ -36,34 +38,33 @@ export class DebugMeshRenderer {
     })
   }
 
-  public render(object: RenderObject, camera: Camera): void {
-    const min = object.aabb.min
-    const max = object.aabb.max
-    const translation = max.clone().add(min).divideScalar(2)
-    const scale = max.clone().subtract(min).divideScalar(2)
-    const transformMatrix = Matrix4.compose(Quaternion.identity(), translation, scale)
+  protected abstract calculateTransformMatrix(object: RenderObject): void
 
+  public render(scene: Scene): void {
     this.program.use()
     this.gl.disable(this.gl.DEPTH_TEST)
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null)
     this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height)
-
-    this.program.uniforms.setValues({
-      worldMatrix: transformMatrix.elements,
-      projectionMatrix: camera.projectionMatrix.elements,
-      color: this.color.elements,
-    })
 
     this.program.attributes.update({
       position: this.positionAttribute,
       index: this.indexAttribute,
     })
 
-    this.gl.drawElements(
-      this.gl.LINES,
-      this.indexAttribute.count,
-      this.indexAttribute.type,
-      this.indexAttribute.offset,
-    )
+    this.program.uniforms.setValues({
+      projectionMatrix: scene.camera.projectionMatrix.elements,
+      color: this.color.elements,
+    })
+
+    scene.getRenderStack().forEach((object) => {
+      this.calculateTransformMatrix(object)
+      this.program.uniforms.setValues({ worldMatrix: this.transformMatrix.elements })
+      this.gl.drawElements(
+        this.gl.LINES,
+        this.indexAttribute.count,
+        this.indexAttribute.type,
+        this.indexAttribute.offset,
+      )
+    })
   }
 }

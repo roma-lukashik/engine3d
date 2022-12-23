@@ -1,6 +1,5 @@
 import { MeshProgram } from "@webgl/program/mesh"
 import { Scene } from "@webgl/scene"
-import { Camera } from "@core/camera"
 import { ShadowMap, ShadowMapRenderer } from "@webgl/renderer/shadow"
 import { RenderState } from "@webgl/utils/state"
 import { Mesh } from "@core/mesh"
@@ -26,7 +25,7 @@ export class MeshRenderer {
     this.shadowMapRenderer = shadowRenderer
   }
 
-  public render(renderStack: RenderObject[], scene: Scene, camera: Camera): void {
+  public render(renderStack: RenderObject[], scene: Scene): void {
     const shadowMap = this.shadowMapRenderer.create(scene)
 
     this.gl.depthMask(true)
@@ -39,12 +38,12 @@ export class MeshRenderer {
 
     renderStack.forEach((object) => {
       object.meshes.forEach((mesh) => {
-        this.renderMesh(mesh, scene, shadowMap, camera)
+        this.renderMesh(mesh, scene, shadowMap)
       })
     })
   }
 
-  private renderMesh(mesh: Mesh, scene: Scene, shadowMap: ShadowMap, camera: Camera): void {
+  private renderMesh(mesh: Mesh, scene: Scene, shadowMap: ShadowMap): void {
     const program = this.getProgram(mesh, scene)
     program.use()
 
@@ -65,8 +64,8 @@ export class MeshRenderer {
       },
       boneTexture: boneTexture?.texture,
       boneTextureSize: boneTexture?.size,
-      projectionMatrix: camera.projectionMatrix.elements,
-      viewMatrix: camera.viewMatrix.elements,
+      projectionMatrix: scene.camera.projectionMatrix.elements,
+      viewMatrix: scene.camera.viewMatrix.elements,
       ambientLights: scene.ambientLights.map(({ color, intensity }) => {
         return { color: color.elements, intensity }
       }),
@@ -134,7 +133,7 @@ export class MeshRenderer {
           shadowMap: shadowMap.get(light)!,
         }
       }),
-      cameraPosition: camera.position.elements,
+      cameraPosition: scene.camera.position.elements,
     })
 
     program.attributes.update(mesh.geometry)

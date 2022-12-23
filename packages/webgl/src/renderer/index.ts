@@ -1,18 +1,15 @@
 import { Scene } from "@webgl/scene"
-import { Camera } from "@core/camera"
 import { ShadowMapRenderer } from "@webgl/renderer/shadow"
 import { MeshRenderer } from "@webgl/renderer/mesh"
-import { DebugLightRenderer } from "@webgl/renderer/debugLight"
 import { RenderState } from "@webgl/utils/state"
-import { DebugSkeletonRenderer } from "@webgl/renderer/debugSkeleton"
-import { DebugMeshRenderer } from "@webgl/renderer/debugMesh"
 import { RenderCache } from "@webgl/renderer/cache"
-import { getRenderStack } from "@webgl/renderer/renderStack"
+import { DebugRenderer, DebugRendererConstructor } from "@webgl/debug/renderers/types"
 
 type Props = {
-  canvas?: HTMLCanvasElement
   width: number
   height: number
+  canvas?: HTMLCanvasElement
+  debugRenderers?: DebugRendererConstructor[]
 }
 
 export class Renderer {
@@ -22,14 +19,13 @@ export class Renderer {
   private readonly cache: RenderCache
   private readonly shadowMapRenderer: ShadowMapRenderer
   private readonly meshRenderer: MeshRenderer
-  private readonly debugLightRenderer: DebugLightRenderer
-  private readonly debugSkeletonRenderer: DebugSkeletonRenderer
-  private readonly debugMeshRenderer: DebugMeshRenderer
+  private readonly debugRenderers: DebugRenderer[]
 
   public constructor({
     canvas = document.createElement("canvas"),
     width,
     height,
+    debugRenderers = [],
   }: Props) {
     const gl = canvas.getContext("webgl", { antialias: true })
     if (!gl) {
@@ -49,21 +45,17 @@ export class Renderer {
     this.cache = new RenderCache(this.gl)
     this.shadowMapRenderer = new ShadowMapRenderer(this.gl, this.state, this.cache)
     this.meshRenderer = new MeshRenderer(this.gl, this.state, this.cache, this.shadowMapRenderer)
-    this.debugLightRenderer = new DebugLightRenderer(this.gl, this.state)
-    this.debugSkeletonRenderer = new DebugSkeletonRenderer(this.gl, this.state)
-    this.debugMeshRenderer = new DebugMeshRenderer(this.gl, this.state)
+    this.debugRenderers = debugRenderers.map((DebugRendererConstructor) => {
+      return new DebugRendererConstructor(this.gl, this.state)
+    })
     this.resize(width, height)
     this.gl.clearColor(0, 0, 0, 1)
   }
 
-  public render(scene: Scene, camera: Camera): void {
-    const renderStack = getRenderStack(scene, camera)
-    this.meshRenderer.render(renderStack, scene, camera)
-    this.debugLightRenderer.render(scene, camera)
-    renderStack.forEach((object) => {
-      this.debugSkeletonRenderer.render(object, camera)
-      this.debugMeshRenderer.render(object, camera)
-    })
+  public render(scene: Scene): void {
+    const renderStack = scene.getRenderStack()
+    this.meshRenderer.render(renderStack, scene)
+    this.debugRenderers.forEach((renderer) => renderer.render(scene))
   }
 
   public resize(width: number, height: number): void {
