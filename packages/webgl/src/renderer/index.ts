@@ -53,8 +53,7 @@ export class Renderer {
   }
 
   public render(scene: Scene): void {
-    const renderStack = scene.getRenderStack()
-    this.meshRenderer.render(renderStack, scene)
+    this.meshRenderer.render(scene)
     this.debugRenderers.forEach((renderer) => renderer.render(scene))
   }
 
