@@ -3,7 +3,6 @@ import { LightType, LightWithShadow } from "@core/lights/types"
 import { RGB } from "@core/color/rgb"
 import { toRadian } from "@math/angle"
 import { Vector3 } from "@math/vector3"
-import { Matrix4 } from "@math/matrix4"
 
 type Props = {
   color?: number
@@ -15,18 +14,13 @@ type Props = {
 export class PointLight implements LightWithShadow {
   public readonly type: LightType
   public readonly castShadow: boolean
+  public readonly camera: Camera
   public color: RGB
   public intensity: number
 
   public get position(): Vector3 {
     return this.camera.position
   }
-
-  public get projectionMatrix(): Matrix4 {
-    return this.camera.projectionMatrix
-  }
-
-  private readonly camera: Camera
 
   public constructor({
     castShadow = true,

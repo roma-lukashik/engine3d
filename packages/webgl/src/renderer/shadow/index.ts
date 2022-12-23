@@ -40,8 +40,7 @@ export class ShadowMapRenderer {
       this.gl.viewport(0, 0, texture.width, texture.height)
       this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
 
-      // TODO fix
-      scene.addCamera(light as any)
+      scene.addCamera(light.camera)
       scene.getRenderStack().forEach((object) => {
         object.meshes.forEach((mesh) => {
           this.renderShadow(mesh, light)
@@ -72,7 +71,7 @@ export class ShadowMapRenderer {
       worldMatrix: mesh.worldMatrix.elements,
       boneTexture: boneTexture?.texture,
       boneTextureSize: boneTexture?.size,
-      projectionMatrix: light.projectionMatrix.elements,
+      projectionMatrix: light.camera.projectionMatrix.elements,
     })
 
     program.attributes.update({

@@ -50,7 +50,7 @@ export class DebugLightsRenderer implements DebugRenderer {
 
     scene.shadowLights.forEach((light) => {
       this.program.uniforms.setValues({
-        worldMatrix: light.projectionMatrix.clone().invert().elements,
+        worldMatrix: light.camera.projectionMatrix.clone().invert().elements,
       })
       this.drawBuffer()
     })

@@ -100,7 +100,7 @@ export class MeshRenderer {
             coneCos,
             penumbraCos,
             bias,
-            projectionMatrix,
+            camera,
           } = light
           return {
             color: color.elements,
@@ -111,7 +111,7 @@ export class MeshRenderer {
             coneCos,
             penumbraCos,
             bias,
-            projectionMatrix: projectionMatrix.elements,
+            projectionMatrix: camera.projectionMatrix.elements,
             shadowMap: shadowMap.get(light)!,
           }
       }),
@@ -123,13 +123,13 @@ export class MeshRenderer {
         }
       }),
       directionalShadowLights: scene.directionalShadowLights.map((light) => {
-        const { color, intensity, direction, bias, projectionMatrix } = light
+        const { color, intensity, direction, bias, camera } = light
         return {
           color: color.elements,
           direction: direction.elements,
           intensity,
           bias,
-          projectionMatrix: projectionMatrix.elements,
+          projectionMatrix: camera.projectionMatrix.elements,
           shadowMap: shadowMap.get(light)!,
         }
       }),
