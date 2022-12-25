@@ -25,10 +25,10 @@ export const detectContinuousCollision = (
   // if (!expandedMovableBox.collide(staticBody.aabb)) {
   //   return
   // }
-  const axes = getAxes(movableBody, staticBody)
+  const axes = getAxes(movableBody.oobb).concat(getAxes(staticBody.oobb))
   const expandedMovableBox = expandOOBBTowardMovementVector(movableBody.oobb, movementVector)
-  const pointsA = getCornerPoints(expandedMovableBox)
-  const pointsB = getCornerPoints(staticBody.oobb)
+  const pointsA = expandedMovableBox.getPoints()
+  const pointsB = staticBody.oobb.getPoints()
   const tests = []
   for (let i = 0; i < axes.length; i++) {
     const projectionA = new Projection(pointsA, axes[i])
@@ -63,15 +63,11 @@ const expandOOBBTowardMovementVector = (oobb: OOBB, movementVector: Vector3): OO
   return box
 }
 
-const getAxes = (bodyA: RigidBody, bodyB: RigidBody): Vector3[] => {
+const getAxes = (box: OOBB): Vector3[] => {
   return units.reduce<Vector3[]>((axes, axis) => {
-    const rotatedAxisA = axis.clone().rotateByQuaternion(bodyA.oobb.rotation)
-    if (!axes.some((v) => eq(Math.abs(v.dot(rotatedAxisA)), 1))) {
-      axes.push(rotatedAxisA)
-    }
-    const rotatedAxisB = axis.clone().rotateByQuaternion(bodyB.oobb.rotation)
-    if (!axes.some((v) => eq(Math.abs(v.dot(rotatedAxisB)), 1))) {
-      axes.push(rotatedAxisB)
+    const rotatedAxis = axis.clone().rotateByQuaternion(box.rotation)
+    if (!axes.some((v) => eq(Math.abs(v.dot(rotatedAxis)), 1))) {
+      axes.push(rotatedAxis)
     }
     return axes
   }, [])
@@ -86,19 +82,4 @@ const testAxis = (axis: Vector3, a: Projection, b: Projection, direction: Vector
   const sign = gte(axis.dot(direction), 0) ? 1 : -1
   const penetration = sign === 1 ? right : left
   return { axis: axis.clone().multiplyScalar(sign), penetration }
-}
-
-const getCornerPoints = ({ halfSize, rotation, center }: OOBB): Vector3[] => {
-  return [
-    new Vector3(halfSize.x, halfSize.y, halfSize.z),
-    new Vector3(-halfSize.x, halfSize.y, halfSize.z),
-    new Vector3(-halfSize.x, -halfSize.y, halfSize.z),
-    new Vector3(-halfSize.x, -halfSize.y, -halfSize.z),
-    new Vector3(halfSize.x, -halfSize.y, -halfSize.z),
-    new Vector3(halfSize.x, halfSize.y, -halfSize.z),
-    new Vector3(-halfSize.x, halfSize.y, -halfSize.z),
-    new Vector3(halfSize.x, -halfSize.y, halfSize.z),
-  ].map((v) => {
-    return v.rotateByQuaternion(rotation).add(center)
-  })
 }
