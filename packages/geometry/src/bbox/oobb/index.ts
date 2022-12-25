@@ -8,16 +8,17 @@ export class OOBB {
   public readonly rotation: Quaternion = Quaternion.identity()
 
   public constructor()
-  public constructor(center: Vector3, halfSize: Vector3)
-  public constructor(...args: [] | [Vector3, Vector3]) {
-    if (args.length === 2) {
+  public constructor(center: Vector3, halfSize: Vector3, rotation: Quaternion)
+  public constructor(...args: [] | [Vector3, Vector3, Quaternion]) {
+    if (args.length === 3) {
       this.center.copy(args[0])
       this.halfSize.copy(args[1])
+      this.rotation.copy(args[2])
     }
   }
 
   public clone(): OOBB {
-    return new OOBB(this.center, this.halfSize)
+    return new OOBB(this.center, this.halfSize, this.rotation)
   }
 
   public fromAABB(aabb: AABB): this {
