@@ -133,6 +133,10 @@ describe("Vector3", () => {
     expect(a.negate()).toValueEqual([-1, -2, -3])
   })
 
+  it("reflect", () => {
+    expect(a.reflect(new Vector3(0, 1, 0))).toValueEqual([1, -2, 3])
+  })
+
   it("dot", () => {
     expect(a.dot(b)).toBe(11)
   })
@@ -174,6 +178,11 @@ describe("Vector3", () => {
 
   it("max", () => {
     expect(a.max(b)).toValueEqual([2, 3, 3])
+  })
+
+  it("sign", () => {
+    a.set(0, -5, 10).sign()
+    expect(a).toValueEqual([0, -1, 1])
   })
 
   it("elements", () => {

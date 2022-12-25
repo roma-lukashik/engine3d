@@ -25,7 +25,7 @@ describe("Geometry", () => {
       index,
     })
 
-    expect(geometry).toMatchObject<Geometry>({
+    expect(geometry).toMatchObject<Partial<Geometry>>({
       position,
       normal,
       color,
