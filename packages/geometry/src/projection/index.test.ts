@@ -27,4 +27,16 @@ describe("Projection", () => {
     expect(p.min).toBeCloseTo(min)
     expect(p.max).toBeCloseTo(max)
   })
+
+  it.each<[axis: Vector3, min: number, max: number]>([
+    [new Vector3(0, 0, 1), 0, 1],
+    [new Vector3(0, 1, 0), -1, 1],
+    [new Vector3(1, 0, 0), -1, 0],
+    [new Vector3(1, 1, 1).normalize(), -1.155, 0.577],
+  ])("fromPoints %#", (axis, min, max) => {
+    const p = new Projection()
+    p.fromPoints(points, axis)
+    expect(p.min).toBeCloseTo(min)
+    expect(p.max).toBeCloseTo(max)
+  })
 })
