@@ -103,7 +103,7 @@ ball.setPosition(new Vector3(0, 7, 1085))
 player.frustumCulled = false
 player.colliders = [net, npc, court]
 player.setMass(70)
-player.setRotation(Quaternion.fromAxisAngle(Vector3.one().normalize(), -Math.PI / 3))
+player.setRotation(Quaternion.fromAxisAngle(Vector3.one().normalize(), -Math.PI / 4))
 player.setPosition(new Vector3(0, 88, 1200))
 
 npc.colliders = [court]

@@ -185,6 +185,16 @@ describe("Vector3", () => {
     expect(a).toValueEqual([0, -1, 1])
   })
 
+  it("abs(0, -5, 10)", () => {
+    a.set(0, -5, 10).abs()
+    expect(a).toValueEqual([0, 5, 10])
+  })
+
+  it("abs(-1, -5, 1-0)", () => {
+    a.set(-1, -5, -10).abs()
+    expect(a).toValueEqual([1, 5, 10])
+  })
+
   it("elements", () => {
     expect(a.elements).toValueEqual([1, 2, 3])
   })
