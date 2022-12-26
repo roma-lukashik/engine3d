@@ -13,6 +13,7 @@ export class OOBB {
   public readonly halfSize: Vector3 = Vector3.zero()
   public readonly rotation: Quaternion = Quaternion.identity()
 
+  // Fix creation array for each OOBB even if points are not needed
   private readonly array: CornerPoints = timesMap(8, Vector3.zero) as CornerPoints
 
   public constructor()

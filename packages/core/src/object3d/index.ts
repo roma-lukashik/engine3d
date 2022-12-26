@@ -75,8 +75,8 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
         }
       }
     })
-    this.updateAABB()
     this.updateOOBB()
+    this.updateAABB()
   }
 
   public setPosition(position: Vector3): this {
@@ -101,20 +101,20 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
 
   public setScale(scale: Vector3): this {
     const delta = scale.clone().divide(this.node.scale)
-    // Save previous AABB center to calculate translation after scaling.
-    // Find a way to change scale only without recalculation whole AABB.
-    const aabbPosition = this.aabb.getCenter().clone()
 
-    // Update object matrices
     this.node.scale.copy(scale)
-    this.node.updateLocalMatrix()
-    this.node.updateWorldMatrix()
-
-    this.updateAABB()
+    this.node.position.multiply(delta)
 
     // Update OOBB
     this.oobb.halfSize.multiply(delta)
-    this.oobb.center.add(this.aabb.getCenter().subtract(aabbPosition))
+    this.oobb.center.multiply(delta)
+
+    // Update AABB
+    this.aabb.min.multiply(delta)
+    this.aabb.max.multiply(delta)
+
+    this.node.updateLocalMatrix()
+    this.node.updateWorldMatrix()
 
     return this
   }
@@ -147,15 +147,14 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
       return
     }
     this.animations[key].update(time)
-    this.updateAABB()
     this.updateOOBB()
+    this.updateAABB()
     this.meshes.forEach((mesh) => mesh.updateSkeleton())
   }
 
   private updateAABB(): void {
-    const aabb = this.calculateAABB()
-    this.aabb.min.copy(aabb.min)
-    this.aabb.max.copy(aabb.max)
+    this.aabb.reset()
+    this.oobb.getPoints().forEach((point) => this.aabb.expandByPoint(point))
   }
 
   private updateOOBB(): void {
@@ -170,9 +169,6 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
     const aabb = this.calculateAABB()
     this.oobb.fromAABB(aabb)
     this.oobb.rotation.copy(this.node.rotation)
-
-    // Check if this is neededw
-    // this.oobb.center.rotateByQuaternion(this.node.rotation)
 
     // Restore object rotation
     this.node.updateLocalMatrix()
