@@ -3,6 +3,7 @@ import { eq, gte, lte, neq } from "@math/operators"
 import { EPS } from "@math/constants"
 import { RigidBody } from "@core/object3d"
 import { OOBB } from "@geometry/bbox/oobb"
+import { AABB } from "@geometry/bbox/aabb"
 import { Projection } from "@geometry/projection"
 
 const units = [
@@ -21,10 +22,9 @@ export const detectContinuousCollision = (
   staticBody: RigidBody,
   movementVector: Vector3,
 ): Manifold | undefined => {
-  // const expandedMovableBox = expandBoxTowardMovementVector(movableBody.aabb, movementVector)
-  // if (!expandedMovableBox.collide(staticBody.aabb)) {
-  //   return
-  // }
+  if (!expandBoxTowardMovementVector(movableBody.aabb, movementVector).collide(staticBody.aabb)) {
+    return
+  }
   const axes = getAxes(movableBody.oobb).concat(getAxes(staticBody.oobb))
   const expandedMovableBox = expandOOBBTowardMovementVector(movableBody.oobb, movementVector)
   const pointsA = expandedMovableBox.getPoints()
@@ -48,12 +48,12 @@ export const detectContinuousCollision = (
   return { axis, penetration: penetration * (1 + EPS) }
 }
 
-// const expandBoxTowardMovementVector = (box: AABB, movementVector: Vector3): AABB => {
-//   return box
-//     .clone()
-//     .expandByPoint(box.min.clone().add(movementVector))
-//     .expandByPoint(box.max.clone().add(movementVector))
-// }
+const expandBoxTowardMovementVector = (box: AABB, movementVector: Vector3): AABB => {
+  return box
+    .clone()
+    .expandByPoint(box.min.clone().add(movementVector))
+    .expandByPoint(box.max.clone().add(movementVector))
+}
 
 const expandOOBBTowardMovementVector = (oobb: OOBB, movementVector: Vector3): OOBB => {
   const box = oobb.clone()
