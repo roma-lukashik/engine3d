@@ -124,7 +124,10 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
 
     // Update OOBB
     this.oobb.rotation.copy(rotation)
-    this.oobb.center.rotateByQuaternion(rotation)
+    this.oobb.center
+      .subtract(this.node.position)
+      .rotateByQuaternion(rotation)
+      .add(this.node.position)
 
     this.node.updateLocalMatrix()
     this.node.updateWorldMatrix()
