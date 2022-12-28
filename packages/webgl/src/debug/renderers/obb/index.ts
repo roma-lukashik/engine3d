@@ -3,7 +3,7 @@ import { RenderObject } from "@core/object3d"
 import { RenderState } from "@webgl/utils/state"
 import { RGB } from "@core/color/rgb"
 
-export class DebugOOBBRenderer extends DebugBoxRenderer {
+export class DebugOBBRenderer extends DebugBoxRenderer {
   public constructor(
     gl: WebGLRenderingContext,
     state: RenderState,
@@ -12,7 +12,7 @@ export class DebugOOBBRenderer extends DebugBoxRenderer {
     super(gl, state, color)
   }
 
-  protected override calculateTransformMatrix({ oobb }: RenderObject) {
-    this.transformMatrix.compose(oobb.rotation, oobb.center, oobb.halfSize)
+  protected override calculateTransformMatrix({ obb }: RenderObject) {
+    this.transformMatrix.compose(obb.rotation, obb.center, obb.halfSize)
   }
 }

@@ -6,14 +6,14 @@ import { AABB } from "@geometry/bbox/aabb"
 import { Vector3 } from "@math/vector3"
 import { Quaternion } from "@math/quaternion"
 import { zero } from "@math/operators"
-import { OOBB } from "@geometry/bbox/oobb"
+import { OBB } from "@geometry/bbox/obb"
 
 export type RenderObject = {
   readonly node: Node
   readonly skeletons: Skeleton[]
   readonly meshes: Set<Mesh>
   readonly aabb: AABB
-  readonly oobb: OOBB
+  readonly obb: OBB
   frustumCulled: boolean
 }
 
@@ -22,7 +22,7 @@ export type RigidBody = {
   readonly velocity: Vector3
   readonly angularVelocity: Vector3
   readonly aabb: AABB
-  readonly oobb: OOBB
+  readonly obb: OBB
   readonly mass: number
   readonly invMass: number
   isMovable: boolean
@@ -43,7 +43,7 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
   public readonly skeletons: Skeleton[] = []
   public readonly meshes: Set<Mesh> = new Set()
   public readonly aabb: AABB = new AABB()
-  public readonly oobb: OOBB = new OOBB()
+  public readonly obb: OBB = new OBB()
   public frustumCulled: boolean = true
 
   public readonly velocity: Vector3 = Vector3.zero()
@@ -75,7 +75,7 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
         }
       }
     })
-    this.updateOOBB()
+    this.updateOBB()
     this.updateAABB()
   }
 
@@ -90,8 +90,8 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
     this.aabb.min.add(delta)
     this.aabb.max.add(delta)
 
-    // Update OOBB
-    this.oobb.center.add(delta)
+    // Update OBB
+    this.obb.center.add(delta)
 
     this.node.localMatrix.setTranslation(this.node.position)
     this.node.updateWorldMatrix()
@@ -105,9 +105,9 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
 
     this.node.scale.copy(scale)
 
-    // Update OOBB
-    this.oobb.halfSize.multiply(delta)
-    this.oobb.center
+    // Update OBB
+    this.obb.halfSize.multiply(delta)
+    this.obb.center
       .subtract(this.node.position)
       .rotateByQuaternion(invertedRotation)
       .multiply(delta)
@@ -136,9 +136,9 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
   }
 
   public setRotation(rotation: Quaternion): this {
-    // Update OOBB
-    this.oobb.rotation.copy(rotation)
-    this.oobb.center
+    // Update OBB
+    this.obb.rotation.copy(rotation)
+    this.obb.center
       .subtract(this.node.position)
       .rotateByQuaternion(this.node.rotation.invert())
       .rotateByQuaternion(rotation)
@@ -166,17 +166,17 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
       return
     }
     this.animations[key].update(time)
-    this.updateOOBB()
+    this.updateOBB()
     this.updateAABB()
     this.meshes.forEach((mesh) => mesh.updateSkeleton())
   }
 
   private updateAABB(): void {
     this.aabb.reset()
-    this.oobb.getPoints().forEach((point) => this.aabb.expandByPoint(point))
+    this.obb.getPoints().forEach((point) => this.aabb.expandByPoint(point))
   }
 
-  private updateOOBB(): void {
+  private updateOBB(): void {
     const scale = this.node.scale
     const position = this.node.position
 
@@ -184,10 +184,10 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
     this.node.localMatrix.scaling(scale.x, scale.y, scale.z).setTranslation(position)
     this.node.updateWorldMatrix()
 
-    // Calculate OOBB from non rotated AABB
+    // Calculate OBB from non rotated AABB
     const aabb = this.calculateAABB()
-    this.oobb.fromAABB(aabb)
-    this.oobb.rotation.copy(this.node.rotation)
+    this.obb.fromAABB(aabb)
+    this.obb.rotation.copy(this.node.rotation)
 
     // Restore object rotation
     this.node.updateLocalMatrix()

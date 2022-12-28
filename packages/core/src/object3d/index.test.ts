@@ -32,10 +32,10 @@ describe("Object3D", () => {
       expect(object3d.aabb.max).toValueEqual([5, 5, 1])
     })
 
-    it("oobb", () => {
-      expect(object3d.oobb.center).toValueEqual([-1, 2.5, -1])
-      expect(object3d.oobb.halfSize).toValueEqual([6, 2.5, 2])
-      expect(object3d.oobb.rotation).toValueEqual([0, 0, 0, 1])
+    it("obb", () => {
+      expect(object3d.obb.center).toValueEqual([-1, 2.5, -1])
+      expect(object3d.obb.halfSize).toValueEqual([6, 2.5, 2])
+      expect(object3d.obb.rotation).toValueEqual([0, 0, 0, 1])
     })
   })
 
@@ -49,10 +49,10 @@ describe("Object3D", () => {
       expect(object3d.aabb.max).toValueEqual([6, 7, 4])
     })
 
-    it("oobb", () => {
-      expect(object3d.oobb.center).toValueEqual([0, 4.5, 2])
-      expect(object3d.oobb.halfSize).toValueEqual([6, 2.5, 2])
-      expect(object3d.oobb.rotation).toValueEqual([0, 0, 0, 1])
+    it("obb", () => {
+      expect(object3d.obb.center).toValueEqual([0, 4.5, 2])
+      expect(object3d.obb.halfSize).toValueEqual([6, 2.5, 2])
+      expect(object3d.obb.rotation).toValueEqual([0, 0, 0, 1])
     })
   })
 
@@ -66,10 +66,10 @@ describe("Object3D", () => {
       expect(object3d.aabb.max).toValueEqual([6, 7, 4])
     })
 
-    it("oobb", () => {
-      expect(object3d.oobb.center).toValueEqual([0, 4.5, 2])
-      expect(object3d.oobb.halfSize).toValueEqual([6, 2.5, 2])
-      expect(object3d.oobb.rotation).toValueEqual([0, 0, 0, 1])
+    it("obb", () => {
+      expect(object3d.obb.center).toValueEqual([0, 4.5, 2])
+      expect(object3d.obb.halfSize).toValueEqual([6, 2.5, 2])
+      expect(object3d.obb.rotation).toValueEqual([0, 0, 0, 1])
     })
   })
 
@@ -83,10 +83,10 @@ describe("Object3D", () => {
       expect(object3d.aabb.max).toValueEqual([2.5, 10, 5])
     })
 
-    it("oobb", () => {
-      expect(object3d.oobb.center).toValueEqual([-0.5, 5, -5])
-      expect(object3d.oobb.halfSize).toValueEqual([3, 5, 10])
-      expect(object3d.oobb.rotation).toValueEqual([0, 0, 0, 1])
+    it("obb", () => {
+      expect(object3d.obb.center).toValueEqual([-0.5, 5, -5])
+      expect(object3d.obb.halfSize).toValueEqual([3, 5, 10])
+      expect(object3d.obb.rotation).toValueEqual([0, 0, 0, 1])
     })
   })
 
@@ -101,10 +101,10 @@ describe("Object3D", () => {
         expect(object3d.aabb.max).toValueEqual([1, 5, 7])
       })
 
-      it("oobb", () => {
-        expect(object3d.oobb.center).toValueEqual([-1, 2.5, 1])
-        expect(object3d.oobb.halfSize).toValueEqual([6, 2.5, 2])
-        expect(object3d.oobb.rotation).toValueEqual([0, 0.707, 0, 0.707])
+      it("obb", () => {
+        expect(object3d.obb.center).toValueEqual([-1, 2.5, 1])
+        expect(object3d.obb.halfSize).toValueEqual([6, 2.5, 2])
+        expect(object3d.obb.rotation).toValueEqual([0, 0.707, 0, 0.707])
       })
     })
 
@@ -118,10 +118,10 @@ describe("Object3D", () => {
         expect(object3d.aabb.max).toValueEqual([4.243, 5, 5.657])
       })
 
-      it("oobb", () => {
-        expect(object3d.oobb.center).toValueEqual([-1.414, 2.5, 0])
-        expect(object3d.oobb.halfSize).toValueEqual([6, 2.5, 2])
-        expect(object3d.oobb.rotation).toValueEqual([0, 0.383, 0, 0.924])
+      it("obb", () => {
+        expect(object3d.obb.center).toValueEqual([-1.414, 2.5, 0])
+        expect(object3d.obb.halfSize).toValueEqual([6, 2.5, 2])
+        expect(object3d.obb.rotation).toValueEqual([0, 0.383, 0, 0.924])
       })
     })
   })
@@ -137,10 +137,10 @@ describe("Object3D", () => {
       expect(object3d.aabb.max).toValueEqual([3.5, 12, 8])
     })
 
-    it("oobb", () => {
-      expect(object3d.oobb.center).toValueEqual([0.5, 7, -2])
-      expect(object3d.oobb.halfSize).toValueEqual([3, 5, 10])
-      expect(object3d.oobb.rotation).toValueEqual([0, 0, 0, 1])
+    it("obb", () => {
+      expect(object3d.obb.center).toValueEqual([0.5, 7, -2])
+      expect(object3d.obb.halfSize).toValueEqual([3, 5, 10])
+      expect(object3d.obb.rotation).toValueEqual([0, 0, 0, 1])
     })
   })
 
@@ -155,10 +155,10 @@ describe("Object3D", () => {
       expect(object3d.aabb.max).toValueEqual([3.5, 12, 8])
     })
 
-    it("oobb", () => {
-      expect(object3d.oobb.center).toValueEqual([0.5, 7, -2])
-      expect(object3d.oobb.halfSize).toValueEqual([3, 5, 10])
-      expect(object3d.oobb.rotation).toValueEqual([0, 0, 0, 1])
+    it("obb", () => {
+      expect(object3d.obb.center).toValueEqual([0.5, 7, -2])
+      expect(object3d.obb.halfSize).toValueEqual([3, 5, 10])
+      expect(object3d.obb.rotation).toValueEqual([0, 0, 0, 1])
     })
   })
 
@@ -173,10 +173,10 @@ describe("Object3D", () => {
       expect(object3d.aabb.max).toValueEqual([2, 7, 10])
     })
 
-    it("oobb", () => {
-      expect(object3d.oobb.center).toValueEqual([0, 4.5, 4])
-      expect(object3d.oobb.halfSize).toValueEqual([6, 2.5, 2])
-      expect(object3d.oobb.rotation).toValueEqual([0, 0.707, 0, 0.707])
+    it("obb", () => {
+      expect(object3d.obb.center).toValueEqual([0, 4.5, 4])
+      expect(object3d.obb.halfSize).toValueEqual([6, 2.5, 2])
+      expect(object3d.obb.rotation).toValueEqual([0, 0.707, 0, 0.707])
     })
   })
 
@@ -191,10 +191,10 @@ describe("Object3D", () => {
       expect(object3d.aabb.max).toValueEqual([2, 7, 10])
     })
 
-    it("oobb", () => {
-      expect(object3d.oobb.center).toValueEqual([0, 4.5, 4])
-      expect(object3d.oobb.halfSize).toValueEqual([6, 2.5, 2])
-      expect(object3d.oobb.rotation).toValueEqual([0, 0.707, 0, 0.707])
+    it("obb", () => {
+      expect(object3d.obb.center).toValueEqual([0, 4.5, 4])
+      expect(object3d.obb.halfSize).toValueEqual([6, 2.5, 2])
+      expect(object3d.obb.rotation).toValueEqual([0, 0.707, 0, 0.707])
     })
   })
 
@@ -209,10 +209,10 @@ describe("Object3D", () => {
       expect(object3d.aabb.max).toValueEqual([5, 10, 3.5])
     })
 
-    it("oobb", () => {
-      expect(object3d.oobb.center).toValueEqual([-5, 5, 0.5])
-      expect(object3d.oobb.halfSize).toValueEqual([3, 5, 10])
-      expect(object3d.oobb.rotation).toValueEqual([0, 0.707, 0, 0.707])
+    it("obb", () => {
+      expect(object3d.obb.center).toValueEqual([-5, 5, 0.5])
+      expect(object3d.obb.halfSize).toValueEqual([3, 5, 10])
+      expect(object3d.obb.rotation).toValueEqual([0, 0.707, 0, 0.707])
     })
   })
 
@@ -227,10 +227,10 @@ describe("Object3D", () => {
       expect(object3d.aabb.max).toValueEqual([5, 10, 3.5])
     })
 
-    it("oobb", () => {
-      expect(object3d.oobb.center).toValueEqual([-5, 5, 0.5])
-      expect(object3d.oobb.halfSize).toValueEqual([3, 5, 10])
-      expect(object3d.oobb.rotation).toValueEqual([0, 0.707, 0, 0.707])
+    it("obb", () => {
+      expect(object3d.obb.center).toValueEqual([-5, 5, 0.5])
+      expect(object3d.obb.halfSize).toValueEqual([3, 5, 10])
+      expect(object3d.obb.rotation).toValueEqual([0, 0.707, 0, 0.707])
     })
   })
 
@@ -245,10 +245,10 @@ describe("Object3D", () => {
       expect(object3d.aabb.max).toValueEqual([4.243, 5, 5.657])
     })
 
-    it("oobb", () => {
-      expect(object3d.oobb.center).toValueEqual([-1.414, 2.5, 0])
-      expect(object3d.oobb.halfSize).toValueEqual([6, 2.5, 2])
-      expect(object3d.oobb.rotation).toValueEqual([0, 0.383, 0, 0.924])
+    it("obb", () => {
+      expect(object3d.obb.center).toValueEqual([-1.414, 2.5, 0])
+      expect(object3d.obb.halfSize).toValueEqual([6, 2.5, 2])
+      expect(object3d.obb.rotation).toValueEqual([0, 0.383, 0, 0.924])
     })
   })
 })

@@ -8,12 +8,12 @@ type CornerPoints = [
   Vector3, Vector3, Vector3, Vector3,
 ]
 
-export class OOBB {
+export class OBB {
   public readonly center: Vector3 = Vector3.zero()
   public readonly halfSize: Vector3 = Vector3.zero()
   public readonly rotation: Quaternion = Quaternion.identity()
 
-  // Fix creation array for each OOBB even if points are not needed
+  // Fix creation array for each OBB even if points are not needed
   private readonly array: CornerPoints = timesMap(8, Vector3.zero) as CornerPoints
 
   public constructor()
@@ -26,8 +26,8 @@ export class OOBB {
     }
   }
 
-  public clone(): OOBB {
-    return new OOBB(this.center, this.halfSize, this.rotation)
+  public clone(): OBB {
+    return new OBB(this.center, this.halfSize, this.rotation)
   }
 
   public fromAABB(aabb: AABB): this {
@@ -53,7 +53,7 @@ export class OOBB {
     return this.array
   }
 
-  public collide(_oobb: OOBB): boolean {
+  public collide(_obb: OBB): boolean {
     return false
   }
 

@@ -2,7 +2,7 @@ import { Vector3 } from "@math/vector3"
 import { eq, gte, lte, neq } from "@math/operators"
 import { EPS } from "@math/constants"
 import { RigidBody } from "@core/object3d"
-import { OOBB } from "@geometry/bbox/oobb"
+import { OBB } from "@geometry/bbox/obb"
 import { AABB } from "@geometry/bbox/aabb"
 import { Projection } from "@geometry/projection"
 
@@ -25,10 +25,10 @@ export const detectContinuousCollision = (
   if (!expandBoxTowardMovementVector(movableBody.aabb, movementVector).collide(staticBody.aabb)) {
     return
   }
-  const axes = getAxes(movableBody.oobb).concat(getAxes(staticBody.oobb))
-  const expandedMovableBox = expandOOBBTowardMovementVector(movableBody.oobb, movementVector)
+  const axes = getAxes(movableBody.obb).concat(getAxes(staticBody.obb))
+  const expandedMovableBox = expandOBBTowardMovementVector(movableBody.obb, movementVector)
   const pointsA = expandedMovableBox.getPoints()
-  const pointsB = staticBody.oobb.getPoints()
+  const pointsB = staticBody.obb.getPoints()
   const tests = []
   for (let i = 0; i < axes.length; i++) {
     const projectionA = new Projection(pointsA, axes[i])
@@ -56,15 +56,15 @@ const expandBoxTowardMovementVector = (box: AABB, movementVector: Vector3): AABB
     .expandByPoint(v.copy(box.max).add(movementVector))
 }
 
-const expandOOBBTowardMovementVector = (oobb: OOBB, movementVector: Vector3): OOBB => {
-  const box = oobb.clone()
+const expandOBBTowardMovementVector = (obb: OBB, movementVector: Vector3): OBB => {
+  const box = obb.clone()
   const halfVector = movementVector.clone().divideScalar(2)
   box.center.add(halfVector)
   box.halfSize.add(halfVector.abs())
   return box
 }
 
-const getAxes = (box: OOBB): Vector3[] => {
+const getAxes = (box: OBB): Vector3[] => {
   return units.reduce<Vector3[]>((axes, axis) => {
     const rotatedAxis = axis.clone().rotateByQuaternion(box.rotation)
     if (!axes.some((v) => eq(Math.abs(v.dot(rotatedAxis)), 1))) {
