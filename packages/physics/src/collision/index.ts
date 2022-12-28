@@ -14,7 +14,7 @@ const units = [
 
 type Manifold = {
   penetration: number
-  axis: Vector3
+  contactNormal: Vector3
 }
 
 export const detectContinuousCollision = (
@@ -37,22 +37,23 @@ export const detectContinuousCollision = (
     if (!testResult) {
       return
     }
-    if (neq(testResult.axis.dot(movementVector), 0)) {
+    if (neq(testResult.contactNormal.dot(movementVector), 0)) {
       tests.push(testResult)
     }
   }
   if (!tests.length) {
     return
   }
-  const { axis, penetration } = tests.reduce((a, b) => a.penetration < b.penetration ? a : b)
-  return { axis, penetration: penetration * (1 + EPS) }
+  const { contactNormal, penetration } = tests.reduce((a, b) => a.penetration < b.penetration ? a : b)
+  return { contactNormal, penetration: penetration * (1 + EPS) }
 }
 
 const expandBoxTowardMovementVector = (box: AABB, movementVector: Vector3): AABB => {
+  const v = box.min.clone()
   return box
     .clone()
-    .expandByPoint(box.min.clone().add(movementVector))
-    .expandByPoint(box.max.clone().add(movementVector))
+    .expandByPoint(v.add(movementVector))
+    .expandByPoint(v.copy(box.max).add(movementVector))
 }
 
 const expandOOBBTowardMovementVector = (oobb: OOBB, movementVector: Vector3): OOBB => {
@@ -81,5 +82,5 @@ const testAxis = (axis: Vector3, a: Projection, b: Projection, direction: Vector
   }
   const sign = gte(axis.dot(direction), 0) ? 1 : -1
   const penetration = sign === 1 ? right : left
-  return { axis: axis.clone().multiplyScalar(sign), penetration }
+  return { contactNormal: axis.clone().multiplyScalar(sign), penetration }
 }

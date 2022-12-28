@@ -101,17 +101,33 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
 
   public setScale(scale: Vector3): this {
     const delta = scale.clone().divide(this.node.scale)
+    const invertedRotation = this.node.rotation.clone().invert()
 
     this.node.scale.copy(scale)
-    this.node.position.multiply(delta)
 
     // Update OOBB
     this.oobb.halfSize.multiply(delta)
-    this.oobb.center.multiply(delta)
+    this.oobb.center
+      .subtract(this.node.position)
+      .rotateByQuaternion(invertedRotation)
+      .multiply(delta)
+      .rotateByQuaternion(this.node.rotation)
+      .add(this.node.position)
 
     // Update AABB
-    this.aabb.min.multiply(delta)
-    this.aabb.max.multiply(delta)
+    this.aabb.min
+      .subtract(this.node.position)
+      .rotateByQuaternion(invertedRotation)
+      .multiply(delta)
+      .rotateByQuaternion(this.node.rotation)
+      .add(this.node.position)
+
+    this.aabb.max
+      .subtract(this.node.position)
+      .rotateByQuaternion(invertedRotation)
+      .multiply(delta)
+      .rotateByQuaternion(this.node.rotation)
+      .add(this.node.position)
 
     this.node.updateLocalMatrix()
     this.node.updateWorldMatrix()
@@ -120,15 +136,15 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
   }
 
   public setRotation(rotation: Quaternion): this {
-    this.node.rotation.copy(rotation)
-
     // Update OOBB
     this.oobb.rotation.copy(rotation)
     this.oobb.center
       .subtract(this.node.position)
+      .rotateByQuaternion(this.node.rotation.invert())
       .rotateByQuaternion(rotation)
       .add(this.node.position)
 
+    this.node.rotation.copy(rotation)
     this.node.updateLocalMatrix()
     this.node.updateWorldMatrix()
 

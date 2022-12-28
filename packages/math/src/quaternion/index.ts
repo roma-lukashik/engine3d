@@ -152,6 +152,13 @@ export class Quaternion {
     return this.multiplyScalar(scale0).add(quaternionTemp.copy(q).multiplyScalar(scale1 * Math.sign(dot)))
   }
 
+  public invert(): this {
+    this.array[0] *= -1
+    this.array[1] *= -1
+    this.array[2] *= -1
+    return this
+  }
+
   private add(q: Quaternion): this {
     this.array[0] += q.x
     this.array[1] += q.y

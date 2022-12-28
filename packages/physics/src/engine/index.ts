@@ -35,9 +35,9 @@ export class PhysicsEngine {
         if (!manifold) {
           return
         }
-        const impulseMagnitude = this.applyImpulse(rigidBody, collider, manifold.axis)
-        this.applyFrictionImpulse(rigidBody, collider, impulseMagnitude, manifold.axis)
-        deltaPosition.subtract(manifold.axis.multiplyScalar(manifold.penetration))
+        const impulseMagnitude = this.applyImpulse(rigidBody, collider, manifold.contactNormal)
+        this.applyFrictionImpulse(rigidBody, collider, impulseMagnitude, manifold.contactNormal)
+        deltaPosition.subtract(manifold.contactNormal.multiplyScalar(manifold.penetration))
       })
       // Assume, that if velocity magnitude less than 1, the body is not moving
       if (rigidBody.velocity.lengthSquared() > 1) {

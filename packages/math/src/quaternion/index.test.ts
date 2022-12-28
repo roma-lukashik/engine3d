@@ -1,4 +1,4 @@
-import { Quaternion } from "@math/quaternion"
+import { Quaternion, QuaternionTuple } from "@math/quaternion"
 import { PI } from "@math/constants"
 import { Vector3 } from "@math/vector3"
 import { Matrix4 } from "@math/matrix4"
@@ -41,7 +41,7 @@ describe("Quaternion", () => {
     expect(q.fromAxisAngle(axis, angle)).toValueEqual(expected)
   })
 
-  it.each<[Matrix4, [number, number, number, number]]>([
+  it.each<[Matrix4, QuaternionTuple]>([
     [Matrix4.rotationX(PI / 4), [-0.383, 0, 0, 0.924]],
     [Matrix4.rotationX(PI), [1, 0, 0, 0]],
     [Matrix4.rotationY(PI / 6), [0, -0.259, 0, 0.966]],
@@ -82,7 +82,7 @@ describe("Quaternion", () => {
     expect(q).toValueEqual([0.1, 0.2, 0.3, 0.5])
   })
 
-  it.each<[number, [number, number, number, number]]>([
+  it.each<[number, QuaternionTuple]>([
     [0, [0.307, 0.102, 0.204, 0.924]],
     [0.5, [0.249, 0.192, 0.291, 0.904]],
     [1, [0.1855, 0.278, 0.371, 0.866]],
@@ -98,7 +98,7 @@ describe("Quaternion", () => {
     expect(start.slerp(end, t)).toValueEqual(result)
   })
 
-  it.each<[number, [number, number, number, number]]>([
+  it.each<[number, QuaternionTuple]>([
     [0, [0.765, 1.148, 1.531, 0.924]],
     [0.5, [1.682, 2.306, 2.93, 0.712]],
     [1, [2.598, 3.464, 4.33, 0.5]],
@@ -112,6 +112,10 @@ describe("Quaternion", () => {
     const end = Quaternion.fromAxisAngle(endAxis, endTheta)
 
     expect(start.slerp(end, t)).toValueEqual(result)
+  })
+
+  it("invert", () => {
+    expect(q.invert()).toValueEqual([-0.1, -0.2, -0.3, 0.5])
   })
 
   it("elements", () => {
