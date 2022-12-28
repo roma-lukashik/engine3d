@@ -19,7 +19,7 @@ import { timesMap } from "@utils/array"
 
 import { DebugLightsRenderer } from "@webgl/debug/renderers/lights"
 import { DebugSkeletonRenderer } from "@webgl/debug/renderers/skeletons"
-import { DebugOOBBRenderer } from "@webgl/debug/renderers/oobb"
+import { DebugOBBRenderer } from "@webgl/debug/renderers/obb"
 import { DebugAABBRenderer } from "@webgl/debug/renderers/aabb"
 
 const camera = new PerspectiveCamera({
@@ -45,8 +45,8 @@ const renderer = new Renderer({
   debugRenderers: [
     DebugLightsRenderer,
     DebugSkeletonRenderer,
-    DebugOOBBRenderer,
     DebugAABBRenderer,
+    DebugOBBRenderer,
   ],
 })
 
@@ -90,8 +90,8 @@ court.setRotation(Quaternion.fromAxisAngle(new Vector3(0, -1, 0), Math.PI / 2))
 net.isMovable = false
 net.restitution = 0.15
 net.setScale(new Vector3(3, 2.5, 4.5))
-net.setRotation(Quaternion.fromAxisAngle(new Vector3(0, -1, 0), Math.PI / 2))
 net.setPosition(new Vector3(31, 0, 0))
+net.setRotation(Quaternion.fromAxisAngle(new Vector3(0, -1, 0), Math.PI / 2))
 
 ball.airFriction = 0.001
 ball.restitution = 0.6

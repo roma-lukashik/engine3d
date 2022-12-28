@@ -40,7 +40,6 @@ export class AABB {
     )
   }
 
-  // TODO Unit tests
   public expandByPoint(point: Vector3): this {
     this.min.min(point)
     this.max.max(point)
