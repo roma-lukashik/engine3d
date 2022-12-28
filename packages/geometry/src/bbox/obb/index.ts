@@ -1,6 +1,6 @@
 import { Vector3 } from "@math/vector3"
 import { Quaternion } from "@math/quaternion"
-import { AABB } from "@geometry/bbox/aabb"
+import type { AABB } from "@geometry/bbox/aabb"
 import { timesMap } from "@utils/array"
 
 type CornerPoints = [

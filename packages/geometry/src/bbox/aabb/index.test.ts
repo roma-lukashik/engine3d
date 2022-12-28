@@ -20,7 +20,7 @@ describe("AABB", () => {
     expect(new AABB(Vector3.zero(), Vector3.one())).toBeDefined()
   })
 
-  it("to be created with empty arguments", () => {
+  it("to be created with no arguments", () => {
     const aabb = new AABB()
     expect(aabb.min).toValueEqual([Infinity, Infinity, Infinity])
     expect(aabb.max).toValueEqual([-Infinity, -Infinity, -Infinity])
