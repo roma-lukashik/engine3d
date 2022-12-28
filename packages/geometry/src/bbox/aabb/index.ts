@@ -15,7 +15,6 @@ export class AABB {
     if (args.length === 1) {
       this.calculateMinMax(args[0])
     } else if (args.length === 2) {
-      // TODO Unit tests
       this.min.copy(args[0])
       this.max.copy(args[1])
     }
@@ -48,7 +47,6 @@ export class AABB {
     return this
   }
 
-  // TODO Unit tests
   public reset(): void {
     this.min.set(Infinity, Infinity, Infinity)
     this.max.set(-Infinity, -Infinity, -Infinity)
