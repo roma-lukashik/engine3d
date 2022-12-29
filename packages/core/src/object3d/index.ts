@@ -136,12 +136,12 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
   }
 
   public setRotation(rotation: Quaternion): this {
+    const deltaRotation = rotation.clone().multiply(this.node.rotation.invert())
     // Update OBB
     this.obb.rotation.copy(rotation)
     this.obb.center
       .subtract(this.node.position)
-      .rotateByQuaternion(this.node.rotation.invert())
-      .rotateByQuaternion(rotation)
+      .rotateByQuaternion(deltaRotation)
       .add(this.node.position)
 
     this.node.rotation.copy(rotation)

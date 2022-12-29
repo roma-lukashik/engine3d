@@ -114,6 +114,10 @@ describe("Quaternion", () => {
     expect(start.slerp(end, t)).toValueEqual(result)
   })
 
+  it("multiply", () => {
+    expect(q.multiply(new Quaternion(0, 0.707, 0, 0.707))).toValueEqual([-0.141, 0.495, 0.283, 0.212])
+  })
+
   it("invert", () => {
     expect(q.invert()).toValueEqual([-0.1, -0.2, -0.3, 0.5])
   })
