@@ -190,7 +190,7 @@ describe("Vector3", () => {
     expect(a).toValueEqual([0, 5, 10])
   })
 
-  it("abs(-1, -5, 1-0)", () => {
+  it("abs(-1, -5, -10)", () => {
     a.set(-1, -5, -10).abs()
     expect(a).toValueEqual([1, 5, 10])
   })

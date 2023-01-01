@@ -6,15 +6,10 @@ import { OBB } from "@geometry/bbox/obb"
 import { AABB } from "@geometry/bbox/aabb"
 import { Projection } from "@geometry/projection"
 
-const units = [
-  new Vector3(1, 0, 0),
-  new Vector3(0, 1, 0),
-  new Vector3(0, 0, 1),
-]
-
 type Manifold = {
   penetration: number
   contactNormal: Vector3
+  contactPoints: Vector3[]
 }
 
 export const detectContinuousCollision = (
@@ -25,15 +20,13 @@ export const detectContinuousCollision = (
   if (!expandBoxTowardMovementVector(movableBody.aabb, movementVector).collide(staticBody.aabb)) {
     return
   }
-  const axes = getAxes(movableBody.obb).concat(getAxes(staticBody.obb))
+  const separateAxes = mergeAxes(movableBody.obb.getBasis(), staticBody.obb.getBasis())
   const expandedMovableBox = expandOBBTowardMovementVector(movableBody.obb, movementVector)
   const pointsA = expandedMovableBox.getPoints()
   const pointsB = staticBody.obb.getPoints()
   const tests = []
-  for (let i = 0; i < axes.length; i++) {
-    const projectionA = new Projection(pointsA, axes[i])
-    const projectionB = new Projection(pointsB, axes[i])
-    const testResult = testAxis(axes[i], projectionA, projectionB, movementVector)
+  for (const axis of separateAxes) {
+    const testResult = testAxis(axis, pointsA, pointsB, movementVector)
     if (!testResult) {
       return
     }
@@ -44,8 +37,19 @@ export const detectContinuousCollision = (
   if (!tests.length) {
     return
   }
-  const { contactNormal, penetration } = tests.reduce((a, b) => a.penetration < b.penetration ? a : b)
-  return { contactNormal, penetration: penetration * (1 + EPS) }
+  const { contactNormal, penetration, sign } = tests.reduce((a, b) => a.penetration < b.penetration ? a : b)
+
+  const nearestPointsA = getNearestPoints(pointsA, contactNormal, sign ? Math.min : Math.max)
+  const contactPointsA = getContactPoints(nearestPointsA, staticBody.obb)
+
+  const nearestPointsB = getNearestPoints(pointsB, contactNormal, sign ? Math.max : Math.max)
+  const contactPointsB = getContactPoints(nearestPointsB, expandedMovableBox)
+
+  return {
+    contactNormal: contactNormal.clone().multiplyScalar(sign),
+    penetration: penetration * (1 + EPS),
+    contactPoints: mergeContactPoints(contactPointsA, contactPointsB),
+  }
 }
 
 const expandBoxTowardMovementVector = (box: AABB, movementVector: Vector3): AABB => {
@@ -64,23 +68,54 @@ const expandOBBTowardMovementVector = (obb: OBB, movementVector: Vector3): OBB =
   return box
 }
 
-const getAxes = (box: OBB): Vector3[] => {
-  return units.reduce<Vector3[]>((axes, axis) => {
-    const rotatedAxis = axis.clone().rotateByQuaternion(box.rotation)
-    if (!axes.some((v) => eq(Math.abs(v.dot(rotatedAxis)), 1))) {
-      axes.push(rotatedAxis)
+const mergeAxes = (axesA: Vector3[], axesB: Vector3[]): Vector3[] => {
+  return [...axesA, ...axesB].reduce<Vector3[]>((result, axis) => {
+    if (!result.some((v) => eq(v.dot(axis), 1))) {
+      result.push(axis)
     }
-    return axes
+    return result
   }, [])
 }
 
-const testAxis = (axis: Vector3, a: Projection, b: Projection, direction: Vector3) => {
-  const left = b.max - a.min
-  const right = a.max - b.min
+type AxisTest = {
+  contactNormal: Vector3
+  penetration: number
+  sign: number
+}
+
+const testAxis = (axis: Vector3, pointsA: Vector3[], pointsB: Vector3[], direction: Vector3): AxisTest | undefined => {
+  const projectionA = new Projection(pointsA, axis)
+  const projectionB = new Projection(pointsB, axis)
+  const left = projectionB.max - projectionA.min
+  const right = projectionA.max - projectionB.min
   if (lte(left, 0) || lte(right, 0)) {
     return
   }
   const sign = gte(axis.dot(direction), 0) ? 1 : -1
   const penetration = sign === 1 ? right : left
-  return { contactNormal: axis.clone().multiplyScalar(sign), penetration }
+  return { contactNormal: axis, penetration, sign }
+}
+
+const getNearestPoints = (
+  points: Vector3[],
+  contactNormal: Vector3,
+  extremum: (...values: number[]) => number,
+): Vector3[] => {
+  // Distances to points toward contact normal.
+  const dots = points.map((p) => p.dot(contactNormal))
+  const extremumValue = extremum(...dots)
+  return points.filter((_, i) => eq(dots[i], extremumValue))
+}
+
+const getContactPoints = (points: Vector3[], obb: OBB): Vector3[] => {
+  return points.filter((point) => obb.containsPoint(point))
+}
+
+const mergeContactPoints = (pointsA: Vector3[], pointsB: Vector3[]): Vector3[] => {
+  return [...pointsA, ...pointsB].reduce<Vector3[]>((result, point) => {
+    if (!result.some((p) => p.equal(point))) {
+      result.push(point)
+    }
+    return result
+  }, [])
 }

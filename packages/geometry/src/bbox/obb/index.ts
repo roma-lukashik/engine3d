@@ -2,6 +2,7 @@ import { Vector3 } from "@math/vector3"
 import { Quaternion } from "@math/quaternion"
 import type { AABB } from "@geometry/bbox/aabb"
 import { timesMap } from "@utils/array"
+import { lte } from "@math/operators"
 
 type CornerPoints = [
   Vector3, Vector3, Vector3, Vector3,
@@ -55,6 +56,23 @@ export class OBB {
 
   public collide(_obb: OBB): boolean {
     return false
+  }
+
+  public containsPoint(point: Vector3): boolean {
+    const p = point.clone().subtract(this.center)
+    return this.getBasis().every((basis, i) => {
+      return lte(Math.abs(basis.dot(p)), this.halfSize.elements[i])
+    })
+  }
+
+  public getBasis(): [Vector3, Vector3, Vector3] {
+    return [
+      new Vector3(1, 0, 0),
+      new Vector3(0, 1, 0),
+      new Vector3(0, 0, 1),
+    ].map((v) => {
+      return v.rotateByQuaternion(this.rotation)
+    }) as [Vector3, Vector3, Vector3]
   }
 
   public reset(): this {
