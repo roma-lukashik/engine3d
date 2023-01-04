@@ -1,10 +1,14 @@
 import { Vector3 } from "@math/vector3"
 import { eq, gte, lt, lte, neq } from "@math/operators"
 import { EPS } from "@math/constants"
-import { RigidBody } from "@core/object3d"
 import { OBB } from "@geometry/bbox/obb"
 import { AABB } from "@geometry/bbox/aabb"
 import { Projection } from "@geometry/projection"
+
+export type CollisionBox = {
+  aabb: AABB
+  obb: OBB
+}
 
 type Manifold = {
   penetration: number
@@ -13,8 +17,8 @@ type Manifold = {
 }
 
 export const detectContinuousCollision = (
-  movableBody: RigidBody,
-  staticBody: RigidBody,
+  movableBody: CollisionBox,
+  staticBody: CollisionBox,
   movementVector: Vector3,
 ): Manifold | undefined => {
   if (!expandBoxTowardMovementVector(movableBody.aabb, movementVector).collide(staticBody.aabb)) {

@@ -11,7 +11,8 @@
       "@physics/*": ["src/*"],
       "@core/*": ["../core/src/*"],
       "@geometry/*": ["../geometry/src/*"],
-      "@math/*": ["../math/src/*"]
+      "@math/*": ["../math/src/*"],
+      "@utils/*": ["../utils/src/*"]
     }
   }
 }

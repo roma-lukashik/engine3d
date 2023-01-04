@@ -18,7 +18,6 @@ export type RenderObject = {
 }
 
 export type RigidBody = {
-  readonly node: Node
   readonly velocity: Vector3
   readonly angularVelocity: Vector3
   readonly aabb: AABB
