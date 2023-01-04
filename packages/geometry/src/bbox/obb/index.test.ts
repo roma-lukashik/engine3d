@@ -56,6 +56,31 @@ describe("OBB", () => {
     expect(points[7]).toValueEqual([1, -4, -2])
   })
 
+  it.each([
+    new Vector3(0, 0, 0),
+    new Vector3(-1, -4, 2),
+    new Vector3(-1, -4, 2.001),
+  ])("containsPoint returns true %#", (point) => {
+    const obb = new OBB(center, halfSize, rotation)
+    expect(obb.containsPoint(point)).toBe(true)
+  })
+
+  it.each([
+    new Vector3(5, 5, 5),
+    new Vector3(-1, -4, 2.002),
+  ])("containsPoint returns false %#", (point) => {
+    const obb = new OBB(center, halfSize, rotation)
+    expect(obb.containsPoint(point)).toBe(false)
+  })
+
+  it("getBasis", () => {
+    const obb = new OBB(center, halfSize, rotation)
+    const basis = obb.getBasis()
+    expect(basis[0]).toValueEqual([0, 0, -1])
+    expect(basis[1]).toValueEqual([0, 1, 0])
+    expect(basis[2]).toValueEqual([1, 0, 0])
+  })
+
   it("reset", () => {
     const obb = new OBB(center, halfSize, rotation)
     obb.reset()
