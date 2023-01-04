@@ -1,5 +1,5 @@
 import { Vector3 } from "@math/vector3"
-import { eq, gte, lte, neq } from "@math/operators"
+import { eq, gte, lt, lte, neq } from "@math/operators"
 import { EPS } from "@math/constants"
 import { RigidBody } from "@core/object3d"
 import { OBB } from "@geometry/bbox/obb"
@@ -25,20 +25,11 @@ export const detectContinuousCollision = (
   const pointsA = boxA.getPoints()
   const pointsB = boxB.getPoints()
   const separateAxes = findSeparateAxes(boxA, boxB)
-  const tests = []
-  for (const axis of separateAxes) {
-    const testResult = testAxis(axis, pointsA, pointsB, movementVector)
-    if (!testResult) {
-      return
-    }
-    if (neq(testResult.contactNormal.dot(movementVector), 0)) {
-      tests.push(testResult)
-    }
-  }
-  if (!tests.length) {
+  const collision = findCollision(pointsA, pointsB, separateAxes, movementVector)
+  if (!collision) {
     return
   }
-  const { contactNormal, penetration, sign } = tests.reduce((a, b) => a.penetration < b.penetration ? a : b)
+  const { contactNormal, penetration, sign } = collision
   const contacts = findContacts(pointsA, boxA, pointsB, boxB, contactNormal, sign)
   return {
     contactNormal: contactNormal.clone().multiplyScalar(sign),
@@ -90,6 +81,30 @@ type AxisTest = {
   sign: number
 }
 
+function findCollision(
+  pointsA: Vector3[],
+  pointsB: Vector3[],
+  separateAxes: Vector3[],
+  resolvingAxis: Vector3,
+): AxisTest | undefined {
+  let collision: AxisTest | undefined
+  for (const axis of separateAxes) {
+    const testResult = testAxis(axis, pointsA, pointsB, resolvingAxis)
+    // There is an axis with no overlap: boxes are not overlapped.
+    if (!testResult) {
+      return
+    }
+    // TODO Take axes which directs in resolvingAxis direction
+    if (eq(testResult.contactNormal.dot(resolvingAxis), 0)) {
+      continue
+    }
+    if (!collision || lt(testResult.penetration, collision.penetration)) {
+      collision = testResult
+    }
+  }
+  return collision
+}
+
 function testAxis(axis: Vector3, pointsA: Vector3[], pointsB: Vector3[], direction: Vector3): AxisTest | undefined {
   const projectionA = new Projection(pointsA, axis)
   const projectionB = new Projection(pointsB, axis)
@@ -117,7 +132,7 @@ function findContacts(
   return contacts
 }
 
-function collectContacts (
+function collectContacts(
   existingContacts: Vector3[],
   contactCandidates: Vector3[],
   colliderOBB: OBB,
