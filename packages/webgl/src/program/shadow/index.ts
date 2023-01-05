@@ -5,7 +5,6 @@ import { define, USE_SKINNING } from "@webgl/utils/glsl"
 import { RenderState } from "@webgl/utils/state"
 import { GeometryAttributes } from "@core/geometry"
 
-// @ts-ignore
 import skeleton from "@webgl/shaders/skeleton.glsl"
 
 export type ShadowUniforms = {

@@ -1,5 +1,8 @@
 {
-  "include": ["./index.ts"],
+  "include": [
+    "./index.ts",
+    "../packages/webgl/src/types.d.ts"
+  ],
   "exclude": ["node_modules"],
   "compilerOptions": {
     "outDir": "dist",
@@ -30,7 +33,7 @@
     "importHelpers": false,
     "declaration": true,
     "typeRoots": [
-      "node_modules/@types",
+      "node_modules/@types"
     ],
     "target": "ES2017",
     "lib": [
