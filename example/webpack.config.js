@@ -21,12 +21,20 @@ module.exports = {
       },
       {
         test: /\.(obj|glsl)$/,
-        use: "text-loader",
+        use: "raw-loader",
       },
     ],
   },
   experiments: {
     topLevelAwait: true,
+  },
+  devServer: {
+    client: {
+      overlay: {
+        warnings: false,
+        errors: false,
+      },
+    },
   },
   plugins: [
     new CopyWebpackPlugin({
