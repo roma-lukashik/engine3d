@@ -12,11 +12,11 @@ const config: Config.InitialOptions = {
   preset: "ts-jest",
   testEnvironment: "node",
   testPathIgnorePatterns: ["node_modules", "dist"],
-  globals: {
-    "ts-jest": {
+  transform: {
+    "\\.ts$": ["ts-jest", {
       tsconfig: tsConfigFile,
       diagnostics: false,
-    },
+    }],
   },
   setupFilesAfterEnv: [path.resolve(__dirname, "tests/jest.setup.ts")],
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths ?? {}, { prefix: "<rootDir>/" }),

@@ -251,6 +251,32 @@ describe("Object3D", () => {
       expect(object3d.obb.rotation).toValueEqual([0, 0.383, 0, 0.924])
     })
   })
+
+  describe("inertia tensor", () => {
+    it("zero dy default", () => {
+      expect(object3d.inertiaTensor).toValueEqual([0, 0, 0])
+      expect(object3d.inertiaTensorInv).toValueEqual([0, 0, 0])
+    })
+
+    it("zero on zero mass", () => {
+      object3d.setMass(0)
+      expect(object3d.inertiaTensor).toValueEqual([0, 0, 0])
+      expect(object3d.inertiaTensorInv).toValueEqual([0, 0, 0])
+    })
+
+    it("changes on mass change", () => {
+      object3d.setMass(10)
+      expect(object3d.inertiaTensor).toValueEqual([34.167, 133.333, 140.833])
+      expect(object3d.inertiaTensorInv).toValueEqual([0.029, 0.008, 0.007])
+    })
+
+    it("changes on scale change", () => {
+      object3d.setMass(10)
+      object3d.setScale(new Vector3(2, 2, 2))
+      expect(object3d.inertiaTensor).toValueEqual([136.667, 533.333, 563.333])
+      expect(object3d.inertiaTensorInv).toValueEqual([0.007, 0.002, 0.002])
+    })
+  })
 })
 
 function createNode(): Mesh {

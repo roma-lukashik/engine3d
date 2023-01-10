@@ -50,9 +50,9 @@ const renderer = new Renderer({
   ],
 })
 
-renderer.gl.canvas.onclick = () => {
-  new CameraControl({ camera, element: renderer.gl.canvas, speed: 0.7 })
-}
+renderer.gl.canvas.addEventListener("click", () => {
+  new CameraControl({ camera, element: renderer.gl.canvas as Element, speed: 0.7 })
+})
 
 const physics = new PhysicsEngine({ deltaTime: 0.2 })
 
@@ -79,7 +79,7 @@ const npc = await loadModel<PlayerAnimations>("models/player.glb")
 const court = await loadModel("models/court.glb")
 const ball = await loadModel("models/ball.glb")
 const net = await loadModel("models/net.glb")
-const wall = await Promise.all(timesMap(9, () => loadModel("models/box.glb")))
+const wall = await Promise.all(timesMap(3, () => loadModel("models/box.glb")))
 
 court.frustumCulled = false
 court.isMovable = false
@@ -110,16 +110,11 @@ npc.colliders = [court]
 npc.setMass(70)
 npc.setPosition(new Vector3(0, 88, -1200))
 
-wall[0].setPosition(new Vector3(0, 0, 100))
-wall[1].setPosition(new Vector3(20, 0, 100))
-wall[2].setPosition(new Vector3(-20, 0, 100))
-wall[3].setPosition(new Vector3(-20, 20, 100))
-wall[4].setPosition(new Vector3(20, 20, 100))
-wall[5].setPosition(new Vector3(0, 20, 100))
-wall[6].setPosition(new Vector3(-20, 40, 100))
-wall[7].setPosition(new Vector3(20, 40, 100))
-wall[8].setPosition(new Vector3(0, 40, 100))
+wall[0].setPosition(new Vector3(0, 0, 300))
+wall[1].setPosition(new Vector3(25, 40, 300))
+wall[2].setPosition(new Vector3(-25, 40, 300))
 wall.forEach((b) => {
+  b.setScale(new Vector3(2, 2, 2))
   b.friction = 0.5
   b.staticFriction = 0.9
   b.colliders = [court, net, ball, ...wall.filter((x) => x !== b)]
@@ -203,12 +198,12 @@ const update = () => {
 
   if (ball.aabb.collide(npc.aabb)) {
     ball.velocity.set(0, Math.sin(angle), Math.cos(angle)).multiplyScalar(power)
-    ball.angularVelocity.set(0, 50 * (Math.random() - 0.5), 0)
+    // ball.angularVelocity.set(0, 50 * (Math.random() - 0.5), 0)
   }
 
   if (ball.aabb.collide(player.aabb)) {
     ball.velocity.set(0, Math.sin(angle), -Math.cos(angle)).multiplyScalar(power)
-    ball.angularVelocity.set(0, 50 * (Math.random() - 0.5), 0)
+    // ball.angularVelocity.set(0, 50 * (Math.random() - 0.5), 0)
   }
 
   physics.run(scene.objects)
@@ -218,7 +213,7 @@ const update = () => {
 
 requestAnimationFrame(update)
 
-document.body.appendChild(renderer.gl.canvas)
+document.body.appendChild(renderer.gl.canvas as Element)
 window.addEventListener("resize", () => {
   renderer.resize(window.innerWidth, window.innerHeight)
   camera.setOptions({ aspect: window.innerWidth / window.innerHeight })

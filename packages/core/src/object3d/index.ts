@@ -20,6 +20,8 @@ export type RenderObject = {
 export type RigidBody = {
   readonly velocity: Vector3
   readonly angularVelocity: Vector3
+  readonly inertiaTensor: Vector3
+  readonly inertiaTensorInv: Vector3
   readonly aabb: AABB
   readonly obb: OBB
   readonly mass: number
@@ -47,6 +49,8 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
 
   public readonly velocity: Vector3 = Vector3.zero()
   public readonly angularVelocity: Vector3 = Vector3.zero()
+  public readonly inertiaTensor: Vector3 = Vector3.zero()
+  public readonly inertiaTensorInv: Vector3 = Vector3.zero()
   public isMovable: boolean = true
   public mass: number = Number.MAX_SAFE_INTEGER
   public invMass: number = 1 / this.mass
@@ -128,6 +132,10 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
       .rotateByQuaternion(this.node.rotation)
       .add(this.node.position)
 
+    // Update inertia tensors due to size changing
+    this.updateInertiaTensor()
+    this.updateInertiaTensorInv()
+
     this.node.updateLocalMatrix()
     this.node.updateWorldMatrix()
 
@@ -157,6 +165,8 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
   public setMass(mass: number): this {
     this.mass = mass
     this.invMass = zero(mass) ? 0 : (1 / mass)
+    this.updateInertiaTensor()
+    this.updateInertiaTensorInv()
     return this
   }
 
@@ -214,5 +224,22 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
       })
     }
     return aabb
+  }
+
+  private updateInertiaTensor(): void {
+    const c = this.mass / 12
+    const sizeSquare = this.obb.halfSize.clone().multiply(this.obb.halfSize).multiplyScalar(4)
+    this.inertiaTensor.x = c * (sizeSquare.y + sizeSquare.z)
+    this.inertiaTensor.y = c * (sizeSquare.x + sizeSquare.z)
+    this.inertiaTensor.z = c * (sizeSquare.x + sizeSquare.y)
+  }
+
+  private updateInertiaTensorInv(): void {
+    const det = this.inertiaTensor.x * this.inertiaTensor.y * this.inertiaTensor.z
+    if (zero(det)) {
+      this.inertiaTensorInv.zero()
+    } else {
+      this.inertiaTensorInv.one().divide(this.inertiaTensor)
+    }
   }
 }
