@@ -104,33 +104,23 @@ export class Object3D<AnimationKeys extends string = string> implements RenderOb
 
   public setScale(scale: Vector3): this {
     const delta = scale.clone().divide(this.node.scale)
-    const invertedRotation = this.node.rotation.clone().invert()
+    const scaleRelativeToCenter = (point: Vector3) =>
+      point
+        .subtract(this.node.position)
+        .rotateByQuaternion(this.node.rotation.invert())
+        .multiply(delta)
+        .rotateByQuaternion(this.node.rotation.invert())
+        .add(this.node.position)
 
     this.node.scale.copy(scale)
 
     // Update OBB
     this.obb.halfSize.multiply(delta)
-    this.obb.center
-      .subtract(this.node.position)
-      .rotateByQuaternion(invertedRotation)
-      .multiply(delta)
-      .rotateByQuaternion(this.node.rotation)
-      .add(this.node.position)
+    scaleRelativeToCenter(this.obb.center)
 
     // Update AABB
-    this.aabb.min
-      .subtract(this.node.position)
-      .rotateByQuaternion(invertedRotation)
-      .multiply(delta)
-      .rotateByQuaternion(this.node.rotation)
-      .add(this.node.position)
-
-    this.aabb.max
-      .subtract(this.node.position)
-      .rotateByQuaternion(invertedRotation)
-      .multiply(delta)
-      .rotateByQuaternion(this.node.rotation)
-      .add(this.node.position)
+    scaleRelativeToCenter(this.aabb.min)
+    scaleRelativeToCenter(this.aabb.max)
 
     // Update inertia tensors due to size changing
     this.updateInertiaTensor()

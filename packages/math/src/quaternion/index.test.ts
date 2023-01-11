@@ -122,6 +122,19 @@ describe("Quaternion", () => {
     expect(q.invert()).toValueEqual([-0.1, -0.2, -0.3, 0.5])
   })
 
+  it("normalize", () => {
+    expect(q.normalize()).toValueEqual([0.16, 0.32, 0.48, 0.801])
+  })
+
+  it("normalize zero quaternion", () => {
+    q.set(0, 0, 0, 0)
+    expect(q.normalize()).toValueEqual([0, 0, 0, 0])
+  })
+
+  it("rotateByVelocity", () => {
+    expect(q.rotateByVelocity(new Vector3(0.1, 0.9, 0.05), 0.1)).toValueEqual([0.185, 0.354, 0.476, 0.783])
+  })
+
   it("elements", () => {
     expect(q.elements).toValueEqual([0.1, 0.2, 0.3, 0.5])
   })

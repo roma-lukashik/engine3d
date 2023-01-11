@@ -1,4 +1,4 @@
-import { lt } from "@math/operators"
+import { lt, zero } from "@math/operators"
 import type { Matrix4 } from "@math/matrix4"
 import type { Vector3 } from "@math/vector3"
 
@@ -166,6 +166,25 @@ export class Quaternion {
     this.array[1] *= -1
     this.array[2] *= -1
     return this
+  }
+
+  public rotateByVelocity(velocity: Vector3, step: number): this {
+    const halfDt = step * 0.5
+    const [x, y, z, w] = this.elements
+    this.array[0] += halfDt * (velocity.x * w + velocity.y * z - velocity.z * y)
+    this.array[1] += halfDt * (velocity.y * w + velocity.z * x - velocity.x * z)
+    this.array[2] += halfDt * (velocity.z * w + velocity.x * y - velocity.y * x)
+    this.array[3] += halfDt * (-velocity.x * x - velocity.y * y - velocity.z * z)
+    return this.normalize()
+  }
+
+  public normalize(): this {
+    const lengthSquared = this.dot(this)
+    if (zero(lengthSquared)) {
+      return this.set(0, 0, 0, 0)
+    }
+    const lengthInv = 1 / Math.sqrt(lengthSquared)
+    return this.multiplyScalar(lengthInv)
   }
 
   private add(q: Quaternion): this {
