@@ -131,8 +131,8 @@ function findContacts(
   sign: number,
 ): Vector3[] {
   const contacts: Vector3[] = []
-  collectContacts(contacts, pointsA, boxB, contactNormal, sign ? Math.min : Math.max)
-  collectContacts(contacts, pointsB, boxA, contactNormal, sign ? Math.max : Math.max)
+  collectContacts(contacts, pointsA, boxB, contactNormal, sign === 1 ? Math.max : Math.min)
+  collectContacts(contacts, pointsB, boxA, contactNormal, sign === 1 ? Math.min : Math.max)
   return contacts
 }
 
