@@ -1,4 +1,4 @@
-import { eq, zero } from "@math/operators"
+import { eq, sign, zero } from "@math/operators"
 import type { Matrix4 } from "@math/matrix4"
 import type { Quaternion } from "@math/quaternion"
 
@@ -202,7 +202,7 @@ export class Vector3 {
   }
 
   public sign(): this {
-    return this.set(Math.sign(this.x), Math.sign(this.y), Math.sign(this.z))
+    return this.set(sign(this.x), sign(this.y), sign(this.z))
   }
 
   public abs(): this {

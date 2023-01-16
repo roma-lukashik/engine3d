@@ -59,4 +59,21 @@ describe("Plane", () => {
     const plane = new Plane(new Vector3(0, 1, 0), -10)
     expect(plane.distanceToPoint(point)).toBe(distance)
   })
+
+  it.each([
+    [new Vector3(0, 0, 0), new Vector3(-18, -18, -18), [-5.774, -5.774, -5.774]],
+    [new Vector3(-18, -18, -18), new Vector3(0, 0, 0), [-5.774, -5.774, -5.774]],
+  ])("intersectSegment returns intersection %#", (start, end, result) => {
+    const plane = new Plane(Vector3.one().normalize(), 10)
+    expect(plane.intersectSegment(start, end)).toValueEqual(result)
+  })
+
+  it.each([
+    [new Vector3(0, 0, 0), new Vector3(2, 2, 2)],
+    [new Vector3(6, 6, 6), new Vector3(10, 10, 10)],
+    [new Vector3(0, -17.32, 0), new Vector3(0, 0, -17.32)],
+  ])("intersectSegment returns undefined %#", (start, end) => {
+    const plane = new Plane(Vector3.one().normalize(), 10)
+    expect(plane.intersectSegment(start, end)).toBeUndefined()
+  })
 })

@@ -19,4 +19,6 @@ export const zero = (a: number, eps = EPS): boolean => Math.abs(a) <= eps
 
 export const clamp = (x: number, min: number, max: number): number => Math.max(min, Math.min(max, x))
 
+export const sign = (x: number): number => zero(x) ? 0 : Math.sign(x)
+
 export const ceilPowerOfTwo = (x: number): number => Math.pow(2, Math.ceil(Math.log(x) / Math.LN2))
