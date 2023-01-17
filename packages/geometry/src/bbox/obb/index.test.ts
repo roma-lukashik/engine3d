@@ -48,12 +48,12 @@ describe("OBB", () => {
     const points = obb.getPoints()
     expect(points[0]).toValueEqual([1, 4, -2])
     expect(points[1]).toValueEqual([1, 4, 2])
-    expect(points[2]).toValueEqual([1, -4, 2])
-    expect(points[3]).toValueEqual([-1, -4, 2])
-    expect(points[4]).toValueEqual([-1, -4, -2])
-    expect(points[5]).toValueEqual([-1, 4, -2])
-    expect(points[6]).toValueEqual([-1, 4, 2])
-    expect(points[7]).toValueEqual([1, -4, -2])
+    expect(points[2]).toValueEqual([-1, 4, 2])
+    expect(points[3]).toValueEqual([-1, 4, -2])
+    expect(points[4]).toValueEqual([1, -4, -2])
+    expect(points[5]).toValueEqual([1, -4, 2])
+    expect(points[6]).toValueEqual([-1, -4, 2])
+    expect(points[7]).toValueEqual([-1, -4, -2])
   })
 
   it.each([

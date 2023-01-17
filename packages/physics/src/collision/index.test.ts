@@ -18,17 +18,54 @@ describe("collision", () => {
       expect(detectContinuousCollision(a, b, new Vector3(0, 0, 2))).toBeUndefined()
     })
 
-    it("should not collide of there is an axis with no overlap", () => {
+    it("should not collide if there is an axis with no overlap", () => {
+      const a = createCollisionBox(
+        new Vector3(2, 1, 2),
+        new Vector3(1.41, 1, 0.705),
+        Quaternion.fromAxisAngle(new Vector3(0, 1, 0), Math.PI / 4),
+      )
+      const b = createCollisionBox(
+        new Vector3(0, 0.5, 0),
+        new Vector3(1, 0.5, 1),
+      )
+
+      expect(detectContinuousCollision(a, b, new Vector3(0, 0, 0.5))).toBeUndefined()
+    })
+
+    it("should collide simple case", () => {
       const a = createCollisionBox(
         new Vector3(0, 0.5, 0),
         new Vector3(1, 0.5, 1),
       )
       const b = createCollisionBox(
-        new Vector3(2, 1, 2),
-        new Vector3(1.41, 1, 0.705),
-        Quaternion.fromAxisAngle(new Vector3(0, 1, 0), Math.PI / 4),
+        new Vector3(-0.5, 0.5, 2),
+        new Vector3(1, 0.5, 1),
       )
-      expect(detectContinuousCollision(a, b, new Vector3(0, 0, 0.5))).toBeUndefined()
+      const collision = detectContinuousCollision(a, b, new Vector3(0, 0, 0.5))
+      expect(collision?.contactNormal).toValueEqual([0, 0, 1])
+      expect(collision?.penetration).toBeCloseTo(0.5)
+      expect(collision?.contactPoints[0]).toValueEqual([0.5, 0, 1])
+      expect(collision?.contactPoints[1]).toValueEqual([0.5, 1, 1])
+      expect(collision?.contactPoints[2]).toValueEqual([-1, 1, 1])
+      expect(collision?.contactPoints[3]).toValueEqual([-1, 0, 1])
+    })
+
+    it("should collide simple case (reverse)", () => {
+      const a = createCollisionBox(
+        new Vector3(-0.5, 0.5, 2),
+        new Vector3(1, 0.5, 1),
+      )
+      const b = createCollisionBox(
+        new Vector3(0, 0.5, 0),
+        new Vector3(1, 0.5, 1),
+      )
+      const collision = detectContinuousCollision(a, b, new Vector3(0, 0, -0.5))
+      expect(collision?.contactNormal).toValueEqual([0, 0, -1])
+      expect(collision?.penetration).toBeCloseTo(0.5)
+      expect(collision?.contactPoints[0]).toValueEqual([0.5, 0, 0.5])
+      expect(collision?.contactPoints[1]).toValueEqual([0.5, 1, 0.5])
+      expect(collision?.contactPoints[2]).toValueEqual([-1, 1, 0.5])
+      expect(collision?.contactPoints[3]).toValueEqual([-1, 0, 0.5])
     })
   })
 })

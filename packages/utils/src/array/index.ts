@@ -11,3 +11,10 @@ export const timesMap = <T>(n: number, fn: (x: number) => T): T[] => {
 }
 
 export const range = (from: number, to: number): number[] => timesMap(to - from, (i) => from + i)
+
+export const forEachPair = <T>(arr: T[], fn: (current: T, next: T) => void): void => {
+  if (arr.length > 2) {
+    times(arr.length - 1, (i) => fn(arr[i], arr[i + 1]))
+    fn(arr[arr.length - 1], arr[0])
+  }
+}

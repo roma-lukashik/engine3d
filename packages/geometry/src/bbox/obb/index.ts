@@ -9,13 +9,26 @@ type CornerPoints = [
   Vector3, Vector3, Vector3, Vector3,
 ]
 
+type Face = [Vector3, Vector3, Vector3, Vector3]
+
+type Faces = [
+  front: Face,
+  right: Face,
+  back: Face,
+  left: Face,
+  top: Face,
+  bottom: Face,
+]
+
 export class OBB {
   public readonly center: Vector3 = Vector3.zero()
   public readonly halfSize: Vector3 = Vector3.zero()
   public readonly rotation: Quaternion = Quaternion.identity()
 
+  public readonly faces: Faces
+
   // Fix creation array for each OBB even if points are not needed
-  private readonly array: CornerPoints = timesMap(8, Vector3.zero) as CornerPoints
+  private readonly points: CornerPoints = timesMap(8, Vector3.zero) as CornerPoints
 
   public constructor()
   public constructor(center: Vector3, halfSize: Vector3, rotation: Quaternion)
@@ -25,6 +38,7 @@ export class OBB {
       this.halfSize.copy(args[1])
       this.rotation.copy(args[2])
     }
+    this.faces = this.calculateFaces()
   }
 
   public clone(): OBB {
@@ -40,18 +54,18 @@ export class OBB {
 
   public getPoints(): CornerPoints {
     const hs = this.halfSize
-    this.array[0].set(hs.x, hs.y, hs.z)
-    this.array[1].set(-hs.x, hs.y, hs.z)
-    this.array[2].set(-hs.x, -hs.y, hs.z)
-    this.array[3].set(-hs.x, -hs.y, -hs.z)
-    this.array[4].set(hs.x, -hs.y, -hs.z)
-    this.array[5].set(hs.x, hs.y, -hs.z)
-    this.array[6].set(-hs.x, hs.y, -hs.z)
-    this.array[7].set(hs.x, -hs.y, hs.z)
-    this.array.forEach((point) => {
+    this.points[0].set(hs.x, hs.y, hs.z)
+    this.points[1].set(-hs.x, hs.y, hs.z)
+    this.points[2].set(-hs.x, hs.y, -hs.z)
+    this.points[3].set(hs.x, hs.y, -hs.z)
+    this.points[4].set(hs.x, -hs.y, hs.z)
+    this.points[5].set(-hs.x, -hs.y, hs.z)
+    this.points[6].set(-hs.x, -hs.y, -hs.z)
+    this.points[7].set(hs.x, -hs.y, -hs.z)
+    this.points.forEach((point) => {
       point.rotateByQuaternion(this.rotation).add(this.center)
     })
-    return this.array
+    return this.points
   }
 
   public collide(_obb: OBB): boolean {
@@ -80,5 +94,16 @@ export class OBB {
     this.halfSize.zero()
     this.rotation.identity()
     return this
+  }
+
+  private calculateFaces(): Faces {
+    return [
+      [this.points[2], this.points[6], this.points[7], this.points[3]],
+      [this.points[3], this.points[7], this.points[4], this.points[0]],
+      [this.points[0], this.points[4], this.points[5], this.points[1]],
+      [this.points[1], this.points[5], this.points[6], this.points[2]],
+      [this.points[0], this.points[1], this.points[2], this.points[3]],
+      [this.points[4], this.points[7], this.points[6], this.points[5]],
+    ]
   }
 }

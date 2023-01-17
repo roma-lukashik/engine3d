@@ -1,9 +1,11 @@
 import { Vector3 } from "@math/vector3"
-import { eq, gte, lt, lte, neq } from "@math/operators"
+import { eq, gte, lt, lte } from "@math/operators"
 import { EPS } from "@math/constants"
 import { OBB } from "@geometry/bbox/obb"
 import { AABB } from "@geometry/bbox/aabb"
 import { Projection } from "@geometry/projection"
+import { Plane } from "@geometry/plane"
+import { forEachPair } from "@utils/array"
 
 export type CollisionBox = {
   aabb: AABB
@@ -75,7 +77,7 @@ function collectSeparateAxes(box: OBB, axes: Vector3[]): void {
 
 function axesParallel(a: Vector3, b: Vector3): boolean {
   // To check if vectors are parallel we need to compare dot product with product of axes magnitudes,
-  // but both of axes are unit vector, so we can compare just with 1.
+  // but both of axes are unit vectors, so just compare them with 1.
   return eq(a.dot(b), 1)
 }
 
@@ -130,31 +132,74 @@ function findContacts(
   contactNormal: Vector3,
   sign: number,
 ): Vector3[] {
-  const contacts: Vector3[] = []
-  collectContacts(contacts, pointsA, boxB, contactNormal, sign === 1 ? Math.max : Math.min)
-  collectContacts(contacts, pointsB, boxA, contactNormal, sign === 1 ? Math.min : Math.max)
-  return contacts
+  const [faceA, coefA] = findSignificantFace(boxA, pointsA, contactNormal, sign === 1 ? Math.max : Math.min)
+  const [faceB, coefB] = findSignificantFace(boxB, pointsB, contactNormal, sign === 1 ? Math.min : Math.max)
+  const [incidentFace, referenceBox] = coefA > coefB ? [faceA, boxB] : [faceB, boxA]
+  const planes = referenceBox.faces.map((face) => {
+    const normal = getFaceNormal(face)
+    return new Plane(normal, -normal.dot(face[0]))
+  })
+  return clipIncidentFace(incidentFace, planes)
 }
 
-function collectContacts(
-  existingContacts: Vector3[],
-  contactCandidates: Vector3[],
-  colliderOBB: OBB,
-  contactNormal: Vector3,
+function findSignificantFace(
+  box: OBB,
+  points: Vector3[],
+  collisionNormal: Vector3,
   extremumFn: (...values: number[]) => number,
-): void {
-  const distances = contactCandidates.map((p) => p.dot(contactNormal))
-  const extremum = extremumFn(...distances)
+): [face: Vector3[], coefficient: number] {
+  const furthestPoints = findFurthestPointsAlongCollisionNormal(points, collisionNormal, extremumFn)
+  const furthestFaces = box.faces.filter((face) => furthestPoints.every((point) => face.includes(point)))
+  if (!furthestFaces.length) {
+    throw new Error("Cannot find the furthest face.")
+  }
+  const parallelCoefficients = furthestFaces.map((face) => getFaceNormal(face).dot(collisionNormal))
+  const maxParallel = Math.max(...parallelCoefficients)
+  return [furthestFaces[parallelCoefficients.indexOf(maxParallel)], maxParallel]
+}
 
-  contactCandidates.forEach((point, i) => {
-    if (neq(distances[i], extremum)) {
-      return
-    }
-    if (existingContacts.some((contact) => contact.equal(point))) {
-      return
-    }
-    if (colliderOBB.containsPoint(point)) {
-      existingContacts.push(point)
-    }
+function findFurthestPointsAlongCollisionNormal(
+  points: Vector3[],
+  collisionNormal: Vector3,
+  extremumFn: (...values: number[]) => number,
+): Vector3[] {
+  const distances = points.map((point) => point.dot(collisionNormal))
+  const furthestDistance = extremumFn(...distances)
+  return points.filter((_, i) => eq(distances[i], furthestDistance))
+}
+
+function getFaceNormal(face: Vector3[]): Vector3 {
+  const a = face[1].clone().subtract(face[0])
+  const b = face[2].clone().subtract(face[0])
+  return a.cross(b).normalize()
+}
+
+// Sutherland Hodgman
+function clipIncidentFace(incidentFace: Vector3[], clippingPlanes: Plane[]): Vector3[] {
+  let finalPolygon = incidentFace
+  clippingPlanes.forEach((plane) => {
+    const clippedPolygon: Vector3[] = []
+    forEachPair(finalPolygon, (current, next) => {
+      const d1 = plane.distanceToPoint(current)
+      const d2 = plane.distanceToPoint(next)
+      if (inFront(d1) && inFront(d2)) {
+        clippedPolygon.push(next)
+      } else if (inFront(d1) && behind(d2)) {
+        clippedPolygon.push(plane.intersectSegment(current, next)!)
+      } else if (behind(d1) && inFront(d2)) {
+        clippedPolygon.push(plane.intersectSegment(current, next)!)
+        clippedPolygon.push(next)
+      }
+    })
+    finalPolygon = clippedPolygon
   })
+  return finalPolygon
+}
+
+function inFront(distance: number): boolean {
+  return gte(distance, 0)
+}
+
+function behind(distance: number): boolean {
+  return lt(distance, 0)
 }
