@@ -5,6 +5,7 @@ describe("Texture", () => {
     width: 100,
     height: 100,
     data: new Uint8ClampedArray(),
+    colorSpace: "srgb",
   }
 
   it("to be defined", () => {
