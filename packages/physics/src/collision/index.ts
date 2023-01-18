@@ -135,10 +135,7 @@ function findContacts(
   const [faceA, coefA] = findSignificantFace(boxA, pointsA, contactNormal, sign === 1 ? Math.max : Math.min)
   const [faceB, coefB] = findSignificantFace(boxB, pointsB, contactNormal, sign === 1 ? Math.min : Math.max)
   const [incidentFace, referenceBox] = coefA > coefB ? [faceA, boxB] : [faceB, boxA]
-  const planes = referenceBox.faces.map((face) => {
-    const normal = getFaceNormal(face)
-    return new Plane(normal, -normal.dot(face[0]))
-  })
+  const planes = referenceBox.faces.map(([a, b, c]) => Plane.fromCoplanarPoints(a, b, c))
   return clipIncidentFace(incidentFace, planes)
 }
 

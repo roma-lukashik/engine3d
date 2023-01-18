@@ -5,14 +5,23 @@ export class Plane {
   public readonly normal: Vector3 = Vector3.zero()
   public constant: number = 0
 
+  public constructor()
   public constructor(x: number, y: number, z: number, constant: number)
   public constructor(normal: Vector3, constant: number)
-  public constructor(...args: [number, number, number, number] | [Vector3, number]) {
+  public constructor(...args: [number, number, number, number] | [Vector3, number] | []) {
     if (args.length === 2) {
       this.set(args[0], args[1])
-    } else {
+    } else if (args.length === 4) {
       this.setComponents(args[0], args[1], args[2], args[3])
     }
+  }
+
+  public static fromCoplanarPoints(a: Vector3, b: Vector3, c: Vector3): Plane {
+    return new Plane().fromCoplanarPoints(a, b, c)
+  }
+
+  public static fromNormalConstant(normal: Vector3, constant: number): Plane {
+    return new Plane().set(normal, constant)
   }
 
   public copy(): Plane {
@@ -29,6 +38,14 @@ export class Plane {
     this.normal.set(x, y, z)
     this.constant = constant
     return this
+  }
+
+  public fromCoplanarPoints(a: Vector3, b: Vector3, c: Vector3): this {
+    const ba = b.clone().subtract(a)
+    const ca = c.clone().subtract(a)
+    const normal = ba.cross(ca).normalize()
+    const constant = -normal.dot(a)
+    return this.set(normal, constant)
   }
 
   public normalize(): this {
