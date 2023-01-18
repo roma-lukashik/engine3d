@@ -56,7 +56,7 @@ function expandOBBTowardMovementVector(obb: OBB, movementVector: Vector3): OBB {
   const box = obb.clone()
   const halfVector = movementVector.clone().divideScalar(2)
   box.center.add(halfVector)
-  box.halfSize.add(halfVector.abs())
+  box.halfSize.add(halfVector.rotateByQuaternion(box.rotation.clone().invert()).abs())
   return box
 }
 
@@ -176,24 +176,24 @@ function getFaceNormal(face: Vector3[]): Vector3 {
 
 // Sutherland Hodgman
 function clipIncidentFace(incidentFace: Vector3[], clippingPlanes: Plane[]): Vector3[] {
-  let finalPolygon = incidentFace
-  clippingPlanes.forEach((plane) => {
-    const clippedPolygon: Vector3[] = []
-    forEachPair(finalPolygon, (current, next) => {
-      const d1 = plane.distanceToPoint(current)
-      const d2 = plane.distanceToPoint(next)
-      if (inFront(d1) && inFront(d2)) {
-        clippedPolygon.push(next)
-      } else if (inFront(d1) && behind(d2)) {
-        clippedPolygon.push(plane.intersectSegment(current, next)!)
-      } else if (behind(d1) && inFront(d2)) {
-        clippedPolygon.push(plane.intersectSegment(current, next)!)
-        clippedPolygon.push(next)
-      }
-    })
-    finalPolygon = clippedPolygon
+  return clippingPlanes.reduce((finalFace, plane) => clipFaceByPlane(finalFace, plane), incidentFace)
+}
+
+function clipFaceByPlane(face: Vector3[], plane: Plane): Vector3[] {
+  const clippedPolygon: Vector3[] = []
+  forEachPair(face, (current, next) => {
+    const d1 = plane.distanceToPoint(current)
+    const d2 = plane.distanceToPoint(next)
+    if (inFront(d1) && inFront(d2)) {
+      clippedPolygon.push(next)
+    } else if (inFront(d1) && behind(d2)) {
+      clippedPolygon.push(plane.intersectSegment(current, next)!)
+    } else if (behind(d1) && inFront(d2)) {
+      clippedPolygon.push(plane.intersectSegment(current, next)!)
+      clippedPolygon.push(next)
+    }
   })
-  return finalPolygon
+  return clippedPolygon
 }
 
 function inFront(distance: number): boolean {

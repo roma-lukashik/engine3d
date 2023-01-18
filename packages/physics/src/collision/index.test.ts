@@ -67,6 +67,25 @@ describe("collision", () => {
       expect(collision?.contactPoints[2]).toValueEqual([-1, 1, 0.5])
       expect(collision?.contactPoints[3]).toValueEqual([-1, 0, 0.5])
     })
+
+    it("should collide with rotated box", () => {
+      const a = createCollisionBox(
+        new Vector3(2, 0, -1),
+        new Vector3(1.414, 1, 1.414),
+        Quaternion.fromAxisAngle(new Vector3(0, 1, 0), Math.PI / 4),
+      )
+      const b = createCollisionBox(
+        new Vector3(0, 0, 2),
+        new Vector3(1, 1, 1),
+      )
+      const collision = detectContinuousCollision(a, b, new Vector3(-1, 0, 1))
+      expect(collision?.contactNormal).toValueEqual([-0.707, 0, 0.707])
+      expect(collision?.penetration).toBeCloseTo(0.707)
+      expect(collision?.contactPoints[0]).toValueEqual([0, -1, 1])
+      expect(collision?.contactPoints[1]).toValueEqual([0, 1, 1])
+      expect(collision?.contactPoints[2]).toValueEqual([1, 1, 2])
+      expect(collision?.contactPoints[3]).toValueEqual([1, -1, 2])
+    })
   })
 })
 
