@@ -36,7 +36,7 @@ export class BufferAttribute {
     this.normalized = normalized
     this.stride = stride
     this.offset = offset
-    this.count = (array.length - offset) / (stride || itemSize)
+    this.count = Math.floor((array.length - offset) / (stride || itemSize))
     this.target = target
   }
 

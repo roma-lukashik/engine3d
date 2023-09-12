@@ -55,7 +55,7 @@ const parseNodes = (data: Gltf): Node[] => {
       position: translation && Vector3.fromArray(translation),
       rotation: rotation && Quaternion.fromArray(rotation),
       scale: scale && Vector3.fromArray(scale),
-      matrix: matrix && Matrix4.fromArray(matrix),
+      matrix: matrix && new Matrix4(matrix),
       name,
     }),
   )
@@ -242,7 +242,7 @@ const parseSkin = (data: Gltf, nodes: Node[], skinIndex: Option<number>) => {
   const boneInverses = timesMap(bones.length, (i) => {
     return Matrix4.fromArray(inverseMatrices.array, Matrix4.size * i)
   })
-  return new Skeleton({ bones, boneInverses })
+  return new Skeleton(bones, boneInverses)
 }
 
 const parseAnimations = <K extends string>(data: Gltf, nodes: Node[]): Record<K, Animation> => {

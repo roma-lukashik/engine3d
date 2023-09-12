@@ -12,7 +12,7 @@ type Options = {
 
 export class Node {
   public name?: string
-  public localMatrix: Matrix4
+  public localMatrix: Matrix4 = Matrix4.identity()
   public worldMatrix: Matrix4 = Matrix4.identity()
   public position: Vector3
   public scale: Vector3
@@ -36,7 +36,7 @@ export class Node {
       this.position = position
       this.scale = scale
       this.rotation = rotation
-      this.localMatrix = Matrix4.compose(rotation, position, scale)
+      this.updateLocalMatrix()
     }
 
     this.name = name
@@ -62,10 +62,14 @@ export class Node {
 
   public updateWorldMatrix(): void {
     if (this.parent) {
-      this.worldMatrix.set(this.parent.worldMatrix.elements).multiply(this.localMatrix)
+      this.worldMatrix.copy(this.parent.worldMatrix).multiply(this.localMatrix)
     } else {
-      this.worldMatrix.set(this.localMatrix.elements)
+      this.worldMatrix.copy(this.localMatrix)
     }
     this.children.forEach((child) => child.updateWorldMatrix())
+  }
+
+  public updateLocalMatrix(): void {
+    this.localMatrix.compose(this.rotation, this.position, this.scale)
   }
 }

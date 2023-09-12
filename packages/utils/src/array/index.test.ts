@@ -1,4 +1,4 @@
-import { range, times, timesMap } from "@utils/array"
+import { forEachPair, range, times, timesMap } from "@utils/array"
 
 describe("array utils", () => {
   describe("#times", () => {
@@ -30,6 +30,29 @@ describe("array utils", () => {
 
     it("works correctly #2", () => {
       expect(range(0, 0)).toEqual([])
+    })
+  })
+
+  describe("forEachPair", () => {
+    it("calls function for each pair including end with start", () => {
+      const fn = jest.fn()
+      forEachPair([0, 1, 2, 3], fn)
+      expect(fn).toHaveBeenNthCalledWith(1, 0, 1)
+      expect(fn).toHaveBeenNthCalledWith(2, 1, 2)
+      expect(fn).toHaveBeenNthCalledWith(3, 2, 3)
+      expect(fn).toHaveBeenNthCalledWith(4, 3, 0)
+    })
+
+    it("to not call callback for an empty array", () => {
+      const fn = jest.fn()
+      forEachPair([], fn)
+      expect(fn).not.toHaveBeenCalled()
+    })
+
+    it("to not call callback for an array with 1 element", () => {
+      const fn = jest.fn()
+      forEachPair([1], fn)
+      expect(fn).not.toHaveBeenCalled()
     })
   })
 })

@@ -2,8 +2,11 @@ import { Vector3 } from "@math/vector3"
 import { gte, lte } from "@math/operators"
 
 export class AABB {
-  public min: Vector3 = new Vector3(Infinity, Infinity, Infinity)
-  public max: Vector3 = new Vector3(-Infinity, -Infinity, -Infinity)
+  public readonly min: Vector3 = new Vector3(Infinity, Infinity, Infinity)
+  public readonly max: Vector3 = new Vector3(-Infinity, -Infinity, -Infinity)
+
+  private readonly center: Vector3 = Vector3.zero()
+  private readonly size: Vector3 = new Vector3(Infinity, Infinity, Infinity)
 
   public constructor()
   public constructor(min: Vector3, max: Vector3)
@@ -12,9 +15,17 @@ export class AABB {
     if (args.length === 1) {
       this.calculateMinMax(args[0])
     } else if (args.length === 2) {
-      this.min = args[0]
-      this.max = args[1]
+      this.min.copy(args[0])
+      this.max.copy(args[1])
     }
+  }
+
+  public getCenter(): Vector3 {
+    return this.center.copy(this.max).add(this.min).divideScalar(2)
+  }
+
+  public getSize(): Vector3 {
+    return this.size.copy(this.max).subtract(this.min)
   }
 
   public clone(): AABB {
@@ -36,8 +47,8 @@ export class AABB {
   }
 
   public reset(): void {
-    this.min.set(Infinity)
-    this.max.set(-Infinity)
+    this.min.set(Infinity, Infinity, Infinity)
+    this.max.set(-Infinity, -Infinity, -Infinity)
   }
 
   private calculateMinMax(array: ArrayLike<number>): void {

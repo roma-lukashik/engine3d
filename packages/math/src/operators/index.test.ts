@@ -1,4 +1,4 @@
-import { eq, neq, gt, gte, lt, lte, clamp, ceilPowerOfTwo } from "@math/operators"
+import { eq, neq, gt, gte, lt, lte, clamp, ceilPowerOfTwo, sign } from "@math/operators"
 
 describe("operators", () => {
   it.each([
@@ -109,6 +109,18 @@ describe("operators", () => {
     [4, 1, 3, 3],
   ])("clamp(%d, %d, %d)=%d", (x, min, max, result) => {
     expect(clamp(x, min, max)).toBe(result)
+  })
+
+  it.each([
+    [10, 1],
+    [-10, -1],
+    [0, 0],
+    [0.001, 0],
+    [0.0015, 1],
+    [-0.001, 0],
+    [-0.0015, -1],
+  ])("sign(%d)=%d", (x, result) => {
+    expect(sign(x)).toBe(result)
   })
 
   it.each([

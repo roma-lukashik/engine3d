@@ -1,8 +1,8 @@
-import { eq } from "@math/operators"
+import { eq, sign, zero } from "@math/operators"
 import type { Matrix4 } from "@math/matrix4"
 import type { Quaternion } from "@math/quaternion"
 
-export type Vector3Tuple = [x: number, y: number, z: number]
+export type Vector3Tuple = Readonly<[x: number, y: number, z: number]>
 
 export class Vector3Array extends Float32Array {
   public constructor() {
@@ -61,9 +61,19 @@ export class Vector3 {
     this.array[2] = z
   }
 
-  public set(x: number): this
-  public set(x: number, y: number, z: number): this
-  public set(x: number, y: number = x, z: number = x): this {
+  public zero(): this {
+    return this.set(0, 0, 0)
+  }
+
+  public one(): this {
+    return this.set(1, 1, 1)
+  }
+
+  public fromArray(array: ArrayLike<number>, offset: number = 0): this {
+    return this.set(array[offset], array[offset + 1], array[offset + 2])
+  }
+
+  public set(x: number, y: number, z: number): this {
     this.array[0] = x
     this.array[1] = y
     this.array[2] = z
@@ -129,7 +139,7 @@ export class Vector3 {
   }
 
   public distanceSquared(v: Vector3): number {
-    return this.clone().subtract(v).lengthSquared()
+    return vectorTemp.copy(v).subtract(this).lengthSquared()
   }
 
   public distance(v: Vector3): number {
@@ -137,11 +147,17 @@ export class Vector3 {
   }
 
   public normalize(): this {
-    return this.divideScalar(this.length())
+    const length = this.length()
+    return zero(length) ? this.zero() : this.divideScalar(length)
   }
 
   public negate(): this {
     return this.multiplyScalar(-1)
+  }
+
+  public reflect(v: Vector3): this {
+    const n = vectorTemp.copy(v).normalize()
+    return this.subtract(n.multiplyScalar(2 * this.dot(n)))
   }
 
   public dot(v: Vector3): number {
@@ -156,7 +172,7 @@ export class Vector3 {
   }
 
   public lerp(v: Vector3, t: number): this {
-    return this.add(v.clone().subtract(this).multiplyScalar(t))
+    return this.add(vectorTemp.copy(v).subtract(this).multiplyScalar(t))
   }
 
   public transformMatrix4(matrix: Matrix4): this {
@@ -172,29 +188,30 @@ export class Vector3 {
 
   public rotateByQuaternion(q: Quaternion): this {
     const v = new Vector3(q.x, q.y, q.z)
-    const u = v.clone().cross(this)
+    const u = vectorTemp.copy(v).cross(this)
     const uu = v.cross(u).multiplyScalar(2)
     return this.add(u.multiplyScalar(q.w * 2)).add(uu)
   }
 
-  // TODO tests
   public min(v: Vector3): this {
-    return this.set(
-      Math.min(this.x, v.x),
-      Math.min(this.y, v.y),
-      Math.min(this.z, v.z),
-    )
+    return this.set(Math.min(this.x, v.x), Math.min(this.y, v.y), Math.min(this.z, v.z))
   }
 
   public max(v: Vector3): this {
-    return this.set(
-      Math.max(this.x, v.x),
-      Math.max(this.y, v.y),
-      Math.max(this.z, v.z),
-    )
+    return this.set(Math.max(this.x, v.x), Math.max(this.y, v.y), Math.max(this.z, v.z))
+  }
+
+  public sign(): this {
+    return this.set(sign(this.x), sign(this.y), sign(this.z))
+  }
+
+  public abs(): this {
+    return this.set(Math.abs(this.x), Math.abs(this.y), Math.abs(this.z))
   }
 
   public equal(v: Vector3): boolean {
     return eq(this.x, v.x) && eq(this.y, v.y) && eq(this.z, v.z)
   }
 }
+
+const vectorTemp = new Vector3()

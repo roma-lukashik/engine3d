@@ -34,16 +34,24 @@ describe("Vector4", () => {
   })
 
   it("zero", () => {
-    expect(Vector4.zero()).toValueEqual([0, 0, 0, 0])
+    const zero = [0, 0, 0, 0]
+    expect(Vector4.zero()).toValueEqual(zero)
+    expect(a.zero()).toValueEqual(zero)
   })
 
   it("one", () => {
-    expect(Vector4.one()).toValueEqual([1, 1, 1, 1])
+    const one = [1, 1, 1, 1]
+    expect(Vector4.one()).toValueEqual(one)
+    expect(a.one()).toValueEqual(one)
   })
 
   it("fromArray", () => {
-    expect(Vector4.fromArray([0, 1, 2, 3, 4, 5, 6])).toValueEqual([0, 1, 2, 3])
-    expect(Vector4.fromArray([0, 1, 2, 3, 4, 5, 6], 3)).toValueEqual([3, 4, 5, 6])
+    const raw = [0, 1, 2, 3, 4, 5, 6]
+    expect(Vector4.fromArray(raw)).toValueEqual([0, 1, 2, 3])
+    expect(Vector4.fromArray(raw, 3)).toValueEqual([3, 4, 5, 6])
+
+    expect(a.fromArray(raw)).toValueEqual([0, 1, 2, 3])
+    expect(a.fromArray(raw, 3)).toValueEqual([3, 4, 5, 6])
   })
 
   it("clone", () => {
@@ -57,10 +65,6 @@ describe("Vector4", () => {
 
   it("set(0, 1, 2, 3)", () => {
     expect(a.set(0, 1, 2, 3)).toValueEqual([0, 1, 2, 3])
-  })
-
-  it("set(2)", () => {
-    expect(a.set(2)).toValueEqual([2, 2, 2, 2])
   })
 
   it("add", () => {

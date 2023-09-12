@@ -22,13 +22,9 @@ import {
 import { MeshAttributes, MeshUniforms } from "@webgl/program/mesh/types"
 import { RenderState } from "@webgl/utils/state"
 
-// @ts-ignore
 import brdf from "@webgl/shaders/brdf.glsl"
-// @ts-ignore
 import skeleton from "@webgl/shaders/skeleton.glsl"
-// @ts-ignore
 import shadow from "@webgl/shaders/shadow.glsl"
-// @ts-ignore
 import helpers from "@webgl/shaders/helpers.glsl"
 
 type Options = {

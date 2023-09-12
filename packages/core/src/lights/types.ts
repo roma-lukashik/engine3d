@@ -1,4 +1,4 @@
-import { Matrix4 } from "@math/matrix4"
+import { Camera } from "@core/camera"
 
 export type Light = {
   readonly type: LightType
@@ -7,7 +7,7 @@ export type Light = {
 }
 
 export type LightWithShadow = Light & {
-  readonly projectionMatrix: Matrix4
+  readonly camera: Camera
 }
 
 export enum LightType {

@@ -1,6 +1,5 @@
 import { AnimationSample } from "@core/animationSample"
 import { Vector3 } from "@math/vector3"
-import { Matrix4 } from "@math/matrix4"
 import { Quaternion } from "@math/quaternion"
 import { EPS } from "@math/constants"
 
@@ -31,18 +30,22 @@ export class Animation {
       switch (transform) {
         case "position":
         case "scale":
-          const prevVector = Vector3.fromArray(values, prevIndex * Vector3.size)
-          const nextVector = Vector3.fromArray(values, nextIndex * Vector3.size)
-          node[transform] = prevVector.lerp(nextVector, t)
+          const prevVector = node[transform].fromArray(values, prevIndex * Vector3.size)
+          nextVector.fromArray(values, nextIndex * Vector3.size)
+          prevVector.lerp(nextVector, t)
           break
         case "rotation":
-          const prevQuaternion = Quaternion.fromArray(values, prevIndex * Quaternion.size)
-          const nextQuaternion = Quaternion.fromArray(values, nextIndex * Quaternion.size)
-          node[transform] = prevQuaternion.slerp(nextQuaternion, t)
+          const prevQuaternion = node[transform].fromArray(values, prevIndex * Quaternion.size)
+          nextQuaternion.fromArray(values, nextIndex * Quaternion.size)
+          prevQuaternion.slerp(nextQuaternion, t)
           break
       }
 
-      node.localMatrix = Matrix4.compose(node.rotation, node.position, node.scale)
+      node.localMatrix.compose(node.rotation, node.position, node.scale)
     })
   }
 }
+
+// Cached values
+const nextVector = new Vector3()
+const nextQuaternion = new Quaternion()

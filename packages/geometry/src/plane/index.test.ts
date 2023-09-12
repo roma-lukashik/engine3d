@@ -2,16 +2,38 @@ import { Plane } from "@geometry/plane"
 import { Vector3 } from "@math/vector3"
 
 describe("Plane", () => {
-  it("to be created", () => {
+  it("to be created with no arguments", () => {
+    const plane = new Plane()
+    expect(plane.normal).toValueEqual([0, 0, 0])
+    expect(plane.constant).toBe(0)
+  })
+
+  it("to be created by vector and constant", () => {
     const plane = new Plane(new Vector3(0, 1, 0), 2)
     expect(plane.normal).toValueEqual([0, 1, 0])
     expect(plane.constant).toBe(2)
   })
 
-  it("fromComponents", () => {
-    const plane = Plane.fromComponents(1, 2, 3, 4)
-    expect(plane.normal).toValueEqual([1, 2, 3])
-    expect(plane.constant).toBe(4)
+  it("to be created by components", () => {
+    const plane = new Plane(0, 1, 0, 2)
+    expect(plane.normal).toValueEqual([0, 1, 0])
+    expect(plane.constant).toBe(2)
+  })
+
+  it("static fromCoplanarPoints", () => {
+    const plane = Plane.fromCoplanarPoints(
+      new Vector3(1, 2, 0),
+      new Vector3(0, 2, 0),
+      new Vector3(0, 2, 1),
+    )
+    expect(plane.normal).toValueEqual([0, 1, 0])
+    expect(plane.constant).toBe(-2)
+  })
+
+  it("fromNormalConstant", () => {
+    const plane = Plane.fromNormalConstant(new Vector3(1, 1, 1), 1)
+    expect(plane.normal).toValueEqual([1, 1, 1])
+    expect(plane.constant).toBe(1)
   })
 
   it("copy", () => {
@@ -33,6 +55,17 @@ describe("Plane", () => {
     plane.setComponents(1, 1, 1, 1)
     expect(plane.normal).toValueEqual([1, 1, 1])
     expect(plane.constant).toBe(1)
+  })
+
+  it("fromCoplanarPoints", () => {
+    const plane = new Plane()
+    plane.fromCoplanarPoints(
+      new Vector3(1, 2, 0),
+      new Vector3(0, 2, 0),
+      new Vector3(0, 2, 1),
+    )
+    expect(plane.normal).toValueEqual([0, 1, 0])
+    expect(plane.constant).toBe(-2)
   })
 
   it("normalize", () => {
@@ -58,5 +91,22 @@ describe("Plane", () => {
   ])("distanceToPoint %#", (point, distance) => {
     const plane = new Plane(new Vector3(0, 1, 0), -10)
     expect(plane.distanceToPoint(point)).toBe(distance)
+  })
+
+  it.each([
+    [new Vector3(0, 0, 0), new Vector3(-18, -18, -18), [-5.774, -5.774, -5.774]],
+    [new Vector3(-18, -18, -18), new Vector3(0, 0, 0), [-5.774, -5.774, -5.774]],
+  ])("intersectSegment returns intersection %#", (start, end, result) => {
+    const plane = new Plane(Vector3.one().normalize(), 10)
+    expect(plane.intersectSegment(start, end)).toValueEqual(result)
+  })
+
+  it.each([
+    [new Vector3(0, 0, 0), new Vector3(2, 2, 2)],
+    [new Vector3(6, 6, 6), new Vector3(10, 10, 10)],
+    [new Vector3(0, -17.32, 0), new Vector3(0, 0, -17.32)],
+  ])("intersectSegment returns undefined %#", (start, end) => {
+    const plane = new Plane(Vector3.one().normalize(), 10)
+    expect(plane.intersectSegment(start, end)).toBeUndefined()
   })
 })

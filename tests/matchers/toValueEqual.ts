@@ -32,7 +32,12 @@ export const toValueEqual: jest.CustomMatcher = <T extends Value>(
   }
 }
 
-const eq = (a: number, b: number, eps: number): boolean => Math.abs(a - b) < eps
+const eq = (a: number, b: number, eps: number): boolean => {
+  if (!Number.isFinite(a) && !Number.isFinite(b)) {
+    return Math.sign(a) === Math.sign(b)
+  }
+  return Math.abs(a - b) < eps
+}
 
 const print = (value: number | ArrayLike<number>, precision: number) => {
   if (typeof value === "number") {

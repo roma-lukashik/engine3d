@@ -1,20 +1,30 @@
-import { AmbientLight, DirectionalLight, SpotLight } from "@core/lights"
+import { AmbientLight, DirectionalLight } from "@core/lights"
 import { PerspectiveCamera } from "@core/camera"
 import { CameraControl } from "@core/cameraControl"
+import { KeyboardManager } from "@core/controls/keyboard"
 import { parseGltf } from "@core/loaders/gltf"
 import { Node } from "@core/node"
+import { Object3D } from "@core/object3d"
 
 import { Renderer } from "@webgl/renderer"
 import { Scene } from "@webgl/scene"
 
 import { toRadian } from "@math/angle"
 import { Vector3 } from "@math/vector3"
-import { Matrix4 } from "@math/matrix4"
-import { Object3D } from "@core/object3d"
+import { Quaternion } from "@math/quaternion"
+
+import { PhysicsEngine } from "@physics/engine"
+
+import { timesMap } from "@utils/array"
+
+import { DebugLightsRenderer } from "@webgl/debug/renderers/lights"
+import { DebugSkeletonRenderer } from "@webgl/debug/renderers/skeletons"
+import { DebugOBBRenderer } from "@webgl/debug/renderers/obb"
+import { DebugAABBRenderer } from "@webgl/debug/renderers/aabb"
 
 const camera = new PerspectiveCamera({
   aspect: window.innerWidth / window.innerHeight,
-  fovy: toRadian(60),
+  fovy: toRadian(30),
   far: 8000,
 })
 
@@ -25,27 +35,6 @@ const directionalLight = new DirectionalLight({
 })
 directionalLight.setPosition(new Vector3(-500, 800, 500))
 
-const spotLight = new SpotLight({
-  intensity: 0.7,
-  castShadow: true,
-  distance: 1200,
-  angle: Math.PI / 8,
-  penumbra: 1.0,
-  bias: 0.000001,
-  color: 0xff0000,
-})
-spotLight.setPosition(new Vector3(-700, 500, 500))
-spotLight.setTarget(new Vector3(-300, 0, 200))
-
-const spotLight2 = new SpotLight({
-  intensity: 0.99,
-  castShadow: true,
-  distance: 1200,
-  angle: Math.PI / 8,
-  penumbra: 0.5,
-  bias: 0.00001,
-})
-
 const ambientLight = new AmbientLight({
   intensity: 0.25,
 })
@@ -53,130 +42,179 @@ const ambientLight = new AmbientLight({
 const renderer = new Renderer({
   width: window.innerWidth,
   height: window.innerHeight,
+  debugRenderers: [
+    DebugLightsRenderer,
+    DebugSkeletonRenderer,
+    DebugAABBRenderer,
+    DebugOBBRenderer,
+  ],
 })
 
-renderer.gl.canvas.onclick = () => {
-  new CameraControl({ camera, element: renderer.gl.canvas, rotationSpeed: 0.7 })
-}
+renderer.gl.canvas.addEventListener("click", () => {
+  new CameraControl({ camera, element: renderer.gl.canvas as Element, speed: 0.7 })
+})
 
-const scene = new Scene()
-scene.addLight(
-  directionalLight,
-  spotLight,
-  spotLight2,
-  ambientLight,
-)
+const physics = new PhysicsEngine({ deltaTime: 0.2 })
 
-const followObject = (node: Node): void => {
-  const nodePosition = node.getWorldPosition()
-  const nodeRotation = node.getWorldRotation()
-  const from = new Vector3(0, 300, 400)
-  const up = new Vector3(0, 150, 0)
-  camera.setPosition(from.rotateByQuaternion(nodeRotation).add(nodePosition))
-  camera.lookAt(up.add(nodePosition))
+const keyboard = new KeyboardManager()
 
-  spotLight2.setPosition(up.clone().add(new Vector3(0, 0, -35).rotateByQuaternion(nodeRotation)))
-  spotLight2.setTarget(new Vector3(0, 40, -250).rotateByQuaternion(nodeRotation).add(nodePosition))
-}
-
-const move = (object: Object3D, translationVector: Vector3, colliders: Object3D[] = []) => {
-  const collide = colliders.some((collider) => collider.aabb.collide(object.aabb))
-  if (!collide) {
-    const position = object.node.getWorldPosition()
-    const target = camera.target.clone().subtract(camera.position).add(position)
-    target.y = position.y
-    object.node.localMatrix = Matrix4.lookAt(position, target, new Vector3(0, 1, 0))
-      .scale(100, 100, 100)
-      .translate(translationVector.x, translationVector.y, translationVector.z)
-  }
-}
-
-type HeroAnimations =
+type PlayerAnimations =
   | "Idle"
-  | "Run"
-  | "TPose"
-  | "Walk"
+  | "RunForward"
+  | "RunBackward"
+  | "RunLeft"
+  | "RunRight"
+  | "RunForwardRight"
+  | "RunForwardLeft"
+  | "RunBackwardRight"
+  | "RunBackwardLeft"
 
 const loadModel = async <T extends string>(url: string) => {
   const gltf = await parseGltf<T>(await (await fetch(url)).arrayBuffer())
   return new Object3D(gltf.node, gltf.animations)
 }
 
-const hero = await loadModel<HeroAnimations>("models/soldier.glb")
-const surface = await loadModel("models/surface.glb")
-const box = await loadModel("models/box.glb")
-const box2 = await loadModel("models/box.glb")
-const box3 = await loadModel("models/box.glb")
+const player = await loadModel<PlayerAnimations>("models/player.glb")
+const npc = await loadModel<PlayerAnimations>("models/player.glb")
+const court = await loadModel("models/court.glb")
+const ball = await loadModel("models/ball.glb")
+const net = await loadModel("models/net.glb")
+const wall = await Promise.all(timesMap(3, () => loadModel("models/box.glb")))
 
-hero.frustumCulled = false
-surface.frustumCulled = false
+court.frustumCulled = false
+court.isMovable = false
+court.restitution = 1
+court.setScale(new Vector3(100, 100, 100))
+court.setRotation(Quaternion.fromAxisAngle(new Vector3(0, -1, 0), Math.PI / 2))
 
-scene.addObject(surface)
-scene.addObject(box)
-scene.addObject(box2)
-scene.addObject(box3)
-scene.addObject(hero)
+net.isMovable = false
+net.restitution = 0.15
+net.setScale(new Vector3(3, 2.5, 4.5))
+net.setPosition(new Vector3(31, 0, 0))
+net.setRotation(Quaternion.fromAxisAngle(new Vector3(0, -1, 0), Math.PI / 2))
 
-surface.updateWorldMatrix(Matrix4.scaling(100, 100, 100).translate(0, -0.1, 0))
-box.updateWorldMatrix(Matrix4.scaling(150, 200, 150).translate(3, 1, -3))
-box2.updateWorldMatrix(Matrix4.scaling(150, 200, 150).translate(-3, 1, -3))
-box3.updateWorldMatrix(Matrix4.scaling(150, 200, 150).translate(3, 1, 3))
+ball.airFriction = 0.001
+ball.restitution = 0.6
+ball.colliders = [court, net, ...wall]
+ball.setMass(0.1)
+ball.setScale(new Vector3(7, 7, 7))
+ball.setPosition(new Vector3(0, 7, 1085))
 
-hero.node.localMatrix = Matrix4.scaling(100, 100, 100)
-hero.updateWorldMatrix()
-followObject(hero.node)
+player.frustumCulled = false
+player.colliders = [net, npc, court]
+player.setMass(70)
+player.setRotation(Quaternion.fromAxisAngle(Vector3.one().normalize(), -Math.PI / 4))
+player.setPosition(new Vector3(0, 88, 1200))
 
-let wPressed = false
-let sPressed = false
-let shiftPressed = false
+npc.colliders = [court]
+npc.setMass(70)
+npc.setPosition(new Vector3(0, 88, -1200))
+
+wall[0].setPosition(new Vector3(0, 0, 300))
+wall[1].setPosition(new Vector3(25, 40, 300))
+wall[2].setPosition(new Vector3(-25, 40, 300))
+wall.forEach((b) => {
+  b.setScale(new Vector3(2, 2, 2))
+  b.friction = 0.5
+  b.staticFriction = 0.9
+  b.colliders = [court, net, ball, ...wall.filter((x) => x !== b)]
+  b.setMass(0.05)
+})
+
+const scene = new Scene()
+scene.addLight(directionalLight, ambientLight)
+scene.addCamera(camera)
+scene.addObject(court)
+scene.addObject(net)
+scene.addObject(player)
+scene.addObject(npc)
+scene.addObject(ball)
+wall.forEach((box) => scene.addObject(box))
+
+keyboard.registerKeyPres("Space", () => followObject(player.node))
+
+const getAnimation = (): PlayerAnimations => {
+  if (keyboard.isPressed("KeyW") && keyboard.isPressed("KeyA")) return "RunForwardLeft"
+  if (keyboard.isPressed("KeyW") && keyboard.isPressed("KeyD")) return "RunForwardRight"
+  if (keyboard.isPressed("KeyS") && keyboard.isPressed("KeyA")) return "RunBackwardLeft"
+  if (keyboard.isPressed("KeyS") && keyboard.isPressed("KeyD")) return "RunBackwardRight"
+  if (keyboard.isPressed("KeyW")) return "RunForward"
+  if (keyboard.isPressed("KeyS")) return "RunBackward"
+  if (keyboard.isPressed("KeyA")) return "RunLeft"
+  if (keyboard.isPressed("KeyD")) return "RunRight"
+  return "Idle"
+}
+
+const followObject = (node: Node): void => {
+  const from = new Vector3(0, 700, 1500)
+  const up = new Vector3(0, 150, 0)
+  camera.setPosition(from.add(node.position))
+  camera.lookAt(up.add(node.position))
+}
+
+const followBall = () => {
+  if (ball.velocity.lengthSquared() < 1) {
+    npc.animate("Idle", i)
+    return
+  }
+  const ballPosition = ball.node.position
+  const npcPosition = npc.node.position
+  if (ballPosition.x > npcPosition.x) {
+    npc.animate("RunLeft", i)
+  } else if (ballPosition.x < npcPosition.x) {
+    npc.animate("RunRight", i)
+  } else {
+    npc.animate("Idle", i)
+  }
+  npcPosition.x = ballPosition.x
+  npc.setPosition(npcPosition)
+}
+
+followObject(player.node)
+
 let i = 0
+const angle = Math.PI / 10
+const power = 170
+const speed = 30
 
 const update = () => {
-  const step = 0.03
-  const colliders = [box, box2, box3]
-  const speed = shiftPressed ? 3 : 1
-  if (wPressed) move(hero, new Vector3(0, 0, speed * -step), colliders)
-  if (sPressed) move(hero, new Vector3(0, 0, speed * step), colliders)
+  player.velocity.x = 0
+  player.velocity.z = 0
 
-  if (wPressed || sPressed) {
-    hero.animate(shiftPressed ? "Run" : "Walk", i += 0.02)
-    followObject(hero.node)
-  } else {
-    hero.animate("Idle", i += 0.02)
+  if (keyboard.isPressed("KeyW")) player.velocity.add(new Vector3(0, 0, -1))
+  if (keyboard.isPressed("KeyS")) player.velocity.add(new Vector3(0, 0, 1))
+  if (keyboard.isPressed("KeyA")) player.velocity.add(new Vector3(-1, 0, 0))
+  if (keyboard.isPressed("KeyD")) player.velocity.add(new Vector3(1, 0, 0))
+
+  if (!player.velocity.equal(Vector3.zero())) {
+    const y = player.velocity.y
+    player.velocity.normalize().multiplyScalar(speed)
+    player.velocity.y = y
   }
 
-  renderer.render(scene, camera)
+  player.animate(getAnimation(), i += 0.02)
+
+  followBall()
+
+  if (ball.aabb.collide(npc.aabb)) {
+    ball.velocity.set(0, Math.sin(angle), Math.cos(angle)).multiplyScalar(power)
+    // ball.angularVelocity.set(0, 50 * (Math.random() - 0.5), 0)
+  }
+
+  if (ball.aabb.collide(player.aabb)) {
+    ball.velocity.set(0, Math.sin(angle), -Math.cos(angle)).multiplyScalar(power)
+    // ball.angularVelocity.set(0, 50 * (Math.random() - 0.5), 0)
+  }
+
+  physics.run(scene.objects)
+  renderer.render(scene)
   requestAnimationFrame(update)
 }
 
 requestAnimationFrame(update)
 
-document.body.appendChild(renderer.gl.canvas)
+document.body.appendChild(renderer.gl.canvas as Element)
 window.addEventListener("resize", () => {
   renderer.resize(window.innerWidth, window.innerHeight)
   camera.setOptions({ aspect: window.innerWidth / window.innerHeight })
-})
-
-window.addEventListener("keydown", (e) => {
-  if (e.key.toLowerCase() === "w") {
-    wPressed = true
-  }
-  if (e.key.toLowerCase() === "s") {
-    sPressed = true
-  }
-  if (e.shiftKey) {
-    shiftPressed = true
-  }
-})
-
-window.addEventListener("keyup", (e) => {
-  if (e.key.toLowerCase() === "w") {
-    wPressed = false
-  }
-  if (e.key.toLowerCase() === "s") {
-    sPressed = false
-  }
-  if (!e.shiftKey) {
-    shiftPressed = false
-  }
 })

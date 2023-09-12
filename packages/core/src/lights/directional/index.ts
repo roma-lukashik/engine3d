@@ -1,5 +1,4 @@
 import { Vector3 } from "@math/vector3"
-import { Matrix4 } from "@math/matrix4"
 import { clamp } from "@math/operators"
 import { Camera, OrthographicCamera } from "@core/camera"
 import { LightType, LightWithShadow } from "@core/lights/types"
@@ -26,14 +25,9 @@ export class DirectionalLight implements LightWithShadow {
   public readonly castShadow: boolean
   public readonly color: RGB
   public readonly direction: Vector3 = Vector3.zero()
+  public readonly camera: Camera
   public intensity: number
   public bias: number
-
-  private readonly camera: Camera
-
-  public get projectionMatrix(): Matrix4 {
-    return this.camera.projectionMatrix
-  }
 
   public constructor({
     castShadow = false,
@@ -47,12 +41,12 @@ export class DirectionalLight implements LightWithShadow {
     this.intensity = clamp(intensity, 0, 1)
     this.bias = bias
     this.camera = new OrthographicCamera({
-      left: -1500,
-      right: 1500,
-      top: 1500,
-      bottom: -1500,
+      left: -2000,
+      right: 2000,
+      top: 2000,
+      bottom: -2000,
       near: 0.5,
-      far: 2000,
+      far: 3000,
     })
     this.updateDirection()
   }

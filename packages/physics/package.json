@@ -1,0 +1,10 @@
+{
+  "name": "@engine3d/physics",
+  "version": "0.0.1",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "lint": "eslint ./src --ext=ts"
+  }
+}

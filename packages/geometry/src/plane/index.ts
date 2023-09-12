@@ -1,15 +1,27 @@
 import { Vector3 } from "@math/vector3"
+import { zero, sign } from "@math/operators"
 
 export class Plane {
-  public normal: Vector3
-  public constant: number
+  public readonly normal: Vector3 = Vector3.zero()
+  public constant: number = 0
 
-  public constructor(normal: Vector3, constant: number = 0) {
-    this.set(normal, constant)
+  public constructor()
+  public constructor(x: number, y: number, z: number, constant: number)
+  public constructor(normal: Vector3, constant: number)
+  public constructor(...args: [number, number, number, number] | [Vector3, number] | []) {
+    if (args.length === 2) {
+      this.set(args[0], args[1])
+    } else if (args.length === 4) {
+      this.setComponents(args[0], args[1], args[2], args[3])
+    }
   }
 
-  public static fromComponents(x: number, y: number, z: number, constant: number): Plane {
-    return new Plane(new Vector3(x, y, z), constant)
+  public static fromCoplanarPoints(a: Vector3, b: Vector3, c: Vector3): Plane {
+    return new Plane().fromCoplanarPoints(a, b, c)
+  }
+
+  public static fromNormalConstant(normal: Vector3, constant: number): Plane {
+    return new Plane().set(normal, constant)
   }
 
   public copy(): Plane {
@@ -17,7 +29,7 @@ export class Plane {
   }
 
   public set(normal: Vector3, constant: number): this {
-    this.normal = normal
+    this.normal.copy(normal)
     this.constant = constant
     return this
   }
@@ -28,9 +40,17 @@ export class Plane {
     return this
   }
 
+  public fromCoplanarPoints(a: Vector3, b: Vector3, c: Vector3): this {
+    const ba = b.clone().subtract(a)
+    const ca = c.clone().subtract(a)
+    const normal = ba.cross(ca).normalize()
+    const constant = -normal.dot(a)
+    return this.set(normal, constant)
+  }
+
   public normalize(): this {
     const length = this.normal.length()
-    const inverseLength = length ? 1.0 / length : 0
+    const inverseLength = zero(length) ? 0 : 1.0 / length
     this.normal.multiplyScalar(inverseLength)
     this.constant *= inverseLength
     return this
@@ -38,5 +58,16 @@ export class Plane {
 
   public distanceToPoint(point: Vector3): number {
     return this.normal.dot(point) + this.constant
+  }
+
+  public intersectSegment(start: Vector3, end: Vector3): Vector3 | undefined {
+    const distanceToStart = this.distanceToPoint(start)
+    const distanceToEnd = this.distanceToPoint(end)
+    if (sign(distanceToStart) === sign(distanceToEnd)) {
+      // Both points lie on one side of a plane.
+      return
+    }
+    const interpolant = Math.abs(distanceToStart / (distanceToStart - distanceToEnd))
+    return start.clone().lerp(end, interpolant)
   }
 }

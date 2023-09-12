@@ -1,8 +1,8 @@
-import { lt } from "@math/operators"
+import { lt, zero } from "@math/operators"
 import type { Matrix4 } from "@math/matrix4"
 import type { Vector3 } from "@math/vector3"
 
-export type QuaternionTuple = [x: number, y: number, z: number, w: number]
+export type QuaternionTuple = Readonly<[x: number, y: number, z: number, w: number]>
 
 export class QuaternionArray extends Float32Array {
   public constructor() {
@@ -46,14 +46,29 @@ export class Quaternion {
   }
 
   public static fromAxisAngle(axis: Vector3, angle: number): Quaternion {
-    const halfTheta = angle / 2
-    const sin = Math.sin(halfTheta)
-    const cos = Math.cos(halfTheta)
-    const vec = axis.clone().multiplyScalar(sin)
-    return new Quaternion(vec.x, vec.y, vec.z, cos)
+    return new Quaternion().fromAxisAngle(axis, angle)
   }
 
   public static fromRotationMatrix(m: Matrix4): Quaternion {
+    return new Quaternion().fromRotationMatrix(m)
+  }
+
+  public static fromArray(array: ArrayLike<number>, offset: number = 0): Quaternion {
+    return new Quaternion(array[offset], array[offset + 1], array[offset + 2], array[offset + 3])
+  }
+
+  public identity(): this {
+    return this.set(0, 0, 0, 1)
+  }
+
+  public fromAxisAngle(axis: Vector3, angle: number): this {
+    const halfTheta = angle / 2
+    const sin = Math.sin(halfTheta)
+    const cos = Math.cos(halfTheta)
+    return this.set(axis.x * sin, axis.y * sin, axis.z * sin, cos)
+  }
+
+  public fromRotationMatrix(m: Matrix4): this {
     const [
       a11, a12, a13, ,
       a21, a22, a23, ,
@@ -64,7 +79,7 @@ export class Quaternion {
 
     if (trace > 0) {
       const s = 2 * Math.sqrt(trace + 1.0)
-      return new Quaternion(
+      return this.set(
         (a23 - a32) / s,
         (a31 - a13) / s,
         (a12 - a21) / s,
@@ -72,7 +87,7 @@ export class Quaternion {
       )
     } else if (a11 > a22 && a11 > a33) {
       const s = 2 * Math.sqrt(1.0 + a11 - a22 - a33)
-      return new Quaternion(
+      return this.set(
         0.25 * s,
         (a12 + a21) / s,
         (a31 + a13) / s,
@@ -80,7 +95,7 @@ export class Quaternion {
       )
     } else if (a22 > a33) {
       const s = 2 * Math.sqrt(1.0 + a22 - a11 - a33)
-      return new Quaternion(
+      return this.set(
         (a12 + a21) / s,
         0.25 * s,
         (a23 + a32) / s,
@@ -88,7 +103,7 @@ export class Quaternion {
       )
     } else {
       const s = 2 * Math.sqrt(1.0 + a33 - a11 - a22)
-      return new Quaternion(
+      return this.set(
         (a31 + a13) / s,
         (a23 + a32) / s,
         0.25 * s,
@@ -97,8 +112,8 @@ export class Quaternion {
     }
   }
 
-  public static fromArray(array: ArrayLike<number>, offset: number = 0): Quaternion {
-    return new Quaternion(array[offset], array[offset + 1], array[offset + 2], array[offset + 3])
+  public fromArray(array: ArrayLike<number>, offset: number = 0): this {
+    return this.set(array[offset], array[offset + 1], array[offset + 2], array[offset + 3])
   }
 
   public set(x: number, y: number, z: number, w: number): this {
@@ -134,7 +149,42 @@ export class Quaternion {
       scale1 = t
     }
 
-    return this.multiplyScalar(scale0).add(q.clone().multiplyScalar(scale1 * Math.sign(dot)))
+    return this.multiplyScalar(scale0).add(quaternionTemp.copy(q).multiplyScalar(scale1 * Math.sign(dot)))
+  }
+
+  public multiply(q: Quaternion): this {
+    return this.set(
+      this.x * q.w + this.w * q.x + this.y * q.z - this.z * q.y,
+      this.y * q.w + this.w * q.y + this.z * q.x - this.x * q.z,
+      this.z * q.w + this.w * q.z + this.x * q.y - this.y * q.x,
+      this.w * q.w - this.x * q.x - this.y * q.y - this.z * q.z,
+    )
+  }
+
+  public invert(): this {
+    this.array[0] *= -1
+    this.array[1] *= -1
+    this.array[2] *= -1
+    return this
+  }
+
+  public rotateByVelocity(velocity: Vector3, step: number): this {
+    const halfDt = step * 0.5
+    const [x, y, z, w] = this.elements
+    this.array[0] += halfDt * (velocity.x * w + velocity.y * z - velocity.z * y)
+    this.array[1] += halfDt * (velocity.y * w + velocity.z * x - velocity.x * z)
+    this.array[2] += halfDt * (velocity.z * w + velocity.x * y - velocity.y * x)
+    this.array[3] += halfDt * (-velocity.x * x - velocity.y * y - velocity.z * z)
+    return this.normalize()
+  }
+
+  public normalize(): this {
+    const lengthSquared = this.dot(this)
+    if (zero(lengthSquared)) {
+      return this.set(0, 0, 0, 0)
+    }
+    const lengthInv = 1 / Math.sqrt(lengthSquared)
+    return this.multiplyScalar(lengthInv)
   }
 
   private add(q: Quaternion): this {
@@ -157,3 +207,5 @@ export class Quaternion {
     return this.x * q.x + this.y * q.y + this.z * q.z + this.w * q.w
   }
 }
+
+const quaternionTemp = new Quaternion()

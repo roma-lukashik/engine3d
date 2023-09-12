@@ -30,6 +30,12 @@ describe("Sphere", () => {
     expect(clone).not.toBe(sphere)
   })
 
+  it("copies center when cloning", () => {
+    const sphere = new Sphere(new Vector3(0.5, 0.5, 2), 2.55)
+    const clone = sphere.clone()
+    expect(clone.center).not.toBe(sphere.center)
+  })
+
   it.each([
     [new Vector3(0, 0, 0), 5], // B inside A
     [new Vector3(0, 0, 0), 11], // A inside B

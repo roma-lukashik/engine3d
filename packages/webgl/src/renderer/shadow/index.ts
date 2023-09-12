@@ -5,7 +5,6 @@ import { RenderState } from "@webgl/utils/state"
 import { Scene } from "@webgl/scene"
 import { WebGLShadowTexture } from "@webgl/textures/shadow"
 import { RenderCache } from "@webgl/renderer/cache"
-import { getRenderStack } from "@webgl/renderer/renderStack"
 
 export type ShadowMap = WeakMap<LightWithShadow, WebGLShadowTexture>
 
@@ -28,6 +27,7 @@ export class ShadowMapRenderer {
 
   public create(scene: Scene): ShadowMap {
     const shadowMap: ShadowMap = new WeakMap()
+    const camera = scene.camera
 
     this.gl.disable(this.gl.CULL_FACE)
     this.gl.enable(this.gl.DEPTH_TEST)
@@ -40,7 +40,8 @@ export class ShadowMapRenderer {
       this.gl.viewport(0, 0, texture.width, texture.height)
       this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
 
-      getRenderStack(scene, light).forEach((object) => {
+      scene.addCamera(light.camera)
+      scene.getRenderStack().forEach((object) => {
         object.meshes.forEach((mesh) => {
           this.renderShadow(mesh, light)
         })
@@ -48,6 +49,7 @@ export class ShadowMapRenderer {
 
       shadowMap.set(light, texture)
     })
+    scene.addCamera(camera)
 
     return shadowMap
   }
@@ -69,7 +71,7 @@ export class ShadowMapRenderer {
       worldMatrix: mesh.worldMatrix.elements,
       boneTexture: boneTexture?.texture,
       boneTextureSize: boneTexture?.size,
-      projectionMatrix: light.projectionMatrix.elements,
+      projectionMatrix: light.camera.projectionMatrix.elements,
     })
 
     program.attributes.update({

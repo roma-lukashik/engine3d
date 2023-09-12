@@ -1,11 +1,9 @@
 import { MeshProgram } from "@webgl/program/mesh"
 import { Scene } from "@webgl/scene"
-import { Camera } from "@core/camera"
 import { ShadowMap, ShadowMapRenderer } from "@webgl/renderer/shadow"
 import { RenderState } from "@webgl/utils/state"
 import { Mesh } from "@core/mesh"
 import { RenderCache } from "@webgl/renderer/cache"
-import { Object3D } from "@core/object3d"
 
 export class MeshRenderer {
   private readonly gl: WebGLRenderingContext
@@ -26,7 +24,7 @@ export class MeshRenderer {
     this.shadowMapRenderer = shadowRenderer
   }
 
-  public render(renderStack: Object3D[], scene: Scene, camera: Camera): void {
+  public render(scene: Scene): void {
     const shadowMap = this.shadowMapRenderer.create(scene)
 
     this.gl.depthMask(true)
@@ -37,14 +35,14 @@ export class MeshRenderer {
     this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height)
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
 
-    renderStack.forEach((object) => {
+    scene.getRenderStack().forEach((object) => {
       object.meshes.forEach((mesh) => {
-        this.renderMesh(mesh, scene, shadowMap, camera)
+        this.renderMesh(mesh, scene, shadowMap)
       })
     })
   }
 
-  private renderMesh(mesh: Mesh, scene: Scene, shadowMap: ShadowMap, camera: Camera): void {
+  private renderMesh(mesh: Mesh, scene: Scene, shadowMap: ShadowMap): void {
     const program = this.getProgram(mesh, scene)
     program.use()
 
@@ -65,8 +63,8 @@ export class MeshRenderer {
       },
       boneTexture: boneTexture?.texture,
       boneTextureSize: boneTexture?.size,
-      projectionMatrix: camera.projectionMatrix.elements,
-      viewMatrix: camera.viewMatrix.elements,
+      projectionMatrix: scene.camera.projectionMatrix.elements,
+      viewMatrix: scene.camera.viewMatrix.elements,
       ambientLights: scene.ambientLights.map(({ color, intensity }) => {
         return { color: color.elements, intensity }
       }),
@@ -101,7 +99,7 @@ export class MeshRenderer {
             coneCos,
             penumbraCos,
             bias,
-            projectionMatrix,
+            camera,
           } = light
           return {
             color: color.elements,
@@ -112,7 +110,7 @@ export class MeshRenderer {
             coneCos,
             penumbraCos,
             bias,
-            projectionMatrix: projectionMatrix.elements,
+            projectionMatrix: camera.projectionMatrix.elements,
             shadowMap: shadowMap.get(light)!,
           }
       }),
@@ -124,17 +122,17 @@ export class MeshRenderer {
         }
       }),
       directionalShadowLights: scene.directionalShadowLights.map((light) => {
-        const { color, intensity, direction, bias, projectionMatrix } = light
+        const { color, intensity, direction, bias, camera } = light
         return {
           color: color.elements,
           direction: direction.elements,
           intensity,
           bias,
-          projectionMatrix: projectionMatrix.elements,
+          projectionMatrix: camera.projectionMatrix.elements,
           shadowMap: shadowMap.get(light)!,
         }
       }),
-      cameraPosition: camera.position.elements,
+      cameraPosition: scene.camera.position.elements,
     })
 
     program.attributes.update(mesh.geometry)

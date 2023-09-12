@@ -15,22 +15,22 @@ describe("Skeleton", () => {
   ]
 
   it("to be defined", () => {
-    expect(new Skeleton({ bones, boneInverses })).toBeDefined()
+    expect(new Skeleton(bones, boneInverses)).toBeDefined()
   })
 
   it("has correct assignment", () => {
-    const skeleton = new Skeleton({ bones, boneInverses })
+    const skeleton = new Skeleton(bones, boneInverses)
     expect(skeleton.bones).toBe(bones)
     expect(skeleton.boneInverses).toBe(boneInverses)
   })
 
   it("creates a boneMatrices with 32 length", () => {
-    const skeleton = new Skeleton({ bones, boneInverses })
+    const skeleton = new Skeleton(bones, boneInverses)
     expect(skeleton.boneMatrices).toHaveLength(32)
   })
 
   it("fills a boneMatrices array", () => {
-    const skeleton = new Skeleton({ bones, boneInverses })
+    const skeleton = new Skeleton(bones, boneInverses)
     const node = new Node({
       matrix: new Matrix4([
         1, 1, 1, -1,

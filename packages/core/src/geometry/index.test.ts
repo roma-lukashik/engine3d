@@ -25,7 +25,7 @@ describe("Geometry", () => {
       index,
     })
 
-    expect(geometry).toMatchObject<Geometry>({
+    expect(geometry).toMatchObject<Partial<Geometry>>({
       position,
       normal,
       color,
@@ -35,6 +35,58 @@ describe("Geometry", () => {
       skinWeight,
       tangent,
       index,
+    })
+  })
+
+  describe("positionPoints", () => {
+    const positionBufferAttribute = new BufferAttribute({
+      array: new Float32Array([
+        -5, 0, 1,
+        -5, 5, 1,
+        5, 5, 1,
+        5, 0, 1,
+        -5, 0, -1,
+        -5, 5, -1,
+        5, 5, -1,
+        5, 0, -1,
+      ]),
+      itemSize: 3,
+    })
+
+    it("non indexed attribute", () => {
+      const geometry = new Geometry({
+        POSITION: positionBufferAttribute,
+      })
+      expect(geometry.positionPoints).toEqual(new Float32Array([
+        -5, 0, 1,
+        -5, 5, 1,
+        5, 5, 1,
+        5, 0, 1,
+        -5, 0, -1,
+        -5, 5, -1,
+        5, 5, -1,
+        5, 0, -1,
+      ]))
+    })
+
+    it("indexed attribute", () => {
+      const geometry = new Geometry({
+        POSITION: positionBufferAttribute,
+        index: new BufferAttribute({
+          array: new Uint8Array([0, 2, 4, 6, 1, 3, 5, 7]),
+          itemSize: 1,
+        }),
+      })
+      expect(geometry.positionPoints).toEqual(new Float32Array([
+        -5, 0, 1,
+        5, 5, 1,
+        -5, 0, -1,
+        5, 5, -1,
+        -5, 5, 1,
+        5, 0, 1,
+        -5, 5, -1,
+        5, 0, -1,
+      ]))
     })
   })
 })

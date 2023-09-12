@@ -1,6 +1,6 @@
 import { eq } from "@math/operators"
 
-export type Vector2Tuple = [x: number, y: number]
+export type Vector2Tuple = Readonly<[x: number, y: number]>
 
 export class Vector2Array extends Float32Array {
   public constructor() {
@@ -43,9 +43,19 @@ export class Vector2 {
     return this.array[1]
   }
 
-  public set(x: number): this
-  public set(x: number, y: number): this
-  public set(x: number, y: number = x): this {
+  public zero(): this {
+    return this.set(0, 0)
+  }
+
+  public one(): this {
+    return this.set(1, 1)
+  }
+
+  public fromArray(array: ArrayLike<number>, offset: number = 0): this {
+    return this.set(array[offset], array[offset + 1])
+  }
+
+  public set(x: number, y: number): this {
     this.array[0] = x
     this.array[1] = y
     return this
@@ -104,7 +114,7 @@ export class Vector2 {
   }
 
   public distanceSquared(v: Vector2): number {
-    return this.clone().subtract(v).lengthSquared()
+    return vectorTemp.copy(v).subtract(this).lengthSquared()
   }
 
   public distance(v: Vector2): number {
@@ -139,3 +149,5 @@ export class Vector2 {
     return eq(this.x, v.x) && eq(this.y, v.y)
   }
 }
+
+const vectorTemp = new Vector2()

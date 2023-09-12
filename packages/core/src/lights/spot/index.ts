@@ -2,7 +2,6 @@ import { Camera, PerspectiveCamera } from "@core/camera"
 import { LightType, LightWithShadow } from "@core/lights/types"
 import { RGB } from "@core/color/rgb"
 import { Vector3 } from "@math/vector3"
-import { Matrix4 } from "@math/matrix4"
 
 type Props = {
   // Hexadecimal color of the light.
@@ -34,6 +33,7 @@ export class SpotLight implements LightWithShadow {
   public readonly castShadow: boolean
   public readonly color: RGB
   public readonly bias: number
+  public readonly camera: Camera
   public intensity: number
   public distance: number
   public angle: number
@@ -47,10 +47,6 @@ export class SpotLight implements LightWithShadow {
     return this.camera.target
   }
 
-  public get projectionMatrix(): Matrix4 {
-    return this.camera.projectionMatrix
-  }
-
   public get coneCos(): number {
     return Math.cos(this.angle)
   }
@@ -58,8 +54,6 @@ export class SpotLight implements LightWithShadow {
   public get penumbraCos(): number {
     return Math.cos(this.angle * (1 - this.penumbra))
   }
-
-  private readonly camera: Camera
 
   public constructor({
     castShadow = false,

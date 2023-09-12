@@ -3,9 +3,12 @@ import { Geometry } from "@core/geometry"
 import { Material } from "@core/material"
 import { Node } from "@core/node"
 import { Skeleton } from "@core/skeleton"
+import { BufferAttribute } from "@core/bufferAttribute"
 
 describe("Mesh", () => {
-  const geometry = new Geometry()
+  const geometry = new Geometry({
+    POSITION: new BufferAttribute({ array: new Uint8Array(), itemSize: 1 }),
+  })
   const material = new Material()
 
   it("to be created", () => {
@@ -26,10 +29,7 @@ describe("Mesh", () => {
 
   it("bind skeleton", () => {
     const mesh = new Mesh({ geometry, material })
-    const skeleton = new Skeleton({
-      bones: [],
-      boneInverses: [],
-    })
+    const skeleton = new Skeleton([], [])
     mesh.bindSkeleton(skeleton)
     expect(mesh.skeleton).toBe(skeleton)
   })
